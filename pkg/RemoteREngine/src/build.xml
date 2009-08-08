@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<project name="remoterengine" default="all" basedir=".">
+
+  <!--{{{ Copyright (c) 2009, Romain Francois <francoisromain@free.fr>
+ 
+ This file is part of the RemoteREngine project
+ 
+ The RemoteREngine project is free software: 
+ you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 2 of the License, or
+ (at your option) any later version.
+ 
+ The RemoteREngine project is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
+}}}-->
+
+	<!--{{{ Properties -->
+  <property file="./build.properties"/>
+  <property name="compiler.debug"         value="on" />
+  <property name="compiler.debuglevel"    value="lines,vars,source" />
+  <property name="compiler.optimize"      value="off" />
+  <property name="compiler.deprecation"   value="off" />
+  <property name="compiler.verbose"       value="off" />
+  <property name="compiler.nowarn"        value="off" />
+  <property name="compiler.target"        value="1.5" />
+  <property name="compiler.source"        value="1.5" />
+  
+  <property name="target.dir" value="${install.dir}/java" />
+  
+  <!--}}}-->
+    
+	<!--{{{ clean -->
+	<target name="clean">
+		<delete dir="build" />
+		<delete dir="${javadoc.dir}" />
+		
+		<mkdir dir="build" />
+		<mkdir dir="build/common" />
+		<mkdir dir="build/server" />
+		<mkdir dir="build/client" />
+		<mkdir dir="${javadoc.dir}" />
+		<mkdir dir="${target.dir}" />
+		
+	</target>
+	<!-- }}} -->
+	
+	<!--{{{ common: RemoteREngineInterface -->
+	
+	<path id="common_classpath">
+		<pathelement location="lib/REngine.jar" />
+	</path>
+	
+	<target name="common" depends="clean">
+		<javac srcdir="src/common" 
+			destdir="build/common"  
+			includeJavaRuntime="yes"
+			debug="${compiler.debug}"
+      debuglevel="${compiler.debuglevel}"
+      optimize="${compiler.optimize}"
+      deprecation="${compiler.deprecation}"
+      verbose="${compiler.verbose}"
+      nowarn="${compiler.nowarn}"
+      target="${compiler.target}"
+      source="${compiler.source}" >
+			<classpath refid="common_classpath" />
+		</javac>	
+		
+	</target>
+	<target name="javadoc"
+		description="Compile the Javadoc API documentation to dist dir">
+		<javadoc
+		           destdir="${javadoc.dir}"
+		           author="true"
+		           version="true"
+		           use="true"
+				   private="true"
+		           windowtitle="Remote R Server Javadoc"
+				   classpathref="server_classpath">
+
+		    <fileset dir="src" defaultexcludes="yes">	
+		    	<exclude name="**/*.xml"/>
+		    	<exclude name="**/*.properties"/>
+		    	<exclude name="**/*.html"/>
+		    	<exclude name="**/*.htm"/>
+		    	<exclude name="**/*Test.java"/>
+		    	<exclude name="**/All*Test.java"/>
+		    	<exclude name="**/All*Tests.java"/>
+		    </fileset>
+
+		    <doctitle><![CDATA[<h1>Remote R Server Javadoc</h1>]]></doctitle>
+		    <bottom><![CDATA[<i>Copyright &#169; 2009, Romain Francois <a href="mailto://francoisromain@free.fr">francoisromain@free.fr</a></i>]]></bottom>
+		    <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+		    <link href="http://www.rforge.net/org/docs/" />
+		    <link href="."/>
+		</javadoc>
+	</target>
+	<!--}}}-->
+	
+	<!--{{{ server side -->
+	
+	<path id="server_classpath">
+		<pathelement location="build/common" />
+		<pathelement location="lib/REngine.jar" />
+		<pathelement location="lib/JRIEngine.jar" />
+		<pathelement location="lib/JRI.jar" />
+	</path>
+	
+	<target name="server" depends="common">
+		<javac srcdir="src/server" 
+			destdir="build/server"  
+			includeJavaRuntime="yes"
+			debug="${compiler.debug}"
+      debuglevel="${compiler.debuglevel}"
+      optimize="${compiler.optimize}"
+      deprecation="${compiler.deprecation}"
+      verbose="${compiler.verbose}"
+      nowarn="${compiler.nowarn}"
+      target="${compiler.target}"
+      source="${compiler.source}" >
+			<classpath refid="server_classpath" />
+		</javac>
+		<unjar src="lib/JRI.jar"       dest="build/server" />
+		<unjar src="lib/JRIEngine.jar" dest="build/server" />
+		<unjar src="lib/REngine.jar"   dest="build/server" />
+		
+		<jar jarfile="${target.dir}/RemoteREngine-server.jar">
+			<fileset dir="build/server" />
+			<fileset dir="build/common" />
+		</jar>
+	</target>
+	
+	
+	<!--}}}-->
+	
+	<!--{{{ client side -->
+	
+	<path id="client_classpath">
+		<pathelement location="build/common" />
+		<pathelement location="lib/REngine.jar" />
+	</path>
+	
+	<target name="client" depends="common">
+		<javac srcdir="src/client" 
+			destdir="build/client"  
+			includeJavaRuntime="yes"
+			debug="${compiler.debug}"
+      debuglevel="${compiler.debuglevel}"
+      optimize="${compiler.optimize}"
+      deprecation="${compiler.deprecation}"
+      verbose="${compiler.verbose}"
+      nowarn="${compiler.nowarn}"
+      target="${compiler.target}"
+      source="${compiler.source}">
+			<classpath refid="client_classpath" />
+		</javac>
+		<unjar src="lib/REngine.jar"   	dest="build/client" />
+		
+		<jar jarfile="${target.dir}/RemoteREngine-client.jar">
+			<fileset dir="build/client" />
+			<fileset dir="build/common" />
+		</jar>
+		
+	</target>
+	<!--}}}-->
+	
+	<target name="all" depends="common,javadoc,client,server" />
+	
+	<!-- :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1: -->
+
+</project>

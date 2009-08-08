@@ -1,0 +1,15 @@
+
+to build the R package, the recommended way is this
+
+$ R CMD build RemoteREngine
+
+this creates a tar.gz file
+
+# R CMD INSTALL RemoteREngine_0.0-0.tar.gz
+
+this has the advantage of not adding the compiled files into the project
+
+then, you can start the engine like this (more options will come)
+
+$ R CMD remoterengine
+

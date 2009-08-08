@@ -1,0 +1,104 @@
+#!/bin/env Rscript
+
+# {{{ Copyright (c) 2009, Romain Francois <francoisromain@free.fr>
+# :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
+#
+# This file is part of the RemoteREngine project
+#
+# The RemoteREngine project is free software: 
+# you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# The RemoteREngine project is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
+# }}}
+
+# {{{ R environment variables
+
+# {{{ R_HOME
+if( Sys.getenv( "R_HOME", unset = "" ) == "" ){
+	R_HOME <- R.home()
+	Sys.setenv( R_HOME = R_HOME )
+}
+R_HOME <- Sys.getenv( "R_HOME" )
+# }}}	
+
+# {{{ R_SHARE_DIR
+R_SHARE_DIR <- file.path( R_HOME, "share" )
+Sys.setenv( R_SHARE_DIR = R_SHARE_DIR)
+# }}}
+
+# {{{ R_INCLUDE_DIR
+R_INCLUDE_DIR <- file.path( R_HOME, "include" )
+Sys.setenv( R_INCLUDE_DIR = R_INCLUDE_DIR)
+# }}}
+
+# {{{ R_DOC_DIR
+R_DOC_DIR <- file.path( R_HOME, "doc" )
+Sys.setenv( R_DOC_DIR = R_DOC_DIR)
+# }}}
+
+# {{{ R_DEFAULT_PACKAGES
+R_DEFAULT_PACKAGES <- "utils, stats, rJava, methods, grDevices, graphics, datasets"
+Sys.setenv( R_DEFAULT_PACKAGES = R_DEFAULT_PACKAGES)
+# }}}
+# }}}
+
+# {{{ java environment variables
+# {{{ JRI_LD_PATH
+SEP <- ":"
+JRI_LD_PATH <- paste( 
+	system.file( "jri", package = "rJava" ), 
+	file.path( R_HOME, "bin" ),
+	file.path( R_HOME, "lib" ),
+	sep = SEP
+)
+
+LD_LIBRARY_PATH <- Sys.getenv( "LD_LIBRARY_PATH", unset = "" )
+LD_LIBRARY_PATH <- if( LD_LIBRARY_PATH == "" ){
+	JRI_LD_PATH
+} else {
+	paste( LD_LIBRARY_PATH, JRI_LD_PATH, sep = SEP )
+}
+Sys.setenv( LD_LIBRARY_PATH = LD_LIBRARY_PATH )
+# }}}
+
+# {{{ LC_NUMERIC
+LC_NUMERIC <- "C"
+Sys.setenv( LC_NUMERIC = LC_NUMERIC )
+# }}}
+
+# {{{ NO_SIG 
+NO_SIG <- "1"
+Sys.setenv( NO_SIG = NO_SIG )
+# }}}
+
+CP <- paste( 
+	system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), 
+	system.file( "java", "boot", package = "rJava" ), 
+	system.file( "java", package = "rJava" ), 
+	sep = SEP
+)
+
+RJAVA <- system.file( "java", package = "rJava" ) 	
+RJAVA_CP <- paste( 
+	system.file( "java", "boot", package = "rJava" ), 
+	system.file( "java", package = "rJava" ), 
+	sep = SEP
+)
+policy <- system.file( "policy", "server.policy", package = "RemoteREngine" ) 
+codebase <- paste( "file:", system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), sep = "" )
+
+cmd <- sprintf( 'java -cp "%s" -Djava.library.path="%s"  -Xmx1024M -Drjava.path="%s" -Drjava.class.path="%s" -Djava.rmi.server.codebase="%s" -Djava.security.policy="%s" org.rosuda.REngine.remote.server.REngineServer test localhost 1099', 
+	CP, LD_LIBRARY_PATH, RJAVA, RJAVA_CP, codebase, policy )
+
+system( cmd, wait = TRUE )
+# cat( cmd, "\n" )
+# }}}

@@ -1,0 +1,70 @@
+#!/bin/bash 
+# {{{ Copyright (c) 2009, Romain Francois <francoisromain@free.fr>
+# :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
+#
+# This file is part of the RemoteREngine project
+#
+# The RemoteREngine project is free software: 
+# you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# The RemoteREngine project is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
+# }}}
+
+# {{{ setup environment variables for JRI 
+# {{{ R stuff
+R_HOME="/usr/local/lib/R"
+export R_HOME
+R_SHARE_DIR="${R_HOME}/share"
+export R_SHARE_DIR
+R_INCLUDE_DIR="${R_HOME}/include"
+export R_INCLUDE_DIR
+R_DOC_DIR="${R_HOME}/doc"
+export R_DOC_DIR
+R_DEFAULT_PACKAGES="utils, stats, rJava, methods, grDevices, graphics, datasets"
+export R_DEFAULT_PACKAGES
+# }}}
+
+# {{{ LD_LIBRARY_PATH
+JRI_LD_PATH="${R_HOME}/library/rJava/jri:${R_HOME}/lib:${R_HOME}/bin:/usr/local/lib/R/lib:/usr/local/lib:/opt/jdk/jre/lib/i386/server:/opt/jdk/jre/lib/i386:/opt/jdk/jre/../lib/i386::/usr/java/packages/lib/i386:/lib:/usr/lib:@JAVA_LD@:/usr/local/lib/R/library/rJava/jri"
+if test -z "${LD_LIBRARY_PATH}"; then
+  LD_LIBRARY_PATH="${JRI_LD_PATH}"
+else
+  LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JRI_LD_PATH}"
+fi
+JAVA="java"
+export LD_LIBRARY_PATH
+NO_SIG=1
+export NO_SIG
+# }}}
+
+# {{{ make sure Java doesn''t screw up formatting of doubles
+LC_NUMERIC=C
+export LC_NUMERIC
+# }}}
+# }}}
+
+# {{{ start the server
+# Set jvm heap initial and maximum sizes (in megabytes).
+JAVA_HEAP_MAX_SIZE=1024
+
+# where to find various jar files
+DIR=/home/romain/svn/RemoteREngine/dist/server
+
+"$JAVA" -cp "${DIR}/server.jar:${R_HOME}/library/rJava/java/boot:${R_HOME}/library/rJava/java" \
+	-Xmx${JAVA_HEAP_MAX_SIZE}M \
+	-Drjava.path="${R_HOME}/library/rJava" \
+	-Drjava.class.path="${R_HOME}/library/rJava/java/boot:${R_HOME}/library/rJava/java" \
+	-Djava.rmi.server.codebase=file:/home/romain/svn/RemoteREngine/dist/server/server.jar \
+	-Djava.security.policy=server.policy \
+	org.rosuda.REngine.remote.server.REngineServer
+# }}}
+

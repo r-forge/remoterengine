@@ -1,0 +1,11 @@
+#!/bin/bash 
+
+cd /home/romain/svn/rosuda/rosuda/REngine
+make
+cp REngine.jar /home/romain/svn/RemoteREngine/lib
+cd JRI
+make
+cp JRIEngine.jar /home/romain/svn/RemoteREngine/lib
+cd /home/romain/svn/RemoteREngine
+ant
+
