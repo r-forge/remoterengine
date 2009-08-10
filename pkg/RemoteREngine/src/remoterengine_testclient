@@ -22,8 +22,16 @@
 
 client <- system.file(  "java", "RemoteREngine-client.jar", package = "RemoteREngine"  )
 policy <- system.file(  "policy", "client.policy", package = "RemoteREngine"  )
-cmd <- sprintf( 'java -cp "%s" -Djava.rmi.server.codebase="file:%s" -Djava.security.policy="%s" org.rosuda.REngine.remote.client.test.RemoteREngineTest test localhost 1099', 
-	client, client, policy )
-system( cmd, wait = FALSE )
 
+# {{{ command line arguments
+arguments <- paste( commandArgs( TRUE ), sep = " ") 
+if( is.null(arguments) || length(arguments)==0 ){
+	arguments <- ""
+}
+# }}}
+
+cmd <- sprintf( 'java -cp "%s" -Djava.rmi.server.codebase="file:%s" -Djava.security.policy="%s" org.rosuda.REngine.remote.client.test.RemoteREngineTest %s', 
+	client, client, policy, arguments )
+system( cmd, wait = TRUE )
+q( status = 0, save = "no" )
 

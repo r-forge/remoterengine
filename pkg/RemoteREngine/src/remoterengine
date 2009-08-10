@@ -79,25 +79,43 @@ Sys.setenv( LC_NUMERIC = LC_NUMERIC )
 NO_SIG <- "1"
 Sys.setenv( NO_SIG = NO_SIG )
 # }}}
+# }}}
 
+# {{{ classpath
 CP <- paste( 
 	system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), 
 	system.file( "java", "boot", package = "rJava" ), 
 	system.file( "java", package = "rJava" ), 
 	sep = SEP
 )
+# }}}
 
+# {{{ rJava stuff
 RJAVA <- system.file( "java", package = "rJava" ) 	
 RJAVA_CP <- paste( 
 	system.file( "java", "boot", package = "rJava" ), 
 	system.file( "java", package = "rJava" ), 
 	sep = SEP
 )
-policy <- system.file( "policy", "server.policy", package = "RemoteREngine" ) 
-codebase <- paste( "file:", system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), sep = "" )
+# }}}
 
-cmd <- sprintf( 'java -cp "%s" -Djava.library.path="%s"  -Xmx1024M -Drjava.path="%s" -Drjava.class.path="%s" -Djava.rmi.server.codebase="%s" -Djava.security.policy="%s" org.rosuda.REngine.remote.server.REngineServer test localhost 1099', 
-	CP, LD_LIBRARY_PATH, RJAVA, RJAVA_CP, codebase, policy )
+# {{{ policy file
+policy <- system.file( "policy", "server.policy", package = "RemoteREngine" )
+# }}}
+
+# {{{ codebase
+codebase <- paste( "file:", system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), sep = "" )
+# }}}
+
+# {{{ command line args
+arguments <- paste( commandArgs(TRUE), sep = " ")
+if( is.null(arguments) || length(arguments) == 0 ){
+	arguments <- ""
+}
+# }}}
+
+cmd <- sprintf( 'java -cp "%s" -Djava.library.path="%s"  -Xmx1024M -Drjava.path="%s" -Drjava.class.path="%s" -Djava.rmi.server.codebase="%s" -Djava.security.policy="%s" org.rosuda.REngine.remote.server.REngineServer %s', 
+	CP, LD_LIBRARY_PATH, RJAVA, RJAVA_CP, codebase, policy, arguments )
 
 system( cmd, wait = TRUE )
 # cat( cmd, "\n" )

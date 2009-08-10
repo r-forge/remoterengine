@@ -21,8 +21,12 @@
 package org.rosuda.REngine.remote.client.test ;
 
 /*{{{ imports */
+import java.util.Map;
+
 import org.rosuda.REngine.*;
 import org.rosuda.REngine.remote.client.RemoteREngine ;
+import org.rosuda.REngine.remote.common.CommandLineArgs;
+
 import static org.rosuda.REngine.remote.common.RemoteREngineConstants.* ;
 /*}}} */
 
@@ -40,21 +44,26 @@ public class RemoteREngineTest {
 
 		try { 
 
-			System.out.println( args.length ) ;
-			
 			String name = DEFAULTNAME ;
-			int nargs = args.length ;
-			if( nargs>0){
-				name = args[0] ;
-			}
 			String host = RMIHOSTNAME ;
-			if( nargs>1){
-				host = args[1] ;
-			}
 			int port = 1099; 
-			if( nargs>2){
-				port = Integer.parseInt( args[2] ) ;
+			
+			
+			Map<String,String> arguments = CommandLineArgs.arguments(args) ;
+			if( arguments.containsKey("host")){
+				host = arguments.get("host") ;
 			}
+			if( arguments.containsKey("name")){
+				name = arguments.get("name");
+			}
+			if( arguments.containsKey("port")){
+				try{
+					port = Integer.parseInt(arguments.get("port")) ;
+				} catch( NumberFormatException ex){
+					System.out.println("Could not parse port into a integer, falling back on default port : 1099 ");
+				}
+			}
+			
 			
 			/*{{{ Init */
 				REngine eng = new RemoteREngine( name, host, port );

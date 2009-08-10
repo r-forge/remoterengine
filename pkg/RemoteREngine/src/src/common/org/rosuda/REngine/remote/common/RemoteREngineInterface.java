@@ -110,11 +110,16 @@ public interface RemoteREngineInterface extends Remote {
 
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException, RemoteException; 
 
+	/* FIXME: these are used only once at the setup of the engine to mirror some of the 
+	 * settings of the JRIEngine, there probably is a better way to deal with that. 
+	 */
 	public REXPReference getGlobalEnv() throws RemoteException ; 
 	public REXPReference getEmptyEnv() throws RemoteException ; 
 	public REXPReference getBaseEnv() throws RemoteException ; 
 	public REXPReference getNullValueRef() throws RemoteException ; 
 	public REXPNull getNullValue() throws RemoteException; 
+	
+	/* this is only used to key the engine, need something better? */
 	public int getEngineHashCode() throws RemoteException; 
 	
 }

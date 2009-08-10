@@ -29,8 +29,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Map;
 
 import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.remote.common.CommandLineArgs;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import static org.rosuda.REngine.remote.common.RemoteREngineConstants.* ;
 
@@ -47,20 +49,24 @@ public class REngineServer {
 		String rmiName = DEFAULTNAME;
 		String rmiHost = RMIHOSTNAME;
 		String rmiPort = RMIPORT;
-		@SuppressWarnings("unused")
-		String registeredName = DEFAULTNAME;
 		
+		/* print the help if see the -h or --help flags */
 		if (args.length > 0) {
-			if (args[0].startsWith("-h")) {
+			if ( args[0].startsWith("-h") || args[0].startsWith( "--help" )) {
 				printMenu();
 				System.exit(0);
 			}
-			rmiName = args[0];
-		} else {
-			System.out.println("Use -help for options");
 		}
-		if (args.length > 1) rmiHost = args[1];
-		if (args.length > 2) rmiPort = args[2];
+		Map<String,String> arguments = CommandLineArgs.arguments(args) ;
+		if( arguments.containsKey( "host" ) ){
+			rmiName = arguments.get("host") ;
+		} 
+		if( arguments.containsKey( "port" )){
+			rmiPort = arguments.get("port") ;
+		}
+		if( arguments.containsKey( "name" )){
+			rmiPort = arguments.get("name") ;
+		}
 		
 	    if (System.getSecurityManager() == null) {
 	        System.setSecurityManager(new SecurityManager());
@@ -73,6 +79,7 @@ public class REngineServer {
 	    	System.err.println(e.getClass().getName() +": While creating the R Engine, " + e.getMessage());
 	    	e.printStackTrace();
 	    }
+	    
         RemoteREngineInterface stub = null;
         Registry registry = null;
         try {
@@ -145,9 +152,16 @@ public class REngineServer {
 	 */
 	private static void printMenu() {
 		System.out.println("Expected arguments are:");
-		System.out.println("RMI name to register server under, e.g. RemoteREngine");
-		System.out.println("RMI Registry hostname or IP address, e.g. localhost");
-		System.out.println("RMI Registry port number, e.g. 1099");
+		
+		System.out.println("  [--name name]    : RMI name to register server under");
+		System.out.println("                     default: 'RemoteREngine' ");
+		
+		System.out.println("  [--host host]    : RMI Registry hostname or IP address");
+		System.out.println("                     default: 'localhost' ");
+		
+		System.out.println("  [--port port]    : RMI Registry port number");
+		System.out.println("                     default: '1099' ");
+		
 	}
     
 }

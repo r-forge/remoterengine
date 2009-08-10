@@ -41,16 +41,17 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Constructor. Initiates the local R engine that this engine shadows
 	 * @throws REngineException Error creating the R instance
 	 */ 
-  public RemoteREngine_Server() throws REngineException {
-      super();
-//      try{
-      	r = (JRIEngine) JRIEngine.createEngine() ;
-/*      } catch( Exception e ){
+	public RemoteREngine_Server() throws REngineException {
+		super();
+		//      try{
+		// r = (JRIEngine) JRIEngine.createEngine() ;
+		r  = new JRIEngine( new String[]{ "--no-save" }, new RemoteRMainLoopCallbacks(this) ) ;
+		/*      } catch( Exception e ){
       	System.out.println( "Could not create JRIEngine :" ) ;
       	e.printStackTrace( ); 
       }
-*/
-  }
+		 */
+	}
   
   /**                                                    
    * parse a string into an expression vector         
