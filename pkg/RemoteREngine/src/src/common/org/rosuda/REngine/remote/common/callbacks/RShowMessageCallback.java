@@ -1,12 +1,9 @@
 package org.rosuda.REngine.remote.common.callbacks;
 
-import org.rosuda.JRI.RMainLoopCallbacks;
-
 /**
  * Callback created when R needs to display a message 
  *  
  * @author Romain Francois
- * @see RMainLoopCallbacks#rShowMessage(org.rosuda.JRI.Rengine, String)
  */
 @SuppressWarnings("serial")
 public class RShowMessageCallback extends RCallback {

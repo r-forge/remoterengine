@@ -1,12 +1,9 @@
 package org.rosuda.REngine.remote.common.callbacks;
 
-import org.rosuda.JRI.RMainLoopCallbacks;
-
 /**
  * Callback used to indicate to the client if R is busy
  * 
  * @author Romain Francois
- * @see RMainLoopCallbacks#rBusy(org.rosuda.JRI.Rengine, int)
  */
 @SuppressWarnings("serial")
 public class RBusyCallback extends RCallback {
