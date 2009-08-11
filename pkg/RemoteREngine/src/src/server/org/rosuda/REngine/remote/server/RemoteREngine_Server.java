@@ -184,6 +184,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		return callbackQueue.next(); 
 	}
 	
+	public void addCallback(RCallback callback){
+		callbackQueue.push(callback) ;
+	}
+	
+	
 	private void debug( String message){
 		if( DEBUG ){
 			System.out.println( message ); 

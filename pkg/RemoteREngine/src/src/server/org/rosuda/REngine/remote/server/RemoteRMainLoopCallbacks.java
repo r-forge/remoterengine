@@ -2,6 +2,10 @@ package org.rosuda.REngine.remote.server;
 
 import org.rosuda.JRI.RMainLoopCallbacks;
 import org.rosuda.JRI.Rengine;
+import org.rosuda.REngine.remote.common.callbacks.RBusyCallback;
+import org.rosuda.REngine.remote.common.callbacks.RFlushConsoleCallback;
+import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
+import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 
 /**
  * Remote main loop callbacks 
@@ -11,7 +15,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	/**
 	 * R server associated with these callbacks
 	 */
-	@SuppressWarnings("unused")
 	private RemoteREngine_Server server ; 
 	
 	/**
@@ -21,14 +24,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	public RemoteRMainLoopCallbacks(RemoteREngine_Server server){
 		this.server = server ;
 	}
-
-	/* TODO: the first few methods inform the clients of this server about the state of R 
-	 * and should be easy to implement 
-	 * 
-	 * create a Callback class that encapsulates the information 
-	 * and send this (or make it available somehow) to the clients
-	 * 
-	 */
 	
     /**
      *  called when R prints output to the console
@@ -39,7 +34,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
     */
 	@Override
 	public void rWriteConsole(Rengine re, String text, int oType) {
-		// TODO: broadcast the message to the clients
+		server.addCallback( new RWriteConsoleCallback( text, oType ) ) ;
 	}
 
     /** 
@@ -51,7 +46,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 */
 	@Override
 	public void rBusy(Rengine re, int which) {
-		// TODO: dispatch the information to the clients
+		server.addCallback( new RBusyCallback( which == 1 ) ) ;
 	}
 	
     /** 
@@ -61,9 +56,22 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 */	
 	@Override
 	public void rFlushConsole(Rengine re) {
-		// TODO: dispatch the information to the clients
+		server.addCallback( new RFlushConsoleCallback() ) ;
 	}
 	
+    /** 
+     * called when R want to show a warning/error message
+     * (not to be confused with messages displayed in the console output)
+     * 
+	 * @param re calling engine
+	 * @param message message to display
+	 */
+	@Override
+	public void rShowMessage(Rengine re, String message) {
+		server.addCallback( new RShowMessageCallback( message ) ) ;
+	}
+	
+	/* history management */
 	
     /** 
      * called to save the contents of the history (the implementation is responsible of keeping track of the history)
@@ -85,17 +93,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
     	// TODO: load the history file
     }
 
-    /** 
-     * called when R want to show a warning/error message
-     * (not to be confused with messages displayed in the console output)
-     * 
-	 * @param re calling engine
-	 * @param message message to display
-	 */
-	@Override
-	public void rShowMessage(Rengine re, String message) {
-		// TODO: dispatch the information to the clients
-	}
 
 	/* TODO: the last two callbacks are more tricky, they need interaction between the client and the server */
 	
