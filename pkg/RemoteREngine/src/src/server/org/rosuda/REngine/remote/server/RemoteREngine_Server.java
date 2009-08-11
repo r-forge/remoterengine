@@ -20,6 +20,7 @@
 
 package org.rosuda.REngine.remote.server ;
 
+import org.rosuda.REngine.remote.server.callbacks.CallbackQueue ;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REXPNull;
@@ -27,6 +28,7 @@ import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.JRI.JRIEngine;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
+import org.rosuda.REngine.remote.common.callbacks.RCallback;
 
 public class RemoteREngine_Server implements RemoteREngineInterface {
   
@@ -36,7 +38,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * The local R engine this server is shadowing
 	 */ 
 	private JRIEngine r ; 
-
+	
+	/**
+	 * The callback queue
+	 */
+	private CallbackQueue callbackQueue ;
+	
 	/**
 	 * Constructor. Initiates the local R engine that this engine shadows
 	 * @throws REngineException Error creating the R instance
@@ -168,6 +175,15 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		return r.parseAndEval( text, where, resolve ); 
 	}
 
+	/**
+	 * Waits for the next callback to be available and sent it
+	 * 
+	 * @return the next callback
+	 */
+	public RCallback nextCallback(){
+		return callbackQueue.next(); 
+	}
+	
 	private void debug( String message){
 		if( DEBUG ){
 			System.out.println( message ); 

@@ -23,6 +23,7 @@ package org.rosuda.REngine.remote.common ;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import org.rosuda.REngine.* ;
+import org.rosuda.REngine.remote.common.callbacks.RCallback;
 
 public interface RemoteREngineInterface extends Remote {
 	
@@ -110,6 +111,11 @@ public interface RemoteREngineInterface extends Remote {
 
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException, RemoteException; 
 
+	/**
+	 * Waits for the next callback to be available and send it to the client
+	 */
+	public RCallback nextCallback() throws RemoteException; 
+	
 	/* FIXME: these are used only once at the setup of the engine to mirror some of the 
 	 * settings of the JRIEngine, there probably is a better way to deal with that. 
 	 */
