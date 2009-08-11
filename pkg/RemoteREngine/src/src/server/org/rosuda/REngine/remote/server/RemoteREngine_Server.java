@@ -51,8 +51,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public RemoteREngine_Server() throws REngineException {
 		super();
 		//      try{
-		// r = (JRIEngine) JRIEngine.createEngine() ;
-		r  = new JRIEngine( new String[]{ "--no-save" }, new RemoteRMainLoopCallbacks(this) ) ;
+		r = (JRIEngine) JRIEngine.createEngine() ;
+		// r  = new JRIEngine( new String[]{ "--no-save" }, new RemoteRMainLoopCallbacks(this) ) ;
 		/*      } catch( Exception e ){
       	System.out.println( "Could not create JRIEngine :" ) ;
       	e.printStackTrace( ); 
