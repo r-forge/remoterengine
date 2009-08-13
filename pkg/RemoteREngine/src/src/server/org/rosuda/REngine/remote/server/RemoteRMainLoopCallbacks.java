@@ -128,7 +128,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		// - setup some background thread that waits for input
 		// - dispatch to the clients that R is waiting for input
 		// - when some input arrives, send it to R
-		return null;
+		return "" ;
 	}
 
 

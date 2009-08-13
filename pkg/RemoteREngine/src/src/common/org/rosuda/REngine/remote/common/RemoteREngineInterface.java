@@ -22,8 +22,15 @@ package org.rosuda.REngine.remote.common ;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import org.rosuda.REngine.* ;
+
+import org.rosuda.REngine.REXP;
+import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.REXPNull;
+import org.rosuda.REngine.REXPReference;
+import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
+import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
+import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 
 public interface RemoteREngineInterface extends Remote {
 	
@@ -105,12 +112,35 @@ public interface RemoteREngineInterface extends Remote {
 	 *
 	 * @param parent parent environment
 	 * @param resolve whether to resolve the reference to the environemnt (usually <code>false</code> since the returned environment will be empty)
+	 * 
 	 * @return resulting environment
 	 */
 	public REXP newEnvironment(REXP parent, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
 
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException, RemoteException; 
 
+	/**
+	 * open a stream to read a file from the server
+	 * @param filename the name of the file in the server
+	 * 
+	 * @return the stream to read from
+	 * 
+	 * @throws ServerSideIOException when the stream cannot be opened 
+	 */
+	public RemoteFileInputStream openFile( String filename ) throws RemoteException, ServerSideIOException; 
+	
+	/**
+	 * open a stream to write into a file in the server
+	 * @param filename filename on the server
+	 * @param must_be_new an exception is thrown if this is true and the file already exists
+	 * 
+	 * @return the stream to write into
+	 * 
+	 * @throws ServerSideIOException when the stream cannot be created
+	 * @throws FileAlreadyExistsException when must_be_new is true and the file already exists on the server
+	 */
+	public RemoteFileOutputStream createFile( String filename, boolean must_be_new ) throws ServerSideIOException, RemoteException, FileAlreadyExistsException ;
+	
 	/**
 	 * Waits for the next callback to be available and send it to the client
 	 */

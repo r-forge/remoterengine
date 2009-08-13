@@ -50,4 +50,12 @@ public class RWriteConsoleCallback extends RCallback {
 		this( message, REGULAR ) ;
 	}
 	
+	public int getType(){
+		return type ; 
+	}
+	
+	public String getMessage(){
+		return message; 
+	}
+	
 }

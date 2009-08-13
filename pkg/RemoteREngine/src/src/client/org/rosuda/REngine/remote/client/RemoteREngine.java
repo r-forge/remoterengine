@@ -20,6 +20,11 @@
 
 package org.rosuda.REngine.remote.client ;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -32,7 +37,11 @@ import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REnginePool;
+import org.rosuda.REngine.remote.common.RemoteFileInputStream;
+import org.rosuda.REngine.remote.common.RemoteFileOutputStream;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
+import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
+import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 
 /**
  * An implementation of the REngine API that communicates through an 
@@ -252,7 +261,56 @@ public class RemoteREngine extends REngine {
 	}
 
 	 /* }}} */
-	 
+	
+	
+	/**
+	 * Push a file from the client side to the server side
+	 * 
+	 * @param client_file name of the file in the client 
+	 * @param server_file name of the file in the server
+	 * @param must_be_new if true, throw an exception if the file already exists 
+	 */
+	public void pushFile( String client_file, String server_file, boolean must_be_new ) throws IOException, ServerSideIOException, FileAlreadyExistsException {
+		BufferedInputStream client_in = new BufferedInputStream( new FileInputStream( client_file ) ) ;
+		RemoteFileOutputStream server_out = engine.createFile(server_file, must_be_new) ;
+		
+		byte [] b = new byte[8192];
+	
+		/* typical java IO stuff */
+		int c = client_in.read(b) ; 
+		while( c >= 0 ){
+			server_out.write( b ) ;
+			c = client_in.read(b) ;
+		}
+		server_out.close();
+		client_in.close(); 
+	}
+	
+	/**
+	 * Fetch a file from the server
+	 * @param client_file the name of the file in the client to write into
+	 * @param server_file the name of the server file to fetch
+	 * @param delete delete the file after fetching it ?
+	 * @throws IOException 
+	 */
+	public void fetchFile( String client_file, String server_file, boolean delete ) throws IOException, ServerSideIOException {
+		BufferedOutputStream client_out = new BufferedOutputStream( new FileOutputStream( client_file ) ) ;
+		RemoteFileInputStream server_in = engine.openFile(server_file) ;
+		
+		byte[] chunk = server_in.readNextChunk() ;
+		while( chunk != null){
+			client_out.write(chunk) ;
+			chunk = server_in.readNextChunk() ;
+		}
+		server_in.close() ;
+		client_out.close(); 
+		if( delete ){
+			server_in.delete(); 
+		}
+	}
+	
+	
+	
 	/* {{{ capabilities */
 	/** check whether this engine supports references to R objects
 	 @return <code>true</code> if this engine supports references, <code>false/code> otherwise */

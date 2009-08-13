@@ -42,6 +42,7 @@ public class CallbackQueue {
 	 * @param callback the callback to add to the queue
 	 */
 	public synchronized void push( RCallback callback ){
+		System.err.println( "callback ["+callback.getId() + "] : " + callback.getClass().getName() );
 		callbacks.add( callback ) ;
 		notifyAll() ;
 	}
