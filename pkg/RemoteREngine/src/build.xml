@@ -111,6 +111,15 @@
 		<pathelement location="lib/JRI.jar" />
 	</path>
 	
+	<path id="stubs_classpath">
+		<pathelement location="build/server" />
+		<pathelement location="build/common" />
+		<pathelement location="lib/REngine.jar" />
+		<pathelement location="lib/JRIEngine.jar" />
+		<pathelement location="lib/JRI.jar" />
+	</path>
+	
+	
 	<target name="server" depends="common">
 		<javac srcdir="src/server" 
 			destdir="build/server"  
@@ -125,6 +134,11 @@
       source="${compiler.source}" >
 			<classpath refid="server_classpath" />
 		</javac>
+		<mkdir dir="build/stubs"/>
+		<rmic base="build/stubs" classpathref="stubs_classpath" 
+			classname="org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server" />
+		<rmic base="build/stubs" classpathref="stubs_classpath"  
+			classname="org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server" />
 		<unjar src="lib/JRI.jar"       dest="build/server" />
 		<unjar src="lib/JRIEngine.jar" dest="build/server" />
 		<unjar src="lib/REngine.jar"   dest="build/server" />
@@ -132,6 +146,7 @@
 		<jar jarfile="${target.dir}/RemoteREngine-server.jar">
 			<fileset dir="build/server" />
 			<fileset dir="build/common" />
+			<fileset dir="build/stubs" />
 		</jar>
 	</target>
 	
@@ -145,7 +160,7 @@
 		<pathelement location="lib/REngine.jar" />
 	</path>
 	
-	<target name="client" depends="common">
+	<target name="client" depends="common,server">
 		<javac srcdir="src/client" 
 			destdir="build/client"  
 			includeJavaRuntime="yes"
@@ -160,10 +175,10 @@
 			<classpath refid="client_classpath" />
 		</javac>
 		<unjar src="lib/REngine.jar"   	dest="build/client" />
-		
 		<jar jarfile="${target.dir}/RemoteREngine-client.jar">
 			<fileset dir="build/client" />
 			<fileset dir="build/common" />
+			<fileset dir="build/stubs" />
 		</jar>
 		
 	</target>

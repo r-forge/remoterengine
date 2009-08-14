@@ -22,6 +22,8 @@ package org.rosuda.REngine.remote.server ;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
@@ -192,12 +194,14 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param filename file name on the server to read from 
 	 * 
 	 * @return the stream used to read the file
+	 * @throws RemoteException 
 	 * @throws IOException when the stream cannot be create
 	 */
 	@Override
-	public RemoteFileInputStream openFile( String filename) throws ServerSideIOException{
+	public RemoteFileInputStream openFile( String filename) throws ServerSideIOException, RemoteException{
 		RemoteFileInputStream_Server stream = new RemoteFileInputStream_Server( filename ) ;
-		return stream ; 
+		RemoteFileInputStream stub = (RemoteFileInputStream) UnicastRemoteObject.exportObject(stream);
+    	return stub ; 
 	}
 
 	/**
@@ -205,17 +209,19 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param filename filename in which to write 
 	 * 
 	 * @return the stream to write into 
+	 * @throws RemoteException 
 	 * @throws IOException when the stream cannot be created 
 	 */
 	@Override
-	public RemoteFileOutputStream createFile( String filename, boolean must_be_new) throws ServerSideIOException, FileAlreadyExistsException{
+	public RemoteFileOutputStream createFile( String filename, boolean must_be_new) throws ServerSideIOException, FileAlreadyExistsException, RemoteException{
 		if( must_be_new ){
 			if( (new File( filename) ).exists() ){
 				throw new FileAlreadyExistsException( filename ) ;
 			}
 		}
 		RemoteFileOutputStream_Server stream = new RemoteFileOutputStream_Server( filename ) ;
-		return stream ;
+		RemoteFileOutputStream stub = (RemoteFileOutputStream)UnicastRemoteObject.exportObject( stream ) ;
+		return stub ;
 	}
 
 
