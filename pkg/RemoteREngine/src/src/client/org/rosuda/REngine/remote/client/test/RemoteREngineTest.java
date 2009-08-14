@@ -21,6 +21,7 @@
 package org.rosuda.REngine.remote.client.test ;
 
 /*{{{ imports */
+import java.io.File;
 import java.util.Map;
 
 import org.rosuda.REngine.*;
@@ -66,7 +67,7 @@ public class RemoteREngineTest {
 			
 			
 			/*{{{ Init */
-				REngine eng = new RemoteREngine( name, host, port );
+				RemoteREngine eng = new RemoteREngine( name, host, port );
 				System.out.println("R Version: " + eng.parseAndEval("R.version.string").asString());
 				/*}}}*/
 
@@ -245,6 +246,36 @@ public class RemoteREngineTest {
 					System.out.println("PASSED");
 				}
 				/*}}}*/
+				
+				/*{{{ * Test file transfer */
+				{
+					System.out.println("* Test file transfer");
+					System.out.println("  generating pdf file in the server side");
+					eng.parseAndEval( "pdf('test.pdf'); plot( rnorm(10) ) ;dev.off()" ) ;
+					System.out.println("  bring the file to the client");
+					eng.fetchFile("test.pdf", "test.pdf", true) ;
+					File clientfile = new File( "test.pdf" ) ;
+					if( !clientfile.exists() ){
+						 throw new TestException("Could not bring file from server");
+					}
+					System.out.println("  check that the server file has been deleted");
+					boolean ok = ( (REXPLogical)eng.parseAndEval(" ! file.exists( 'test.pdf' ) ") ).isTRUE()[0] ;
+					if( !ok ){
+						 throw new TestException("server file was not deleted");
+					}
+					System.out.println("  push file to the server");
+					eng.pushFile( "test.pdf", "filefromclient.pdf" , true ) ;
+					ok = ( (REXPLogical)eng.parseAndEval("file.exists( 'filefromclient.pdf' ) ") ).isTRUE()[0] ;
+					if( !ok ){
+						 throw new TestException("  file was not transferred to the server");
+					}
+					/* clean */
+					eng.parseAndEval( "unlink( 'filefromclient.pdf' )" ) ;
+					clientfile.delete(); 
+					System.out.println("PASSED");
+				}
+				/*}}} */
+				
 
 				System.out.println("Done.");
 
