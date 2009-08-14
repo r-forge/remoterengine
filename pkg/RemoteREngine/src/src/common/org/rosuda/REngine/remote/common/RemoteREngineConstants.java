@@ -15,5 +15,8 @@ public class RemoteREngineConstants {
 	
 	/** Define the default port number to locate the RMI Registry */
 	public static final String RMIPORT = "1099";
+
+	/**  The default chunk size for byte[] buffer */
+	public static final int CHUNKSIZE = 8192 ; 
 	
 }

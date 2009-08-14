@@ -39,9 +39,11 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REnginePool;
 import org.rosuda.REngine.remote.common.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.RemoteFileOutputStream;
+import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
+import org.rosuda.REngine.remote.common.files.FileChunk;
 
 /**
  * An implementation of the REngine API that communicates through an 
@@ -274,12 +276,12 @@ public class RemoteREngine extends REngine {
 		BufferedInputStream client_in = new BufferedInputStream( new FileInputStream( client_file ) ) ;
 		RemoteFileOutputStream server_out = engine.createFile(server_file, must_be_new) ;
 		
-		byte [] b = new byte[8192];
+		byte [] b = new byte[ RemoteREngineConstants.CHUNKSIZE ];
 	
 		/* typical java IO stuff */
 		int c = client_in.read(b) ; 
 		while( c >= 0 ){
-			server_out.write( b ) ;
+			server_out.write( b, 0, c ) ;
 			c = client_in.read(b) ;
 		}
 		server_out.close();
@@ -297,9 +299,9 @@ public class RemoteREngine extends REngine {
 		BufferedOutputStream client_out = new BufferedOutputStream( new FileOutputStream( client_file ) ) ;
 		RemoteFileInputStream server_in = engine.openFile(server_file) ;
 		
-		byte[] chunk = server_in.readNextChunk() ;
-		while( chunk != null){
-			client_out.write(chunk) ;
+		FileChunk chunk = server_in.readNextChunk() ;
+		while( ! chunk.isEmpty() ){
+			client_out.write(chunk.buffer, 0, chunk.size ) ;
 			chunk = server_in.readNextChunk() ;
 		}
 		server_in.close() ;
