@@ -44,6 +44,8 @@
 		<mkdir dir="build/common" />
 		<mkdir dir="build/server" />
 		<mkdir dir="build/client" />
+		<mkdir dir="build/stubs"/>
+		
 		<mkdir dir="${javadoc.dir}" />
 		<mkdir dir="${target.dir}" />
 		
@@ -134,7 +136,6 @@
       source="${compiler.source}" >
 			<classpath refid="server_classpath" />
 		</javac>
-		<mkdir dir="build/stubs"/>
 		<rmic base="build/stubs" classpathref="stubs_classpath" 
 			classname="org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server" />
 		<rmic base="build/stubs" classpathref="stubs_classpath"  
