@@ -37,13 +37,13 @@ import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REnginePool;
-import org.rosuda.REngine.remote.common.RemoteFileInputStream;
-import org.rosuda.REngine.remote.common.RemoteFileOutputStream;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.FileChunk;
+import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
+import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
 
 /**
  * An implementation of the REngine API that communicates through an 

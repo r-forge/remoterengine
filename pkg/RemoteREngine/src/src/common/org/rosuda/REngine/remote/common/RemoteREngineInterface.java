@@ -31,6 +31,8 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
+import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
+import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
 
 public interface RemoteREngineInterface extends Remote {
 	
