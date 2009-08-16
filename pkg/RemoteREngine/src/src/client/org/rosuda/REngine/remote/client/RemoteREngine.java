@@ -29,6 +29,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
@@ -37,8 +38,11 @@ import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REnginePool;
+import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
+import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
+import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.FileChunk;
@@ -49,23 +53,27 @@ import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
  * An implementation of the REngine API that communicates through an 
  * RMI protocol
  */
-public class RemoteREngine extends REngine {
-	
+public class RemoteREngine extends REngine implements RemoteREngineClient {
+
 	/* {{{ fields */
 	private RemoteREngineInterface engine;
-	
+
 	/** special, global references */
 	public REXPReference globalEnv, emptyEnv, baseEnv, nullValueRef;
-	
+
 	/** canonical NULL object */
 	public REXPNull nullValue;
+
+	/** the hashcode of the server this shadows */
+	private int serverHashCode ; 
 	
 	/* }}} */
-	
+
 	/**
 	 * Construct a RemoteREngine
 	 * @param registryHost Name or IP Address of the host containing the RMI registry
 	 * @param name Name of the Remote server registered within the Registry
+	 * @param port port to use to connect to the server
 	 */
 	public RemoteREngine(String name, String registryHost, int port){
 		if (name == null || name.length()==0) {
@@ -76,48 +84,46 @@ public class RemoteREngine extends REngine {
 			engine = (RemoteREngineInterface) reg.lookup(name);
 			
 			/* store this engine in the pool */
-			int code      = engine.getEngineHashCode( ) ;
-			REnginePool.add( this, code ); 
+			System.out.println( "subscribe to the server" ) ;
+			RemoteREngineClient stub = (RemoteREngineClient) UnicastRemoteObject.exportObject(this) ;
+			JRIEngineGlobalVariables variables = engine.subscribe(stub) ;
+			serverHashCode = variables.hashCode ;
+			
+			globalEnv    = variables.globalEnv ;
+			emptyEnv     = variables.emptyEnv ; 
+			baseEnv      = variables.baseEnv ; 
+			nullValueRef = variables.nullValueRef ;
+			nullValue    = variables.nullValue ; 
+			
+			REnginePool.add( this, serverHashCode ); 
 		} catch ( NotBoundException nb) {
 			System.out.println("Unable to locate " + name + " within RMI Registry");
 		} catch( Exception e ){
 			System.out.println( e.getClass().getName() + " creating the RemoteREngine" ) ;
 			e.printStackTrace();
 		}
-		init(); 
 	}
-	
-	private void init(){
-		try{
-			globalEnv    = engine.getGlobalEnv() ;
-			emptyEnv     = engine.getEmptyEnv(); 
-			baseEnv      = engine.getBaseEnv(); 
-			nullValueRef = engine.getNullValueRef();
-			nullValue    = engine.getNullValue(); 
-		} catch (RemoteException e){
-			RemoteExceptionManager.send( e, "init" ) ; 
-		}
+
+	public RemoteREngine(String name, String registryHost ){
+		this( name, registryHost, 1099 ) ;
 	}
-	/* }}} */
-	
-	/* {{{ implementation of REngine through the RemoteREngineInterface */
 	
 	/**                                                    
-   * parse a string into an expression vector         
-   *
-   * @param text string to parse
-   * @param resolve resolve the resulting REXP (<code>true</code>) or just return a reference (<code>false</code>)
-   * @return parsed expression 
-   */
-  public REXP parse(String text, boolean resolve) throws REngineException{
-   	 REXP res = null ; 
-   	 try{
-   	 	 res = engine.parse( text, resolve );
-   	 } catch( RemoteException e){
-   	 	 RemoteExceptionManager.send( e, "parse" ); 
-   	 }
-   	 return res ;
-  }
+	 * parse a string into an expression vector         
+	 *
+	 * @param text string to parse
+	 * @param resolve resolve the resulting REXP (<code>true</code>) or just return a reference (<code>false</code>)
+	 * @return parsed expression 
+	 */
+	public REXP parse(String text, boolean resolve) throws REngineException{
+		REXP res = null ; 
+		try{
+			res = engine.parse( text, resolve );
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "parse" ); 
+		}
+		return res ;
+	}
 
 	/** 
 	 * evaluate an expression vector
@@ -127,29 +133,29 @@ public class RemoteREngine extends REngine {
 	 * @return the result of the evaluation of the last expression 
 	 */
 	public REXP eval(REXP what, REXP where, boolean resolve) throws REngineException, REXPMismatchException{
-	 	REXP res = null ; 
-  		try{
-  			 res = engine.eval( what, where, resolve );  
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "eval" ); 
-  		}
-  		return res ;
-  	}
+		REXP res = null ; 
+		try{
+			res = engine.eval( what, where, resolve );  
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "eval" ); 
+		}
+		return res ;
+	}
 
 	/**
 	 * assign into an environment
 	 *
-   * @param symbol symbol name
-   * @param value value to assign
-   * @param env environment to assign to (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine
-   */
-   public void assign(String symbol, REXP value, REXP env) throws REngineException, REXPMismatchException{
-	 	try{
-  			engine.assign( symbol, value, env );  
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "assign" ); 
-  		}
-   }
+	 * @param symbol symbol name
+	 * @param value value to assign
+	 * @param env environment to assign to (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine
+	 */
+	public void assign(String symbol, REXP value, REXP env) throws REngineException, REXPMismatchException{
+		try{
+			engine.assign( symbol, value, env );  
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "assign" ); 
+		}
+	}
 
 	/**
 	 * get a value from an environment
@@ -158,15 +164,15 @@ public class RemoteREngine extends REngine {
 	 * @param resolve resolve the resulting REXP or just return a reference		
 	 * @return value
 	 */
-   public REXP get(String symbol, REXP env, boolean resolve) throws REngineException, REXPMismatchException{
-	 	REXP res = null ; 
-  		try{
-  			 res = engine.get( symbol, env, resolve );  
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "get" ); 
-  		}
-  		return res ;
-   }
+	public REXP get(String symbol, REXP env, boolean resolve) throws REngineException, REXPMismatchException{
+		REXP res = null ; 
+		try{
+			res = engine.get( symbol, env, resolve );  
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "get" ); 
+		}
+		return res ;
+	}
 
 	/** 
 	 * fetch the contents of the given reference. 
@@ -178,13 +184,13 @@ public class RemoteREngine extends REngine {
 	 * @return resolved reference
 	 */
 	public REXP resolveReference(REXP ref) throws REngineException, REXPMismatchException{
-	 	REXP res = null ; 
-  		try{
-  			 res = engine.resolveReference(ref) ;  
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "resolveReference" ); 
-  		}
-  		return res ;
+		REXP res = null ; 
+		try{
+			res = engine.resolveReference(ref) ;  
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "resolveReference" ); 
+		}
+		return res ;
 	}
 
 	/** 
@@ -194,15 +200,15 @@ public class RemoteREngine extends REngine {
 	 * @param value to create reference to
 	 * @return reference to the value
 	 */
-	 public REXP createReference(REXP value) throws REngineException, REXPMismatchException{
-	 	REXP res = null ; 
-  		try{
-  			 res = engine.createReference( value );    
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "createReference" ); 
-  		}
-  		return res ;
-	 }
+	public REXP createReference(REXP value) throws REngineException, REXPMismatchException{
+		REXP res = null ; 
+		try{
+			res = engine.createReference( value );    
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "createReference" ); 
+		}
+		return res ;
+	}
 
 	/** 
 	 * removes reference from the R side. This method is called automatically by the finalizer 
@@ -210,14 +216,14 @@ public class RemoteREngine extends REngine {
 	 *
 	 * @param ref reference to finalize 
 	 */
-	 public void finalizeReference(REXP ref) throws REngineException, REXPMismatchException{
-	 	try{
-  			 engine.finalizeReference( ref );     
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "finalizeReference" ); 
-  		}
-	 }
-	
+	public void finalizeReference(REXP ref) throws REngineException, REXPMismatchException{
+		try{
+			engine.finalizeReference( ref );     
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "finalizeReference" ); 
+		}
+	}
+
 	/**
 	 * get the parent environemnt of an environment
 	 *
@@ -226,15 +232,15 @@ public class RemoteREngine extends REngine {
 	 * @return parent environemnt of env
 	 */
 	public REXP getParentEnvironment(REXP env, boolean resolve) throws REngineException, REXPMismatchException{
-	 	REXP res = null ; 
-  		try{
-  			 res = engine.getParentEnvironment( env, resolve );    
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "getParentEnvironment" ); 
-  		}
-  		return res ;
+		REXP res = null ; 
+		try{
+			res = engine.getParentEnvironment( env, resolve );    
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "getParentEnvironment" ); 
+		}
+		return res ;
 	}
-	
+
 	/**
 	 * create a new environemnt
 	 *
@@ -242,15 +248,15 @@ public class RemoteREngine extends REngine {
 	 * @param resolve whether to resolve the reference to the environemnt (usually <code>false</code> since the returned environment will be empty)
 	 * @return resulting environment
 	 */
-	 public REXP newEnvironment(REXP parent, boolean resolve) throws REngineException, REXPMismatchException{
-	 	REXP res = null ; 
-  		try{
-  			 res = engine.newEnvironment( parent, resolve ) ;    
-  		} catch( RemoteException e){
-  			 RemoteExceptionManager.send( e, "newEnvironment" ); 
-  		}
-  		return res ;
-	 }
+	public REXP newEnvironment(REXP parent, boolean resolve) throws REngineException, REXPMismatchException{
+		REXP res = null ; 
+		try{
+			res = engine.newEnvironment( parent, resolve ) ;    
+		} catch( RemoteException e){
+			RemoteExceptionManager.send( e, "newEnvironment" ); 
+		}
+		return res ;
+	}
 
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException {
 		REXP res = null; 
@@ -262,9 +268,6 @@ public class RemoteREngine extends REngine {
 		return res ; 
 	}
 
-	 /* }}} */
-	
-	
 	/**
 	 * Push a file from the client side to the server side
 	 * 
@@ -275,9 +278,9 @@ public class RemoteREngine extends REngine {
 	public void pushFile( String client_file, String server_file, boolean must_be_new ) throws IOException, ServerSideIOException, FileAlreadyExistsException {
 		BufferedInputStream client_in = new BufferedInputStream( new FileInputStream( client_file ) ) ;
 		RemoteFileOutputStream server_out = engine.createFile(server_file, must_be_new) ;
-		
+
 		byte [] b = new byte[ RemoteREngineConstants.CHUNKSIZE ];
-	
+
 		/* typical java IO stuff */
 		int c = client_in.read(b) ; 
 		while( c >= 0 ){
@@ -287,7 +290,7 @@ public class RemoteREngine extends REngine {
 		server_out.close();
 		client_in.close(); 
 	}
-	
+
 	/**
 	 * Fetch a file from the server
 	 * @param client_file the name of the file in the client to write into
@@ -298,7 +301,7 @@ public class RemoteREngine extends REngine {
 	public void fetchFile( String client_file, String server_file, boolean delete ) throws IOException, ServerSideIOException {
 		BufferedOutputStream client_out = new BufferedOutputStream( new FileOutputStream( client_file ) ) ;
 		RemoteFileInputStream server_in = engine.openFile(server_file) ;
-		
+
 		FileChunk chunk = server_in.readNextChunk() ;
 		while( ! chunk.isEmpty() ){
 			client_out.write(chunk.buffer, 0, chunk.size ) ;
@@ -310,10 +313,7 @@ public class RemoteREngine extends REngine {
 			server_in.delete(); 
 		}
 	}
-	
-	
-	
-	/* {{{ capabilities */
+
 	/** check whether this engine supports references to R objects
 	 @return <code>true</code> if this engine supports references, <code>false/code> otherwise */
 	public boolean supportsReferences() { return true ; }
@@ -326,8 +326,11 @@ public class RemoteREngine extends REngine {
 	/** check whether this engine supports locking ({@link #lock}, {@link #tryLock} and {@link #unlock}).
 	 @return <code>true</code> if this engine supports REPL, <code>false/code> otherwise */
 	public boolean supportsLocking() { return true ; }
-	/* }}} */
 
-    // :tabSize=4:indentSize=4:noTabs=false:folding=explicit:collapseFolds=1:
+	@Override
+	public void callback(RCallback callback) throws RemoteException {
+
+	}
+
 }
 

@@ -24,13 +24,14 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Vector;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REXPNull;
-import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.JRI.JRIEngine;
+import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
+import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
@@ -45,6 +46,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 
 	private static boolean DEBUG = false; 
 
+	private Vector<RemoteREngineClient> clients ;
+	
 	/** 
 	 * The local R engine this server is shadowing
 	 */ 
@@ -56,16 +59,29 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private CallbackQueue callbackQueue ;
 
 	/**
+	 * Captures some of the global variables that are sent to the clients
+	 * when they subscribe
+	 */
+	private JRIEngineGlobalVariables variables ;
+	
+	/**
 	 * Constructor. Initiates the local R engine that this engine shadows
 	 * @throws REngineException Error creating the R instance
 	 */ 
 	public RemoteREngine_Server() throws REngineException {
 		super();
+		clients = new Vector<RemoteREngineClient>(); 
 		//      try{
 		callbackQueue = new CallbackQueue(); 
 		// String[] args = new String[]{ "--no-save" } ; // TODO: control this
 		// r  = new JRIEngine( args , new RemoteRMainLoopCallbacks(this) ) ;
 		r = (JRIEngine) JRIEngine.createEngine() ;
+		
+		/* capture global variables of the JRIEngine */
+		variables = new JRIEngineGlobalVariables( 
+				r.globalEnv, r.emptyEnv, r.baseEnv, 
+				r.nullValueRef, r.nullValue,r.hashCode() ) ;
+		
 		/*      } catch( Exception e ){
       	System.out.println( "Could not create JRIEngine :" ) ;
       	e.printStackTrace( ); 
@@ -224,45 +240,34 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		return stub ;
 	}
 
-
-
-	/**
-	 * Waits for the next callback to be available and sent it
-	 * 
-	 * @return the next callback
-	 */
-	public RCallback nextCallback(){
-		return callbackQueue.next(); 
-	}
-
-	public void addCallback(RCallback callback){
-		callbackQueue.push(callback) ;
-	}
-
-
+	
 	private void debug( String message){
 		if( DEBUG ){
 			System.out.println( message ); 
 		}
 	}
 
-	public REXPReference getGlobalEnv(){
-		return r.globalEnv; 
+	/**
+	 * Register a client
+	 */
+	@Override
+	public synchronized JRIEngineGlobalVariables subscribe(RemoteREngineClient client) throws RemoteException {
+		System.out.println( "registering client" ) ;
+		if( !clients.contains(client) ) {
+			if( clients.isEmpty() ){
+				/* r.getRni().addMainLoopCallbacks( new RemoteRMainLoopCallbacks( this ) ) ; */
+			}
+			clients.add( client ) ;
+		}
+		return variables ; 
 	}
-	public REXPReference getEmptyEnv(){
-		return r.emptyEnv ; 
-	}
-	public REXPReference getBaseEnv(){
-		return r.baseEnv; 
-	}
-	public REXPReference getNullValueRef(){
-		return r.nullValueRef ;
-	}
-	public REXPNull getNullValue(){
-		return r.nullValue ;
-	}
-	public int getEngineHashCode(){
-		return r.hashCode(); 
+	
+	/**
+	 * Adds a callback to the queue
+	 * @param callback the callback
+	 */
+	public void addCallback( RCallback callback ){
+		callbackQueue.push(callback) ;
 	}
 
 

@@ -25,10 +25,7 @@ import java.rmi.RemoteException;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REXPNull;
-import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
@@ -144,21 +141,14 @@ public interface RemoteREngineInterface extends Remote {
 	public RemoteFileOutputStream createFile( String filename, boolean must_be_new ) throws ServerSideIOException, RemoteException, FileAlreadyExistsException ;
 	
 	/**
-	 * Waits for the next callback to be available and send it to the client
+	 * Subscribe a client to this server. The server uses this subscription 
+	 * mechanism to send callbacks to the clients 
+	 * 
+	 * @param client
+	 * @throws RemoteException
 	 */
-	public RCallback nextCallback() throws RemoteException; 
+	public JRIEngineGlobalVariables subscribe( RemoteREngineClient client) throws RemoteException ;
 	
-	/* FIXME: these are used only once at the setup of the engine to mirror some of the 
-	 * settings of the JRIEngine, there probably is a better way to deal with that. 
-	 */
-	public REXPReference getGlobalEnv() throws RemoteException ; 
-	public REXPReference getEmptyEnv() throws RemoteException ; 
-	public REXPReference getBaseEnv() throws RemoteException ; 
-	public REXPReference getNullValueRef() throws RemoteException ; 
-	public REXPNull getNullValue() throws RemoteException; 
-	
-	/* this is only used to key the engine, need something better? */
-	public int getEngineHashCode() throws RemoteException; 
 	
 }
 
