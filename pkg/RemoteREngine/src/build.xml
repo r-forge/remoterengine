@@ -41,7 +41,9 @@
 	<target name="clean">
 		<delete dir="build" />
 		<delete dir="${javadoc.dir}" />
-		
+	</target>
+
+	<target name="init" depends="clean"> 	
 		<mkdir dir="build" />
 		<mkdir dir="build/common" />
 		<mkdir dir="build/server" />
@@ -60,7 +62,7 @@
 		<pathelement location="lib/REngine.jar" />
 	</path>
 	
-	<target name="common" depends="clean">
+	<target name="common" depends="init">
 		<javac srcdir="src/common" 
 			destdir="build/common"  
 			includeJavaRuntime="yes"
@@ -139,20 +141,24 @@
 	</path>
 	
 	<target name="client" depends="common,server">
-		<javac srcdir="src/client" 
-			destdir="build/client"  
-			includeJavaRuntime="yes"
-			debug="${compiler.debug}"
-      debuglevel="${compiler.debuglevel}"
-      optimize="${compiler.optimize}"
-      deprecation="${compiler.deprecation}"
-      verbose="${compiler.verbose}"
-      nowarn="${compiler.nowarn}"
-      target="${compiler.target}"
-      source="${compiler.source}">
+		<javac
+				destdir="build/client"  
+				includeJavaRuntime="yes"
+				debug="${compiler.debug}"
+      	debuglevel="${compiler.debuglevel}"
+      	optimize="${compiler.optimize}"
+      	deprecation="${compiler.deprecation}"
+      	verbose="${compiler.verbose}"
+      	nowarn="${compiler.nowarn}"
+      	target="${compiler.target}"
+      	source="${compiler.source}">
+      
+      <src path="src/client" />
 			<classpath refid="client_classpath" />
+			<include name="**/*.java"/>
+			<exclude name="**/test/*"/>
+
 		</javac>
-		
 	</target>
 	<!--}}}-->
 	
