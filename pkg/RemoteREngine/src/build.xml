@@ -2,7 +2,7 @@
 <project name="remoterengine" default="all" basedir=".">
 
   <!--{{{ Copyright (c) 2009, Romain Francois <francoisromain@free.fr>
- 
+ :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
  This file is part of the RemoteREngine project
  
  The RemoteREngine project is free software: 
@@ -115,7 +115,6 @@
 		<pathelement location="lib/JRI.jar" />
 	</path>
 	
-	
 	<target name="server" depends="common">
 		<javac srcdir="src/server" 
 			destdir="build/server"  
@@ -131,12 +130,9 @@
 			<classpath refid="server_classpath" />
 		</javac>
 	</target>
-	
-	
 	<!--}}}-->
 	
 	<!--{{{ client side -->
-	
 	<path id="client_classpath">
 		<pathelement location="build/common" />
 		<pathelement location="lib/REngine.jar" />
@@ -160,6 +156,7 @@
 	</target>
 	<!--}}}-->
 	
+	<!--{{{ client and server stubs -->
 	<path id="stubs_classpath">
 		<pathelement location="build/server" />
 		<pathelement location="build/common" />
@@ -180,7 +177,9 @@
 		<rmic base="build/stubs" classpathref="stubs_classpath"  
 			classname="org.rosuda.REngine.remote.client.RemoteREngine" />
 	</target>
+	<!--}}}-->
 	
+	<!--{{{ creating the jar -->
 	<target name="makejars" depends="stubs">
 		<!-- client jar -->
 		<unjar src="lib/REngine.jar"   	dest="build/client" />
@@ -202,9 +201,8 @@
 		</jar>
 
 	</target>
+	<!--}}}-->
 	
 	<target name="all" depends="javadoc,makejars" />
-	
-	<!-- :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1: -->
 
 </project>
