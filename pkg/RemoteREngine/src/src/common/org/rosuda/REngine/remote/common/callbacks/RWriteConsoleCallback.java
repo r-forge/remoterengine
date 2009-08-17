@@ -27,7 +27,7 @@ package org.rosuda.REngine.remote.common.callbacks;
  *
  */
 @SuppressWarnings("serial")
-public class RWriteConsoleCallback extends RCallback {
+public class RWriteConsoleCallback extends RCallbackNoResponse {
 
 	/** 
 	 * regular message

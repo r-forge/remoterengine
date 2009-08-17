@@ -22,6 +22,7 @@ package org.rosuda.REngine.remote.common;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 
 /**
@@ -38,6 +39,6 @@ public interface RemoteREngineClient extends Remote {
 	 * 
 	 * @param callback a callback
 	 */
-	public void callback( RCallback callback ) throws RemoteException ; 
+	public CallbackResponse callback( RCallback callback ) throws RemoteException ; 
 	
 }

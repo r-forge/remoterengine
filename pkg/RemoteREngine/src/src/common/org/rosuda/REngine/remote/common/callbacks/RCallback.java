@@ -43,4 +43,9 @@ public abstract class RCallback implements Serializable{
 		return id; 
 	}
 	
+	/**
+	 * @return true if this callback requires a response. 
+	 */
+	public abstract boolean needsResponse() ;
+	
 }

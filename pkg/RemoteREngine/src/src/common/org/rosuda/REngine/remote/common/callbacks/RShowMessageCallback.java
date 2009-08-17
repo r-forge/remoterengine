@@ -26,7 +26,7 @@ package org.rosuda.REngine.remote.common.callbacks;
  * @author Romain Francois
  */
 @SuppressWarnings("serial")
-public class RShowMessageCallback extends RCallback {
+public class RShowMessageCallback extends RCallbackNoResponse {
 
 	/**
 	 * The message

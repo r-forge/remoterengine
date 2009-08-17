@@ -26,7 +26,7 @@ package org.rosuda.REngine.remote.common.callbacks;
  * @author Romain Francois
  */
 @SuppressWarnings("serial")
-public class RBusyCallback extends RCallback {
+public class RBusyCallback extends RCallbackNoResponse {
 
 	/**
 	 * Is R busy
@@ -57,5 +57,6 @@ public class RBusyCallback extends RCallback {
 	public boolean isBusy(){
 		return busy;
 	}
+	
 	
 }

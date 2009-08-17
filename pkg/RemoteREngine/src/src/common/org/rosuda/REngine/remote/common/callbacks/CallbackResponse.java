@@ -17,22 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.rosuda.REngine.remote.common.callbacks;
 
+import java.io.Serializable;
 
 /**
- * Callback to flush the console
+ * Object sent by the client in response to a callback
  * 
  * @author Romain Francois
  */
-@SuppressWarnings("serial")
-public class RFlushConsoleCallback extends RCallbackNoResponse {
-
+public abstract class CallbackResponse implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	/**
-	 * Default constructor
+	 * The id of the callback this is responding to
 	 */
-	public RFlushConsoleCallback(){
-		super(); 
+	private int callbackId ; 
+	
+	/**
+	 * Constructor. Holds the id of the associated callback
+	 * @param callbackId the id of the callback this is responding to
+	 */
+	public CallbackResponse( int callbackId){
+		this.callbackId = callbackId ;
+	}
+	
+	/**
+	 * @return the id of the associated callback
+	 */
+	public int getCallbackId(){
+		return callbackId ; 
 	}
 }

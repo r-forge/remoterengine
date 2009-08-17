@@ -46,7 +46,7 @@ public class CallbackQueue {
 	
 	/**
 	 * Waits until a callback is available and return it
-	 * @return the next callback to send to the client
+	 * @return the next callback to send to the clients
 	 */
 	public synchronized RCallback next(){
 		while ( callbacks.isEmpty() ){

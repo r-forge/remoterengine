@@ -42,6 +42,7 @@ import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
+import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
@@ -328,8 +329,8 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	public boolean supportsLocking() { return true ; }
 
 	@Override
-	public void callback(RCallback callback) throws RemoteException {
-
+	public CallbackResponse callback(RCallback callback) throws RemoteException {
+		return null; 
 	}
 
 }
