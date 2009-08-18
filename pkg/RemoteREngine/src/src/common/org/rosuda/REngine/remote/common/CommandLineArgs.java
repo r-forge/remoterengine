@@ -48,6 +48,7 @@ public class CommandLineArgs {
 		
 		String flag = null; 
 		for( int i=0; i<args.length; i++){
+			
 			String arg = args[i] ;
 			if( arg.startsWith("-") ){
 				if( flag != null || i == args.length ){

@@ -59,13 +59,13 @@ public class REngineServer {
 		}
 		Map<String,String> arguments = CommandLineArgs.arguments(args) ;
 		if( arguments.containsKey( "host" ) ){
-			rmiName = arguments.get("host") ;
+			rmiHost= arguments.get("host") ;
 		} 
 		if( arguments.containsKey( "port" )){
 			rmiPort = arguments.get("port") ;
 		}
 		if( arguments.containsKey( "name" )){
-			rmiPort = arguments.get("name") ;
+			rmiName = arguments.get("name") ;
 		}
 		
 	    if (System.getSecurityManager() == null) {
@@ -97,7 +97,7 @@ public class REngineServer {
 
     	try {
     		registry.rebind(rmiName, stub);	// registry is never null but may not be valid
-	        System.out.println("R Engine bound as " + rmiName);
+	        System.out.println("R Engine bound as `" + rmiName + "`");
     	} catch (AccessException e) {
     		System.err.println("Access to RMI Registry denied, " + e.getMessage());
     		e.printStackTrace();

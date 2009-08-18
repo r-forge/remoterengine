@@ -49,6 +49,7 @@
 		<mkdir dir="build/server" />
 		<mkdir dir="build/client" />
 		<mkdir dir="build/stubs"/>
+		<mkdir dir="build/client-junit"/>
 		
 		<mkdir dir="${javadoc.dir}" />
 		<mkdir dir="${target.dir}" />
@@ -94,6 +95,7 @@
 		    	<exclude name="**/*.properties"/>
 		    	<exclude name="**/*.html"/>
 		    	<exclude name="**/*.htm"/>
+		    	<exclude name="**/test/*"/>
 		    	<exclude name="**/*Test.java"/>
 		    	<exclude name="**/All*Test.java"/>
 		    	<exclude name="**/All*Tests.java"/>
@@ -209,6 +211,44 @@
 	</target>
 	<!--}}}-->
 	
-	<target name="all" depends="javadoc,makejars" />
+	<!--{{{ creating the jar containing unit tests -->
+	<path id="client_junit_classpath">
+		<pathelement location="build/common" />
+		<pathelement location="lib/REngine.jar" />
+		<pathelement location="${JUNIT_JAR}" />
+	</path>
+
+	<target name="compile-client-junit" depends="client">
+			<javac
+				destdir="build/client-junit"  
+				includeJavaRuntime="yes"
+				debug="${compiler.debug}"
+      	debuglevel="${compiler.debuglevel}"
+      	optimize="${compiler.optimize}"
+      	deprecation="${compiler.deprecation}"
+      	verbose="${compiler.verbose}"
+      	nowarn="${compiler.nowarn}"
+      	target="${compiler.target}"
+      	source="${compiler.source}">
+      
+      <src path="src/client" />
+			<classpath refid="client_junit_classpath" />
+		</javac>
+	</target>
+	
+	<target name="build-client-junit" depends="compile-client-junit,stubs">
+		<!-- client jar -->
+		<unjar src="lib/REngine.jar"   	dest="build/client-junit" />
+		<unjar src="${JUNIT_JAR}" dest="build/client-junit" />
+		<jar jarfile="${target.dir}/RemoteREngine-client-junit.jar">
+			<fileset dir="build/client-junit" />
+			<fileset dir="build/common" />
+			<fileset dir="build/stubs" />
+		</jar>
+		
+	</target>
+	<!--}}}-->
+	
+	<target name="all" depends="javadoc,makejars,build-client-junit" />
 
 </project>

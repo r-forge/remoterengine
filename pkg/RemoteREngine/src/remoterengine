@@ -108,7 +108,7 @@ codebase <- paste( "file:", system.file( "java", "RemoteREngine-server.jar", pac
 # }}}
 
 # {{{ command line args
-arguments <- paste( commandArgs(TRUE), sep = " ")
+arguments <- paste( commandArgs(TRUE), collapse = " ")
 if( is.null(arguments) || length(arguments) == 0 ){
 	arguments <- ""
 }
