@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<project name="RemoteRengine-junit" default="report">
+
+	<property name="client.policy" value="/usr/local/lib/R/library/RemoteREngine/policy/client.policy" />
+	<property name="dir.testresults" value="/tmp/results" />
+	<property name="dir.src.tests" value="/home/romain/svn/remoterengine/pkg/RemoteREngine/src/src/client" />
+	
+	<target name="test">         
+
+	<junit fork="true" forkmode="once" haltonfailure="false" haltonerror="false"
+        failureproperty="tests.failures" errorproperty="tests.errors"
+        includeantruntime="true" showoutput="true" printsummary="true">
+     
+     <classpath>
+         <pathelement location="/usr/local/lib/R/library/RemoteREngine/java/RemoteREngine-client-junit.jar"/>
+     </classpath>
+     <jvmarg value="-Djava.security.policy=${client.policy}" />
+
+     <formatter type="xml"/>
+
+     <batchtest fork="yes"
+                todir="${dir.testresults}">
+         <fileset dir="${dir.src.tests}">
+             <include name="**/*_Test.java"/>
+         </fileset>
+
+     </batchtest>
+ </junit>
+ </target>
+ 
+ <target name="report" depends="test">
+	 <junitreport todir="${dir.testresults}">
+		  <fileset dir="${dir.testresults}">
+		    <include name="TEST-*.xml"/>
+		  </fileset>
+		  <report format="frames" todir="${dir.testresults}/html"/>
+		</junitreport>
+	</target>
+	
+</project>

@@ -8,9 +8,9 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.RList;
 import org.rosuda.REngine.remote.client.RemoteREngine;
 
-public class Strings extends RemoteREngineTest {
+public class Strings_Test extends RemoteREngineTest {
 
-	private static RemoteREngine r = TestSuite.r ; 
+	private static RemoteREngine r = TestEnvironment.r ; 
 
 	@Test
 	public void strings(){

@@ -2,8 +2,8 @@ package org.rosuda.REngine.remote.client.test;
 
 import org.rosuda.REngine.remote.client.RemoteREngine;
 
-public class TestSuite extends RemoteREngineTest {
-
+public class TestEnvironment {
+	
 	public static RemoteREngine r = init() ;
 
 	private static RemoteREngine init(){
