@@ -7,9 +7,19 @@ this creates a tar.gz file
 
 # R CMD INSTALL RemoteREngine_0.0-0.tar.gz
 
-this has the advantage of not adding the compiled files into the project
+( this has the advantage of not adding the compiled files into the project )
 
-then, you can start the engine like this (more options will come)
+the startup script for the Remote R engine is located in the exec directory 
+of the installed package, you can start it like this :
 
-$ R CMD remoterengine
+$ `Rscript -e "system.file( 'exec', 'remoterengine', package = 'RemoteREngine' ) " ` --name test --port 1099
+
+On my system I have this alias set up: 
+
+alias re="R CMD /usr/local/lib/R/library/RemoteREngine/exec/remoterengine"
+so that I can just do : 
+
+$ re --name test
+$ re --name test --port 1099
+$ re 
 
