@@ -1,9 +1,4 @@
-REMOTERENGINE=$(R_HOME)/bin/remoterengine.R
-REMOTERENGINETEST=$(R_HOME)/bin/remoterengine_testclient.R
-
 all:
 	ant all
-	sed -e 1d "remoterengine" > $(REMOTERENGINE)
-	sed -e 1d "remoterengine_testclient" > $(REMOTERENGINETEST)
 
 clean:
