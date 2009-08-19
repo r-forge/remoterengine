@@ -17,33 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.rosuda.REngine.remote.common;
-
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-import org.rosuda.REngine.remote.common.callbacks.RCallback;
+package org.rosuda.REngine.remote.common.exceptions;
 
 /**
- * A client of a RemoteREngine. The RemoteREngine server keeps a reference of 
- * all its clients and use the methods of this class to call back the client 
- * 
+ * Exception thrown when a client attempts to unregister itself 
+ * without being registered 
+ *  
  * @author Romain Francois
- *
  */
-public interface RemoteREngineClient extends Remote {
+public class NotRegisteredException extends ServerSideException {
 
-	/**
-	 * Send an RCallback to a client 
-	 * 
-	 * @param callback a callback
-	 */
-	public void callback( RCallback callback ) throws RemoteException ; 
-	
-	/**
-	 * Indicates to the client that the callback was responded by another client
-	 * @param callback
-	 */
-	public void cancelCallback( RCallback callback ) throws RemoteException ;
-	
+	private static final long serialVersionUID = 1L;
+
+	public NotRegisteredException(){
+		super( "Attempt to unregister a client that is not registered" ) ;
+	}
 }

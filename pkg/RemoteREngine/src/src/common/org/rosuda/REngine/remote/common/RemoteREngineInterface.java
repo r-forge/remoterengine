@@ -26,11 +26,19 @@ import java.rmi.RemoteException;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
+import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
 
+/**
+ * The remote interface that is used to from a client program 
+ * to call a remote R engine 
+ * 
+ * @author Romain Francois
+ */
 public interface RemoteREngineInterface extends Remote {
 	
 	/**                                                    
@@ -147,8 +155,13 @@ public interface RemoteREngineInterface extends Remote {
 	 * @param client
 	 * @throws RemoteException
 	 */
-	public JRIEngineGlobalVariables subscribe( RemoteREngineClient client) throws RemoteException ;
+	public JRIEngineGlobalVariables subscribe( RemoteREngineClient client) throws RemoteException, AlreadyRegisteredException ;
 	
+	/**
+	 * Close the engine. Ends the subscription 
+	 * @throws RemoteException
+	 */
+	public void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException ;  
 	
 }
 

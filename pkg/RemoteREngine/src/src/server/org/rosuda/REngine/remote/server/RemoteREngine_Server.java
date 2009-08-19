@@ -34,7 +34,9 @@ import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
+import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
+import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
@@ -243,30 +245,46 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	
 	private void debug( String message){
 		if( DEBUG ){
-			System.out.println( message ); 
+			System.err.println( message ); 
 		}
 	}
 
 	/**
 	 * Register a client
+	 * @throws AlreadyRegisteredException if the client is already registered with this server
 	 */
 	@Override
-	public synchronized JRIEngineGlobalVariables subscribe(RemoteREngineClient client) throws RemoteException {
-		System.out.println( "registering client" ) ;
-		if( !clients.contains(client) ) {
-			if( clients.isEmpty() ){
-				/* r.getRni().addMainLoopCallbacks( new RemoteRMainLoopCallbacks( this ) ) ; */
-			}
-			clients.add( client ) ;
+	public synchronized JRIEngineGlobalVariables subscribe(RemoteREngineClient client) throws RemoteException, AlreadyRegisteredException {
+		debug( "registering client" ) ;
+		if( clients.contains( client ) ){
+			throw new AlreadyRegisteredException(); 
 		}
+		if( clients.isEmpty() ){
+			/* r.getRni().addMainLoopCallbacks( new RemoteRMainLoopCallbacks( this ) ) ; */
+		}
+		clients.add( client ) ;
 		return variables ; 
 	}
+	
+	/**
+	 * Unsubscribe a client
+	 * @throws NotRegisteredException if the client is not registered with this server
+	 */
+	@Override
+	public void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException {
+		debug( "unregister client" ) ;
+		if( !clients.contains( client) ){
+			throw new NotRegisteredException() ; 
+		}
+		clients.remove( client ) ;
+	}
+
 	
 	/**
 	 * Adds a callback to the queue
 	 * @param callback the callback
 	 */
-	public void addCallback( RCallback callback ){
+	public void addCallback(RCallback callback){
 		callbackQueue.push(callback) ;
 	}
 

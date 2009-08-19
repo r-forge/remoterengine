@@ -31,14 +31,26 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public abstract class RCallback implements Serializable{
 	
+	/** 
+	 * counter
+	 */
 	private static int counter = 0 ; 
 	
+	/**
+	 * id of this callback
+	 */
 	private int id;
 	
+	/**
+	 * constructor, increments the id
+	 */
 	public RCallback(){
 		id = counter++ ;
 	}
 	
+	/**
+	 * @return the id of the callback
+	 */
 	public int getId(){
 		return id; 
 	}

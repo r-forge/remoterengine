@@ -42,9 +42,9 @@ import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
-import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
+import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.FileChunk;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
@@ -56,19 +56,45 @@ import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
  */
 public class RemoteREngine extends REngine implements RemoteREngineClient {
 
-	/* {{{ fields */
+	/**
+	 * The remote interface through which this client calls the server
+	 */
 	private RemoteREngineInterface engine;
 
-	/** special, global references */
-	public REXPReference globalEnv, emptyEnv, baseEnv, nullValueRef;
+	/** 
+	 * reference to the global environment of the remote engine
+	 */
+	public REXPReference globalEnv ; 
+	
+	/**
+	 * reference to the empty environment of the remote engine
+	 */
+	public REXPReference emptyEnv ; 
+	
+	/**
+	 * Reference to the base environment of the remote engine
+	 */
+	public REXPReference baseEnv ; 
+	
+	/**
+	 * Reference to the NULL value of the remote engine
+	 */
+	public REXPReference nullValueRef;
 
-	/** canonical NULL object */
+	/**
+	 * canonical NULL object (obtained from the server)
+	 */
 	public REXPNull nullValue;
 
-	/** the hashcode of the server this shadows */
+	/** 
+	 * the hashcode of the server this shadows
+	 */
 	private int serverHashCode ; 
 	
-	/* }}} */
+	/**
+	 * Is this engine valid ?
+	 */
+	private boolean valid = false; 
 
 	/**
 	 * Construct a RemoteREngine
@@ -83,20 +109,21 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		try{
 			Registry reg = LocateRegistry.getRegistry(registryHost, port);
 			engine = (RemoteREngineInterface) reg.lookup(name);
-			
-			/* store this engine in the pool */
+
+			/* subscribe to the server and populate the fields */
 			System.out.println( "subscribe to the server" ) ;
-			RemoteREngineClient stub = (RemoteREngineClient) UnicastRemoteObject.exportObject(this) ;
-			JRIEngineGlobalVariables variables = engine.subscribe(stub) ;
+			UnicastRemoteObject.exportObject(this) ;
+			JRIEngineGlobalVariables variables = engine.subscribe(this) ;
 			serverHashCode = variables.hashCode ;
-			
 			globalEnv    = variables.globalEnv ;
 			emptyEnv     = variables.emptyEnv ; 
 			baseEnv      = variables.baseEnv ; 
 			nullValueRef = variables.nullValueRef ;
 			nullValue    = variables.nullValue ; 
 			
+			/* store this engine in the pool */
 			REnginePool.add( this, serverHashCode ); 
+			valid = true; 
 		} catch ( NotBoundException nb) {
 			System.out.println("Unable to locate " + name + " within RMI Registry");
 		} catch( Exception e ){
@@ -105,10 +132,25 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		}
 	}
 
+	/**
+	 * Indicates if this engine is valid
+	 */
+	public boolean isValid(){
+		/* TODO: maybe ping the engine */
+		return valid; 
+	}
+	
+	/**
+	 * Constructor using the default port
+	 * 
+	 * @see RemoteREngineConstants#RMIPORT for the default value
+	 * @param name name of the remote object in the registry
+	 * @param registryHost host name
+	 */
 	public RemoteREngine(String name, String registryHost ){
 		this( name, registryHost, 1099 ) ;
 	}
-	
+
 	/**                                                    
 	 * parse a string into an expression vector         
 	 *
@@ -315,22 +357,79 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		}
 	}
 
-	/** check whether this engine supports references to R objects
-	 @return <code>true</code> if this engine supports references, <code>false/code> otherwise */
-	public boolean supportsReferences() { return true ; }
-	/** check whether this engine supports handing of environments (if not, {@link #eval} and {@link #assign} only support the global environment denoted by <code>null</code>).
-	 @return <code>true</code> if this engine supports environments, <code>false/code> otherwise */
-	public boolean supportsEnvironemnts() { return true ; }
-	/** check whether this engine supports REPL (Read-Evaluate-Print-Loop) and corresponding callbacks.
-	 @return <code>true</code> if this engine supports REPL, <code>false/code> otherwise */
-	public boolean supportsREPL() { return true ; }
-	/** check whether this engine supports locking ({@link #lock}, {@link #tryLock} and {@link #unlock}).
-	 @return <code>true</code> if this engine supports REPL, <code>false/code> otherwise */
-	public boolean supportsLocking() { return true ; }
+	/** 
+	 * References are supported since this mirrors a JRIEngine
+	 */
+	public boolean supportsReferences() { 
+		return true ;
+	}
 
+	/** 
+	 * Environments are supported since this mirrors a JRIEngine
+	 */
+	public boolean supportsEnvironemnts() {
+		return true ;
+	}
+
+	/** 
+	 * REPL is supported since this mirrors a JRIEngine 
+	 */
+	public boolean supportsREPL() {
+		return true ;
+	}
+
+	/* TODO: implement the locking mechanism in the server side */
+	/** 
+	 * locking is supported since this mirrors a JRIEngine
+	 */
+	public boolean supportsLocking() { 
+		return true ; 
+	}
+	
+	/**
+	 * End the subscription of this client with the R engine on the server side
+	 * This method invalidates fields previously set by the subscription mechanism
+	 * and makes this engine useless
+	 */
 	@Override
-	public CallbackResponse callback(RCallback callback) throws RemoteException {
-		return null; 
+	public boolean close() {
+		try{
+			engine.close( this ) ;
+		} catch( NotRegisteredException e){
+			/* TODO: not sure what to do with this */
+		} catch( RemoteException e){
+			/* TODO: not sure what to do with this */
+		}
+		valid = false; 
+		engine = null ; 
+		globalEnv = null; 
+		emptyEnv = null;
+		baseEnv = null ; 
+		nullValueRef = null; 
+		nullValue = null; 
+		serverHashCode = Integer.MIN_VALUE ; 
+		return true;  
+	}
+	
+	/**
+	 * Receives a callback from the server
+	 */
+	@Override
+	public void callback(RCallback callback) throws RemoteException {
+		/* TODO: handle the callback */
+	}
+	
+	public void cancelCallback( RCallback callback ) throws RemoteException {
+		/* TODO: handle this */
+	}
+	
+	/**
+	 * Unregister this client from the server before usual finalization
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		close() ;
+		super.finalize();
 	}
 
 }
