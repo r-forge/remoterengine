@@ -71,54 +71,6 @@ public class RemoteREngineTest {
 				System.out.println("R Version: " + eng.parseAndEval("R.version.string").asString());
 				/*}}}*/
 
-				/*{{{ * Test string and list retrieval */
-				{
-					System.out.println("* Test string and list retrieval");
-					RList l = eng.parseAndEval("{d=data.frame(\"huhu\",c(11:20)); lapply(d,as.character)}").asList();
-					int cols = l.size();
-					@SuppressWarnings("unused")
-					int rows = l.at(0).length();
-					String[][] s = new String[cols][];
-					for (int i=0; i<cols; i++) s[i]=l.at(i).asStrings();
-					System.out.println("PASSED");
-				}
-				/*}}}*/
-
-				/*{{{ * Test NA/NaN support in double vectors... */
-				{
-					System.out.println("* Test NA/NaN support in double vectors...");
-					double x[] = { 1.0, 0.5, REXPDouble.NA , Double.NaN, 3.5 };
-					eng.assign("x",x);
-					String nas = eng.parseAndEval("paste(capture.output(print(x)),collapse='\\n')").asString();
-					System.out.println(nas);
-					if (!nas.equals("[1] 1.0 0.5  NA NaN 3.5"))
-						throw new TestException("NA/NaN assign+retrieve test failed");
-					System.out.println("PASSED");
-				}
-				/*}}}*/
-
-				/*{{{ * Test assigning of lists and vectors ... */
-				{
-					System.out.println("* Test assigning of lists and vectors ...");
-					RList l = new RList();
-					l.put("a",new REXPInteger(new int[] { 0,1,2,3}));
-					l.put("b",new REXPDouble(new double[] { 0.5,1.2,2.3,3.0}));
-					System.out.println("  assign x=pairlist");
-					eng.assign("x", new REXPList(l));
-					System.out.println("  assign y=vector");
-					eng.assign("y", new REXPGenericVector(l));
-					System.out.println("  assign z=data.frame");
-					eng.assign("z", REXP.createDataFrame(l));
-					System.out.println("  pull all three back to Java");
-					REXP x = eng.parseAndEval("x");
-					System.out.println("  x = "+x);
-					x = eng.parseAndEval("y");
-					System.out.println("  y = "+x);
-					x = eng.parseAndEval("z");
-					System.out.println("  z = "+x);
-					System.out.println("PASSED");
-				} /*}}}*/
-
 				/*{{{ * Testing functionality of assembled S3 objects ... */
 				{ // regression: object bit was not set for Java-side generated objects before 0.5-3
 					System.out.println("* Testing functionality of assembled S3 objects ...");
