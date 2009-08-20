@@ -25,7 +25,8 @@ import java.util.Map;
 
 /**
  * Very simple command line argument utility
- * @author romain
+ * 
+ * @author Romain Francois <francoisromain@free.fr>
  */
 public class CommandLineArgs {
 
@@ -51,8 +52,10 @@ public class CommandLineArgs {
 			
 			String arg = args[i] ;
 			if( arg.startsWith("-") ){
-				if( flag != null || i == args.length ){
+				if( flag != null ) {
 					result.put( flag, "yes" ) ;
+				} else if( i == ( args.length -1) ){
+					result.put( unflag( args[i] ) , "yes" ) ;
 				}
 				flag = unflag( arg ) ;
 			} else {
@@ -66,6 +69,13 @@ public class CommandLineArgs {
 		return result; 
 	}
 	
+	/**
+	 * Removes the leading "-" from the string
+	 * 
+	 * @param flag a command line flag, i.e. --flag
+	 *  
+	 * @return the flag without its leading "-" signs
+	 */
 	private static String unflag( String flag ){
 		return flag.replaceFirst( "^-+", "" ) ; 
 	}

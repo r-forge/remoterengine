@@ -47,6 +47,9 @@ import org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server;
 public class RemoteREngine_Server implements RemoteREngineInterface {
 
 	private static boolean DEBUG = false; 
+	public static void setDebug( boolean debug){
+		DEBUG = debug; 
+	}
 
 	private Vector<RemoteREngineClient> clients ;
 	

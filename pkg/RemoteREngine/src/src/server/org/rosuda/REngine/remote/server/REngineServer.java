@@ -57,11 +57,15 @@ public class REngineServer {
 			}
 		}
 		Map<String,String> arguments = CommandLineArgs.arguments(args) ;
+		
 		if( arguments.containsKey( "port" )){
 			rmiPort = arguments.get("port") ;
 		}
 		if( arguments.containsKey( "name" )){
 			rmiName = arguments.get("name") ;
+		}
+		if( arguments.containsKey( "debug" ) ){
+			RemoteREngine_Server.setDebug( arguments.get( "debug" ).equals("yes") ) ;
 		}
 		
 	    if (System.getSecurityManager() == null) {
