@@ -144,7 +144,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @return user's input to be passed to R for evaluation */
 	@Override
 	public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-		// TODO:
+		// TODO: implement rReadConsole callback
 		// - setup some background thread that waits for input
 		// - dispatch to the clients that R is waiting for input
 		// - when some input arrives, send it to R

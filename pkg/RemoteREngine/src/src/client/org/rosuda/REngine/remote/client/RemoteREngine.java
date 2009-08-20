@@ -406,9 +406,9 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		try{
 			engine.close( this ) ;
 		} catch( NotRegisteredException e){
-			/* TODO: not sure what to do with this */
+			/* TODO: handle NotRegisteredException when closing the client */
 		} catch( RemoteException e){
-			/* TODO: not sure what to do with this */
+			/* TODO: handle RemoteException when closing the client */
 		}
 		invalidate(); 
 		return true;  
@@ -438,7 +438,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 */
 	@Override
 	public void cancelCallback( int id ) throws RemoteException {
-		/* TODO: handle this */
+		/* TODO: handle cancellation of callbacks */
 	}
 	
 	/**

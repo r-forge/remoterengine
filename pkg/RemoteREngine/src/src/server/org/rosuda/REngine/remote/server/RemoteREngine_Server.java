@@ -77,7 +77,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		super();
 		clients = new Vector<RemoteREngineClient>(); 
 		callbackQueue = new CallbackQueue(); 
-		// String[] args = new String[]{ "--no-save" } ; // TODO: control this
+		// String[] args = new String[]{ "--no-save" } ; 
+		// TODO: control parameters passed to R
 		// r  = new JRIEngine( args , new RemoteRMainLoopCallbacks(this) ) ;
 		r = (JRIEngine) JRIEngine.createEngine() ;
 		
@@ -95,7 +96,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 					try{
 						client.serverDying(); 
 					} catch( RemoteException e){
-						/* TODO: handle */
+						/* TODO: handle RemoteException when calling serverDying */
 					}
 				}
 				/* TODO: maybe also unbind the object from the registry instead

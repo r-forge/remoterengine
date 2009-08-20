@@ -72,7 +72,7 @@ public class Lists_Test {
 		assertEquals( "test class of list element (2)", "REXPDouble", xl.at(1).getClass().getSimpleName() ) ;
 		assertArrayEquals("test values of list element (2)", lb , xl.at(1).asDoubles(), 0.0 ) ;
 		
-		/* TODO: more */
+		/* TODO: more tests on lists */
 		
 		/*
 		r.assign("y", new REXPGenericVector(l) );
