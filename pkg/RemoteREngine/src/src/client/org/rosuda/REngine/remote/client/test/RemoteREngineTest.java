@@ -21,20 +21,28 @@
 package org.rosuda.REngine.remote.client.test ;
 
 /*{{{ imports */
+import static org.rosuda.REngine.remote.common.RemoteREngineConstants.DEFAULTNAME;
+import static org.rosuda.REngine.remote.common.RemoteREngineConstants.RMIHOSTNAME;
+
 import java.io.File;
 import java.util.Map;
 
-import org.rosuda.REngine.*;
-import org.rosuda.REngine.remote.client.RemoteREngine ;
+import org.rosuda.REngine.REXP;
+import org.rosuda.REngine.REXPEnvironment;
+import org.rosuda.REngine.REXPFactor;
+import org.rosuda.REngine.REXPLogical;
+import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.REXPRaw;
+import org.rosuda.REngine.REXPString;
+import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.RFactor;
+import org.rosuda.REngine.RList;
+import org.rosuda.REngine.remote.client.RemoteREngine;
 import org.rosuda.REngine.remote.common.CommandLineArgs;
-
-import static org.rosuda.REngine.remote.common.RemoteREngineConstants.* ;
-/*}}} */
 
 public class RemoteREngineTest {
 
 	/*{{{ main */
-	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {
 
 		/*{{{ security manager */
@@ -71,30 +79,7 @@ public class RemoteREngineTest {
 				System.out.println("R Version: " + eng.parseAndEval("R.version.string").asString());
 				/*}}}*/
 
-				/*{{{ * Testing functionality of assembled S3 objects ... */
-				{ // regression: object bit was not set for Java-side generated objects before 0.5-3
-					System.out.println("* Testing functionality of assembled S3 objects ...");
-					// we have already assigned the data.frame in previous test, so we jsut re-use it
-					REXP x = eng.parseAndEval("z[2,2]");
-					System.out.println("  z[2,2] = " + x);
-					if (x == null || x.length() != 1 || x.asDouble() != 1.2)
-						throw new TestException("S3 object bit regression test failed");
-					System.out.println("PASSED");
-				}
-				/*}}}*/
-
-				/*{{{ * Testing pass-though capability for data.frames ... */
-				{ // this test does a pull and push of a data frame. It will fail when the S3 test above failed.
-					System.out.println("* Testing pass-though capability for data.frames ...");
-					REXP df = eng.parseAndEval("{data(iris); iris}");
-					eng.assign("df", df);
-					REXP x = eng.parseAndEval("identical(df, iris)");
-					System.out.println("  identical(df, iris) = "+x);
-					if (x == null || !x.isLogical() || x.length() != 1 || !((REXPLogical)x).isTrue()[0])
-						throw new TestException("Pass-through test for a data.frame failed");
-					System.out.println("PASSED");
-				}
-				/*}}}*/
+				
 
 				/*{{{ * Test support of factors */
 				{ // factors
