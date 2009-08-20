@@ -41,14 +41,14 @@ import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
  * @author Romain Francois
  */
 public interface RemoteREngineInterface extends Remote {
-	
+
 	/**                                                    
-   * parse a string into an expression vector         
-   *
-   * @param text string to parse
-   * @param resolve resolve the resulting REXP (<code>true</code>) or just return a reference (<code>false</code>)
-   * @return parsed expression 
-   */
+	 * parse a string into an expression vector         
+	 *
+	 * @param text string to parse
+	 * @param resolve resolve the resulting REXP (<code>true</code>) or just return a reference (<code>false</code>)
+	 * @return parsed expression 
+	 */
 	public REXP parse(String text, boolean resolve) throws REngineException, RemoteException ;
 
 	/** 
@@ -58,16 +58,16 @@ public interface RemoteREngineInterface extends Remote {
 	 * @param resolve resolve the resulting REXP or just return a reference
 	 * @return the result of the evaluation of the last expression 
 	 */
-  public REXP eval(REXP what, REXP where, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
+	public REXP eval(REXP what, REXP where, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
 
 	/**
 	 * assign into an environment
 	 *
-   * @param symbol symbol name
-   * @param value value to assign
-   * @param env environment to assign to (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine
-   */
-   public void assign(String symbol, REXP value, REXP env) throws REngineException, REXPMismatchException, RemoteException;
+	 * @param symbol symbol name
+	 * @param value value to assign
+	 * @param env environment to assign to (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine
+	 */
+	public void assign(String symbol, REXP value, REXP env) throws REngineException, REXPMismatchException, RemoteException;
 
 	/**
 	 * get a value from an environment
@@ -76,7 +76,7 @@ public interface RemoteREngineInterface extends Remote {
 	 * @param resolve resolve the resulting REXP or just return a reference		
 	 * @return value
 	 */
-   public REXP get(String symbol, REXP env, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
+	public REXP get(String symbol, REXP env, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
 
 	/** 
 	 * fetch the contents of the given reference. 
@@ -105,7 +105,7 @@ public interface RemoteREngineInterface extends Remote {
 	 * @param ref reference to finalize 
 	 */
 	public void finalizeReference(REXP ref) throws REngineException, REXPMismatchException, RemoteException;
-	
+
 	/**
 	 * get the parent environemnt of an environment
 	 *
@@ -114,7 +114,7 @@ public interface RemoteREngineInterface extends Remote {
 	 * @return parent environemnt of env
 	 */
 	public REXP getParentEnvironment(REXP env, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
-	
+
 	/**
 	 * create a new environemnt
 	 *
@@ -149,7 +149,7 @@ public interface RemoteREngineInterface extends Remote {
 	 * @throws ServerSideIOException when the stream cannot be opened 
 	 */
 	public RemoteFileInputStream openFile( String filename ) throws RemoteException, ServerSideIOException; 
-	
+
 	/**
 	 * open a stream to write into a file in the server
 	 * @param filename filename on the server
@@ -161,7 +161,7 @@ public interface RemoteREngineInterface extends Remote {
 	 * @throws FileAlreadyExistsException when must_be_new is true and the file already exists on the server
 	 */
 	public RemoteFileOutputStream createFile( String filename, boolean must_be_new ) throws ServerSideIOException, RemoteException, FileAlreadyExistsException ;
-	
+
 	/**
 	 * Subscribe a client to this server. The server uses this subscription 
 	 * mechanism to send callbacks to the clients 
@@ -170,12 +170,12 @@ public interface RemoteREngineInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public JRIEngineGlobalVariables subscribe( RemoteREngineClient client) throws RemoteException, AlreadyRegisteredException ;
-	
+
 	/**
 	 * Close the engine. Ends the subscription 
 	 * @throws RemoteException
 	 */
 	public void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException ;  
-	
+
 }
 

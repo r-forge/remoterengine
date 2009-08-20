@@ -97,6 +97,11 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	private boolean valid = false; 
 
 	/**
+	 * Shutdown hook for this client
+	 */
+	private RemoteREngineShutdownHook shutdownHook ; 
+	
+	/**
 	 * Construct a RemoteREngine
 	 * @param registryHost Name or IP Address of the host containing the RMI registry
 	 * @param name Name of the Remote server registered within the Registry
@@ -132,14 +137,27 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			e.printStackTrace();
 		}
 		
+		shutdownHook = new RemoteREngineShutdownHook(); 
+		
 		/* let the server know when the jvm of this client closes */
-		Runtime.getRuntime().addShutdownHook( new Thread(){
-			public void run(){
-				if( valid ){
-					close( ) ; 
-				}
+		Runtime.getRuntime().addShutdownHook( shutdownHook ) ;
+	}
+	
+	/**
+	 * Shutdown hook for the client. This is used when the jvm of the client
+	 * is about to shutdown so that the server is informed and can stop
+	 * sending callbacks to this client
+	 * 
+	 * @see Runtime#addShutdownHook(Thread)
+	 * @author Romain Francois
+	 *
+	 */
+	private class RemoteREngineShutdownHook extends Thread {
+		public void run(){
+			if( isValid() ){
+				close( ) ; 
 			}
-		}) ;
+		}
 	}
 
 	/**
@@ -432,24 +450,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	public void callback(RCallback callback) throws RemoteException {
 		/* TODO: handle the callback */
 	}
-	
-	/**
-	 * The callback has been responded to by another client
-	 */
-	@Override
-	public void cancelCallback( int id ) throws RemoteException {
-		/* TODO: handle cancellation of callbacks */
-	}
-	
-	/**
-	 * The server is dying. This invalidates this client and make it useless
-	 */
-	@Override
-	public void serverDying(){
-		/* TODO: maybe this should communicate the information to listeners of the client */
-		invalidate() ; 
-	}
-	
+		
 	/**
 	 * Unregister this client from the server before usual finalization
 	 */

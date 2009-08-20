@@ -17,28 +17,45 @@
  * You should have received a copy of the GNU General Public License
  * along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.rosuda.REngine.remote.common;
-
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-import org.rosuda.REngine.remote.common.callbacks.RCallback;
+package org.rosuda.REngine.remote.common.callbacks;
 
 /**
- * A client of a RemoteREngine. The RemoteREngine server keeps a reference of 
- * all its clients and use the methods of this class to call back the client 
+ * Call back sent to the clients to indicate that a previous 
+ * callback has already been reply to from another client 
  * 
  * @author Romain Francois
  *
  */
-public interface RemoteREngineClient extends Remote {
+public class CancelCallback extends RCallbackNoResponse {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Send an RCallback to a client 
-	 * 
-	 * @param callback a callback
+	 * The id of the callback to cancel
 	 */
-	public void callback( RCallback callback ) throws RemoteException ; 
+	private int cancelledId ;  
 	
+	/**
+	 * Constructor
+	 * @param cancelledId the id of the callback to cancel
+	 */
+	public CancelCallback( int cancelledId ) {
+		this.cancelledId = cancelledId; 
+	}
 	
+	/**
+	 * Constructor using the id of the specified callback
+	 * @param original original callback to cancel
+	 */
+	public CancelCallback( RCallback original ){
+		this( original.getId() ) ;
+	}
+	
+	/**
+	 * @return the id of the callback to cancel
+	 */
+	public int getCancelledId(){
+		return cancelledId ;
+	}
+
 }

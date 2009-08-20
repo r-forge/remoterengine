@@ -17,28 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.rosuda.REngine.remote.common;
-
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-import org.rosuda.REngine.remote.common.callbacks.RCallback;
+package org.rosuda.REngine.remote.common.callbacks;
 
 /**
- * A client of a RemoteREngine. The RemoteREngine server keeps a reference of 
- * all its clients and use the methods of this class to call back the client 
+ * Callback sent to the client to inform that the server is dying. 
+ * 
+ * This is used for example when the the java virtual machine
+ * containing the server is about to shutdown, or when the server 
+ * is being garbage collected
  * 
  * @author Romain Francois
- *
  */
-public interface RemoteREngineClient extends Remote {
+public class ServerDownCallback extends RCallbackNoResponse {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Send an RCallback to a client 
-	 * 
-	 * @param callback a callback
+	 * Constructor
 	 */
-	public void callback( RCallback callback ) throws RemoteException ; 
-	
-	
+	public ServerDownCallback() {
+		super(); 
+	}
+
 }

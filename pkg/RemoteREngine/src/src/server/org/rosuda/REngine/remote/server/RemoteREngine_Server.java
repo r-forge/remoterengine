@@ -34,6 +34,7 @@ import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
+import org.rosuda.REngine.remote.common.callbacks.ServerDownCallback;
 import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
@@ -44,9 +45,16 @@ import org.rosuda.REngine.remote.server.callbacks.CallbackQueue;
 import org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server;
 import org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server;
 
+/**
+ * The main class of the server side part of the RemoteREngine project 
+ *
+ * @author Romain Francois
+ *
+ */
 public class RemoteREngine_Server implements RemoteREngineInterface {
 
 	private static boolean DEBUG = false; 
+	
 	public static void setDebug( boolean debug){
 		DEBUG = debug; 
 	}
@@ -70,6 +78,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private JRIEngineGlobalVariables variables ;
 	
 	/**
+	 * Shutdown hook
+	 */
+	private RemoteREngineServerShutdownHook shutdownHook; 
+	
+	/**
 	 * Constructor. Initiates the local R engine that this engine shadows
 	 * @throws REngineException Error creating the R instance
 	 */ 
@@ -90,25 +103,34 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				r.nullValueRef, r.nullValue,r.hashCode() ) ;
 		
 		/* inform the clients that the jvm of the server is dying */
-		Runtime.getRuntime().addShutdownHook( new Thread(){
-			public void run(){
-				for( RemoteREngineClient client: clients){
-					try{
-						client.serverDying(); 
-					} catch( RemoteException e){
-						/* TODO: handle RemoteException when calling serverDying */
-					}
-				}
-				/* TODO: maybe also unbind the object from the registry instead
-				 * of doing it in the REngineServer class*/
-				
-				/* TODO: shutdown R cleanly as well */
-			}
-		} ); 
-		
-		
+		shutdownHook = new RemoteREngineServerShutdownHook() ;
+		Runtime.getRuntime().addShutdownHook( shutdownHook ); 
 	}
 
+	
+	/**
+	 * Shutdown hook that indicates to clients of this server 
+	 * that the server is dying 
+	 * 
+	 * @author Romain Francois
+	 */
+	private class RemoteREngineServerShutdownHook extends Thread{
+		public void run(){
+			for( RemoteREngineClient client: clients){
+				try{
+					/* client.serverDying(); */
+					client.callback( new ServerDownCallback() ) ;
+				} catch( RemoteException e){
+					/* TODO: handle RemoteException when calling serverDying */
+				}
+			}
+			/* TODO: maybe also unbind the object from the registry instead
+			 * of doing it in the REngineServer class*/
+			
+			/* TODO: shutdown R cleanly as well */
+		}
+	}
+	
 	/**                                                    
 	 * parse a string into an expression vector         
 	 *
@@ -271,7 +293,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	}
 
 	/**
-	 * Register a client
+	 * Register a client with this server
+	 * 
 	 * @throws AlreadyRegisteredException if the client is already registered with this server
 	 */
 	@Override
@@ -292,7 +315,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws NotRegisteredException if the client is not registered with this server
 	 */
 	@Override
-	public void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException {
+	public synchronized void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException {
 		debug( "unregister client" ) ;
 		if( !clients.contains( client) ){
 			throw new NotRegisteredException() ; 
