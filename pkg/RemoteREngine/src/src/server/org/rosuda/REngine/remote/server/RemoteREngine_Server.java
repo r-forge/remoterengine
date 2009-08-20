@@ -201,6 +201,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		return r.newEnvironment( parent, resolve ) ; 
 	}
 
+	/**
+	 * Parse and eval text
+	 */
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException {
 		debug( ">> parseAndEval" ) ;
 		return r.parseAndEval( text, where, resolve ); 

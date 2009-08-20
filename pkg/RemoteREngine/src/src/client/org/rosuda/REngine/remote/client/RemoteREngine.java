@@ -419,6 +419,10 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		/* TODO: handle the callback */
 	}
 	
+	/**
+	 * The callback has been responded to by another client
+	 */
+	@Override
 	public void cancelCallback( RCallback callback ) throws RemoteException {
 		/* TODO: handle this */
 	}

@@ -25,6 +25,7 @@ import java.rmi.RemoteException;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
@@ -118,12 +119,25 @@ public interface RemoteREngineInterface extends Remote {
 	 * create a new environemnt
 	 *
 	 * @param parent parent environment
-	 * @param resolve whether to resolve the reference to the environemnt (usually <code>false</code> since the returned environment will be empty)
+	 * @param resolve whether to resolve the reference to the environement (usually <code>false</code> since the returned environment will be empty)
 	 * 
 	 * @return resulting environment
 	 */
 	public REXP newEnvironment(REXP parent, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
 
+	/**
+	 * Convenience method to parse and eval. This is overriden so that both
+	 * operations happen on the server side
+	 * 
+	 * @param text text to parse
+	 * @param where environment
+	 * @param resolve should the reference be resolved
+	 * @return a {@link REXPReference} to the result if resolve is false, a {@link REXP} if resolve is true, or null if an error occured
+	 *
+	 * @throws REngineException
+	 * @throws REXPMismatchException
+	 * @throws RemoteException
+	 */
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException, RemoteException; 
 
 	/**
