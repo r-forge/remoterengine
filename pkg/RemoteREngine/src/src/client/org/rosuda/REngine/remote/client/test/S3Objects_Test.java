@@ -61,5 +61,9 @@ public class S3Objects_Test {
 		assertEquals( "length of result" , 1, x.length() ) ;
 		assertEquals( "content of result", 1.2, x.asDouble(), 0.0 ) ;
 		
+		REXP z = r.get( "z", null, true) ;
+		assertEquals( "test class attribute of the data frame", 
+				"data.frame", z.getAttribute("class").asString() ) ;
+		
 	}
 }

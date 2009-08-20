@@ -47,7 +47,6 @@ public class REngineServer {
 	public static void main(String[] args) {
 		
 		String rmiName = DEFAULTNAME;
-		String rmiHost = RMIHOSTNAME;
 		String rmiPort = RMIPORT;
 		
 		/* print the help if see the -h or --help flags */
@@ -58,9 +57,6 @@ public class REngineServer {
 			}
 		}
 		Map<String,String> arguments = CommandLineArgs.arguments(args) ;
-		if( arguments.containsKey( "host" ) ){
-			rmiHost= arguments.get("host") ;
-		} 
 		if( arguments.containsKey( "port" )){
 			rmiPort = arguments.get("port") ;
 		}
@@ -84,12 +80,12 @@ public class REngineServer {
         Registry registry = null;
         try {
             stub = (RemoteREngineInterface) UnicastRemoteObject.exportObject(engine, 0);
-        	registry = LocateRegistry.getRegistry(rmiHost, Integer.parseInt(rmiPort));
+        	registry = LocateRegistry.getRegistry(null, Integer.parseInt(rmiPort));
         } catch (NumberFormatException e) {
         	System.err.println("Unable to parse RMI port number from " + rmiPort);
         	printMenu();
         } catch (RemoteException e) {
-        	System.err.println(e.getClass().getName() + " while trying to connect to the RMIRegistry on " + rmiHost + ":" +
+        	System.err.println(e.getClass().getName() + ":  while trying to connect to the RMIRegistry" +
         			rmiPort + ". Is the registry running?");
         	System.err.println(e.getMessage());
         	printMenu();
@@ -103,13 +99,13 @@ public class REngineServer {
     		e.printStackTrace();
     	} catch (RemoteException e) {
     		System.err.println(e.getClass().getName() + ": while binding to the RMI registry on " + 
-    				rmiHost + ":" + rmiPort + ", " + e.getMessage());
+    				" port " + rmiPort + ", " + e.getMessage());
     		e.printStackTrace();
     		String[] names = new String[0];
     		try {
     			names = registry.list();
     		} catch (RemoteException re) {
-    			if (names.length == 0) System.err.println("Is RMI Registry running on " + rmiHost + ":" + rmiPort + "?");
+    			if (names.length == 0) System.err.println("Is RMI Registry running on port " + rmiPort + "?");
     		}
     		if (names.length > 0) {
 	    		System.err.println("Existing bound services are:");
@@ -155,9 +151,6 @@ public class REngineServer {
 		
 		System.out.println("  [--name name]    : RMI name to register server under");
 		System.out.println("                     default: 'RemoteREngine' ");
-		
-		System.out.println("  [--host host]    : RMI Registry hostname or IP address");
-		System.out.println("                     default: 'localhost' ");
 		
 		System.out.println("  [--port port]    : RMI Registry port number");
 		System.out.println("                     default: '1099' ");

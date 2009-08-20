@@ -111,7 +111,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			engine = (RemoteREngineInterface) reg.lookup(name);
 
 			/* subscribe to the server and populate the fields */
-			System.out.println( "subscribe to the server" ) ;
+			/* System.out.println( "subscribe to the server" ) ; */
 			UnicastRemoteObject.exportObject(this) ;
 			JRIEngineGlobalVariables variables = engine.subscribe(this) ;
 			serverHashCode = variables.hashCode ;
