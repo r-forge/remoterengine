@@ -59,7 +59,7 @@ public class Lists_Test {
 		l.put("b",new REXPDouble(lb));
 		r.assign("x", new REXPList(l));
 		assertTrue( "does the list exist",
-			( (REXPLogical)r.parseAndEval("exists(x) && is.list(x)" ) ).isTRUE()[0] );
+			( (REXPLogical)r.parseAndEval("exists('x') && is.list(x)" ) ).isTRUE()[0] );
 		r.assign("y", new REXPGenericVector(l) );
 		r.assign("z", REXP.createDataFrame(l) );
 		REXP x = r.parseAndEval("x");
@@ -74,7 +74,7 @@ public class Lists_Test {
 		
 		REXP z = r.parseAndEval("z");
 		assertEquals( "test class attribute of the data frame", 
-				"data.frame", z.getAttribute("class") ) ;
+				"data.frame", z.getAttribute("class").asString() ) ;
 		/* TODO: more */
 		
 		/*

@@ -68,7 +68,7 @@ public class DataFrames_Test {
 		
 		r.assign("df", df);
 		assertEquals("ncols of pushed data frame", 5, r.parseAndEval("ncol(df)").asInteger() ) ;
-		assertEquals("nrows of pushed data frame", 5, r.parseAndEval("nrow(df)").asInteger() ) ;
+		assertEquals("nrows of pushed data frame", 150, r.parseAndEval("nrow(df)").asInteger() ) ;
 		boolean identical = ((REXPLogical)r.parseAndEval("identical(df, iris)")).isTRUE()[0] ;
 		assertTrue( "identical( df, iris )", identical ) ;
 	}
