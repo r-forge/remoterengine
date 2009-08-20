@@ -44,6 +44,12 @@ public interface RemoteREngineClient extends Remote {
 	 * Indicates to the client that the callback was responded by another client
 	 * @param callback
 	 */
-	public void cancelCallback( RCallback callback ) throws RemoteException ;
+	public void cancelCallback( int id ) throws RemoteException ;
+	
+	/**
+	 * Indicates to the client that the server is dying 
+	 * @throws RemoteException
+	 */
+	public void serverDying() throws RemoteException;  
 	
 }

@@ -12,17 +12,6 @@ callbacks:
 		going to be slightly more tricky. They probably require to set up some sort of background thread
 		that waits until the client has made the response available
 
-	I need to find out how to call the clients from the server basically
-
-
-file transfer: 
-	We need something to transfer files accross, probably taking inspiration from 
-	Rserve's RFile(In|Out)putStream. 
-
-	This is needed for the rChooseFile callback also
-
 graphics:
 	...
-
-
 

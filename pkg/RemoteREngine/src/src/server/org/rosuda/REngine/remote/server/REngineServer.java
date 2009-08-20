@@ -120,6 +120,12 @@ public class REngineServer {
     			System.err.println("No existing services located within RMI Registry");
     		}
     	}
+    	
+    	/* TODO: replace this with a more useful console 
+    	 *   - ability to type R commands in (take advantage of REPL)
+    	 *   - abstract this so that backends like gnu readline or jline (http://jline.sourceforge.net/project-info.html)
+    	 *     can be used
+    	 * */
     	// don't kill the process otherwise you kill the server
 		BufferedReader rdr = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {

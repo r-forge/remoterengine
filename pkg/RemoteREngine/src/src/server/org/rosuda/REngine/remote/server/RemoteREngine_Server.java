@@ -76,22 +76,36 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public RemoteREngine_Server() throws REngineException {
 		super();
 		clients = new Vector<RemoteREngineClient>(); 
-		//      try{
 		callbackQueue = new CallbackQueue(); 
 		// String[] args = new String[]{ "--no-save" } ; // TODO: control this
 		// r  = new JRIEngine( args , new RemoteRMainLoopCallbacks(this) ) ;
 		r = (JRIEngine) JRIEngine.createEngine() ;
+		
+		/* TODO: forbid the q function */
 		
 		/* capture global variables of the JRIEngine */
 		variables = new JRIEngineGlobalVariables( 
 				r.globalEnv, r.emptyEnv, r.baseEnv, 
 				r.nullValueRef, r.nullValue,r.hashCode() ) ;
 		
-		/*      } catch( Exception e ){
-      	System.out.println( "Could not create JRIEngine :" ) ;
-      	e.printStackTrace( ); 
-      }
-		 */
+		/* inform the clients that the jvm of the server is dying */
+		Runtime.getRuntime().addShutdownHook( new Thread(){
+			public void run(){
+				for( RemoteREngineClient client: clients){
+					try{
+						client.serverDying(); 
+					} catch( RemoteException e){
+						/* TODO: handle */
+					}
+				}
+				/* TODO: maybe also unbind the object from the registry instead
+				 * of doing it in the REngineServer class*/
+				
+				/* TODO: shutdown R cleanly as well */
+			}
+		} ); 
+		
+		
 	}
 
 	/**                                                    
@@ -181,11 +195,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	}
 
 	/**
-	 * get the parent environemnt of an environment
+	 * get the parent environment of an environment
 	 *
 	 * @param env environment to query
 	 * @param resolve whether to resolve the resulting environment reference
-	 * @return parent environemnt of env
+	 * @return parent environment of env
 	 */
 	public REXP getParentEnvironment(REXP env, boolean resolve) throws REngineException, REXPMismatchException {
 		debug( ">> getParentEnvironment" ) ;

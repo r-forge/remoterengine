@@ -124,12 +124,22 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			/* store this engine in the pool */
 			REnginePool.add( this, serverHashCode ); 
 			valid = true; 
+			
 		} catch ( NotBoundException nb) {
 			System.out.println("Unable to locate " + name + " within RMI Registry");
 		} catch( Exception e ){
 			System.out.println( e.getClass().getName() + " creating the RemoteREngine" ) ;
 			e.printStackTrace();
 		}
+		
+		/* let the server know when the jvm of this client closes */
+		Runtime.getRuntime().addShutdownHook( new Thread(){
+			public void run(){
+				if( valid ){
+					close( ) ; 
+				}
+			}
+		}) ;
 	}
 
 	/**
@@ -400,6 +410,11 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		} catch( RemoteException e){
 			/* TODO: not sure what to do with this */
 		}
+		invalidate(); 
+		return true;  
+	}
+
+	private void invalidate() {
 		valid = false; 
 		engine = null ; 
 		globalEnv = null; 
@@ -407,8 +422,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		baseEnv = null ; 
 		nullValueRef = null; 
 		nullValue = null; 
-		serverHashCode = Integer.MIN_VALUE ; 
-		return true;  
+		serverHashCode = Integer.MIN_VALUE ;
 	}
 	
 	/**
@@ -423,8 +437,17 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * The callback has been responded to by another client
 	 */
 	@Override
-	public void cancelCallback( RCallback callback ) throws RemoteException {
+	public void cancelCallback( int id ) throws RemoteException {
 		/* TODO: handle this */
+	}
+	
+	/**
+	 * The server is dying. This invalidates this client and make it useless
+	 */
+	@Override
+	public void serverDying(){
+		/* TODO: maybe this should communicate the information to listeners of the client */
+		invalidate() ; 
 	}
 	
 	/**
