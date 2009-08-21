@@ -169,31 +169,35 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	private class RemoteREngineServerShutdownHook extends Thread{
 		public void run(){
-			shutdown() ;
+			if( !running ) shutdown() ;
 		}
 	}
 	
 	/**
 	 * Shutdown the server
 	 */
-	public void shutdown(){
-		
+	public synchronized void shutdown(){
+		System.err.println( "shutdown" ) ;
 		if( !running ) return; 
+		running = false; 
 		
 		consoleThread.requestStop() ;
+		consoleThread.interrupt() ;
 		
-		ServerDownCallback dying = new ServerDownCallback() ;
-		for( RemoteREngineClient client: clients){
-			try{
-				client.callback( dying ) ;
-			} catch( RemoteException e){
-				/* don't care */
+		if( !clients.isEmpty() ){
+			ServerDownCallback dying = new ServerDownCallback() ;
+			for( RemoteREngineClient client: clients){
+				try{
+					client.callback( dying ) ;
+				} catch( RemoteException e){
+					/* don't care */
+				}
 			}
 		}
 		
 		/* TODO: shutdown R cleanly as well */
 		
-		debug("Unbinding " + name );
+		System.err.println("Unbinding " + name );
 		try {
 			registry.unbind( name );
 		} catch (NotBoundException e) {
@@ -201,7 +205,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		} catch (RemoteException e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage() + ". While unbinding " + name );
 		}
-		running = false; 
 		System.out.println("Stopping the JVM");
 		System.exit(0);
 		
