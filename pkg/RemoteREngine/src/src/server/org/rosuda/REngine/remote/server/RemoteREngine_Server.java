@@ -182,12 +182,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		
 		consoleThread.requestStop() ;
 		
+		ServerDownCallback dying = new ServerDownCallback() ;
 		for( RemoteREngineClient client: clients){
 			try{
-				/* client.serverDying(); */
-				client.callback( new ServerDownCallback() ) ;
+				client.callback( dying ) ;
 			} catch( RemoteException e){
-				/* TODO: handle RemoteException when calling serverDying */
+				/* don't care */
 			}
 		}
 		
