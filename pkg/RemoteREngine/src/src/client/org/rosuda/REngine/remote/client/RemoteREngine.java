@@ -313,7 +313,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	}
 
 	/**
-	 * create a new environemnt
+	 * create a new environment
 	 *
 	 * @param parent parent environment
 	 * @param resolve whether to resolve the reference to the environemnt (usually <code>false</code> since the returned environment will be empty)
@@ -329,6 +329,9 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		return res ;
 	}
 
+	/**
+	 * Convenience method to parse and eval
+	 */
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException {
 		REXP res = null; 
 		try{
@@ -364,6 +367,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 
 	/**
 	 * Fetch a file from the server
+	 * 
 	 * @param client_file the name of the file in the client to write into
 	 * @param server_file the name of the server file to fetch
 	 * @param delete delete the file after fetching it ?

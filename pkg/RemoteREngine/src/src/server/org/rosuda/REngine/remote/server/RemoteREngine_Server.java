@@ -22,7 +22,11 @@ package org.rosuda.REngine.remote.server ;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Vector;
 
@@ -42,6 +46,7 @@ import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
 import org.rosuda.REngine.remote.server.callbacks.CallbackQueue;
+import org.rosuda.REngine.remote.server.console.ConsoleThread;
 import org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server;
 import org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server;
 
@@ -83,11 +88,37 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private RemoteREngineServerShutdownHook shutdownHook; 
 	
 	/**
+	 * Name of this object in the RMI registry
+	 */
+	private String name; 
+	
+	/**
+	 * Port of the RMI registry
+	 */
+	private int port ;
+	
+	/**
+	 * The console thread associated with this engine
+	 */
+	private ConsoleThread consoleThread ; 
+	
+	private Registry registry ; 
+	
+	private boolean running = false; 
+	
+	/**
 	 * Constructor. Initiates the local R engine that this engine shadows
+	 * 
+	 * @param name name of this engine in the RMI registry
+	 * @param port port used by the RMI registry
+	 * @param args arguments for R 
+	 * 
 	 * @throws REngineException Error creating the R instance
 	 */ 
-	public RemoteREngine_Server() throws REngineException {
+	public RemoteREngine_Server(String name, int port, String[] args) throws REngineException, RemoteException, AccessException {
 		super();
+		this.name = name ; 
+		this.port = port ;
 		clients = new Vector<RemoteREngineClient>(); 
 		callbackQueue = new CallbackQueue(); 
 		// String[] args = new String[]{ "--no-save" } ; 
@@ -105,8 +136,30 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		/* inform the clients that the jvm of the server is dying */
 		shutdownHook = new RemoteREngineServerShutdownHook() ;
 		Runtime.getRuntime().addShutdownHook( shutdownHook ); 
+		
+		registry = LocateRegistry.getRegistry(null, port);
+		UnicastRemoteObject.exportObject(this);
+		/* TODO: check if the name is not already being used by another object */ 
+		registry.rebind( name, this ) ;
+		consoleThread = new ConsoleThread(this);
+		
+		debug( "R Engine bound as `"+ name +"` on port " + port ) ;
+		running = true; 
 	}
 
+	/**
+	 * Constructor initializing R with the default arguments
+	 * 
+	 * @param name name of this engine in the MRI registry
+ 	 * @param port port used by the RMI registry
+ 	 * 
+	 * @throws REngineException
+	 * @throws RemoteException
+	 * @throws AccessException
+	 */
+	public RemoteREngine_Server(String name, int port) throws REngineException, RemoteException, AccessException{
+		this( name, port, null) ;
+	}
 	
 	/**
 	 * Shutdown hook that indicates to clients of this server 
@@ -116,19 +169,54 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	private class RemoteREngineServerShutdownHook extends Thread{
 		public void run(){
-			for( RemoteREngineClient client: clients){
-				try{
-					/* client.serverDying(); */
-					client.callback( new ServerDownCallback() ) ;
-				} catch( RemoteException e){
-					/* TODO: handle RemoteException when calling serverDying */
-				}
+			if( running ) {
+				shutdown() ;
 			}
-			/* TODO: maybe also unbind the object from the registry instead
-			 * of doing it in the REngineServer class*/
-			
-			/* TODO: shutdown R cleanly as well */
 		}
+	}
+	
+	/**
+	 * Shutdown the server
+	 */
+	public void shutdown(){
+		for( RemoteREngineClient client: clients){
+			try{
+				/* client.serverDying(); */
+				client.callback( new ServerDownCallback() ) ;
+			} catch( RemoteException e){
+				/* TODO: handle RemoteException when calling serverDying */
+			}
+		}
+		
+		/* TODO: shutdown R cleanly as well */
+		
+		debug("Unbinding " + name );
+		try {
+			registry.unbind( name );
+		} catch (NotBoundException e) {
+			// don't care
+		} catch (RemoteException e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage() + ". While unbinding " + name );
+		}
+		
+		System.out.println("Stopping the JVM");
+		System.exit(0);
+		
+		
+	}
+	
+	/**
+	 * @return the name of this engine in the RMI registry
+	 */
+	public String getName(){
+		return name; 
+	}
+	
+	/**
+	 * @return the port on which the RMI registry runs
+	 */
+	public int getPort(){
+		return port ; 
 	}
 	
 	/**                                                    
@@ -312,6 +400,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	
 	/**
 	 * Unsubscribe a client
+	 * 
 	 * @throws NotRegisteredException if the client is not registered with this server
 	 */
 	@Override
@@ -332,6 +421,13 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		callbackQueue.push(callback) ;
 	}
 
+	/** 
+	 * start the console thread
+	 */
+	public void startConsoleThread() {
+		consoleThread.start(); 
+	}
 
+	
 }
 
