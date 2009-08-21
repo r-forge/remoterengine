@@ -138,9 +138,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		Runtime.getRuntime().addShutdownHook( shutdownHook ); 
 		
 		registry = LocateRegistry.getRegistry(null, port);
-		UnicastRemoteObject.exportObject(this);
+		RemoteREngineInterface stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,0);
 		/* TODO: check if the name is not already being used by another object */ 
-		registry.rebind( name, this ) ;
+		registry.rebind( name, stub ) ;
 		consoleThread = new ConsoleThread(this);
 		
 		debug( "R Engine bound as `"+ name +"` on port " + port ) ;
@@ -169,9 +169,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	private class RemoteREngineServerShutdownHook extends Thread{
 		public void run(){
-			if( running ) {
-				shutdown() ;
-			}
+			shutdown() ;
 		}
 	}
 	
@@ -179,6 +177,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Shutdown the server
 	 */
 	public void shutdown(){
+		
+		if( !running ) return; 
+		
+		consoleThread.requestStop() ;
+		
 		for( RemoteREngineClient client: clients){
 			try{
 				/* client.serverDying(); */
@@ -198,7 +201,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		} catch (RemoteException e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage() + ". While unbinding " + name );
 		}
-		
+		running = false; 
 		System.out.println("Stopping the JVM");
 		System.exit(0);
 		
@@ -415,6 +418,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	
 	/**
 	 * Adds a callback to the queue
+	 * 
 	 * @param callback the callback
 	 */
 	public void addCallback(RCallback callback){
