@@ -27,6 +27,7 @@ import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
@@ -177,5 +178,12 @@ public interface RemoteREngineInterface extends Remote {
 	 */
 	public void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException ;  
 
+	/**
+	 * Sends a response to a callback
+	 * @param response the response to a callback
+	 * @throws RemoteException
+	 */
+	public void sendResponse( CallbackResponse response ) throws RemoteException ;
+	
 }
 

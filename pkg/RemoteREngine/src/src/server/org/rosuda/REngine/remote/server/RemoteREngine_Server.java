@@ -37,6 +37,7 @@ import org.rosuda.REngine.JRI.JRIEngine;
 import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
+import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.callbacks.ServerDownCallback;
 import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
@@ -107,6 +108,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private boolean running = false; 
 	
 	/**
+	 * The callback loop
+	 */
+	private RemoteRMainLoopCallbacks callbackLoop; 
+	
+	/**
 	 * Constructor. Initiates the local R engine that this engine shadows
 	 * 
 	 * @param name name of this engine in the RMI registry
@@ -121,10 +127,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		this.port = port ;
 		clients = new Vector<RemoteREngineClient>(); 
 		callbackQueue = new CallbackQueue(); 
-		// String[] args = new String[]{ "--no-save" } ; 
-		// TODO: control parameters passed to R
-		// r  = new JRIEngine( args , new RemoteRMainLoopCallbacks(this) ) ;
-		r = (JRIEngine) JRIEngine.createEngine() ;
+		r = new JRIEngine( args ) ;
 		
 		/* TODO: forbid the q function */
 		
@@ -142,6 +145,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		/* TODO: check if the name is not already being used by another object */ 
 		registry.rebind( name, stub ) ;
 		consoleThread = new ConsoleThread(this);
+		
+		callbackLoop = new RemoteRMainLoopCallbacks(this) ;
+		/* r.getRni().addMainLoopCallbacks( callbackLoop ) ; */
 		
 		debug( "R Engine bound as `"+ name +"` on port " + port ) ;
 		running = true; 
@@ -397,9 +403,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		if( clients.contains( client ) ){
 			throw new AlreadyRegisteredException(); 
 		}
-		if( clients.isEmpty() ){
-			/* r.getRni().addMainLoopCallbacks( new RemoteRMainLoopCallbacks( this ) ) ; */
-		}
 		clients.add( client ) ;
 		return variables ; 
 	}
@@ -418,6 +421,14 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		clients.remove( client ) ;
 	}
 
+	/**
+	 * Sends a response to a callback
+	 */
+	@Override
+	public void sendResponse( CallbackResponse response ) throws RemoteException {
+		// TODO: check if the associated callback still needs a response
+		// TODO: put the response in the appropriate response queue ( readconsole, choosefile, ... )
+	}
 	
 	/**
 	 * Adds a callback to the queue

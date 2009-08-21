@@ -26,6 +26,7 @@ import org.rosuda.REngine.remote.common.callbacks.RBusyCallback;
 import org.rosuda.REngine.remote.common.callbacks.RFlushConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
 import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
+import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
 
 /**
  * Remote main loop callbacks 
@@ -100,7 +101,8 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param filename name of the history file
 	 */
     public void   rSaveHistory  (Rengine re, String filename){
-    	// TODO: read the history file. Make it available to clients
+    	// TODO: read the history file
+    	// TODO: Make the history available to clients
     }
     
     /** 
@@ -148,7 +150,20 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		// - setup some background thread that waits for input
 		// - dispatch to the clients that R is waiting for input
 		// - when some input arrives, send it to R
-		return "" ;
+		
+		ReadConsoleCallback callback = new ReadConsoleCallback( prompt) ;
+		server.addCallback( callback ) ; 
+		String result = ""; 
+		/* for now */
+		try {
+			wait( 100 ) ;
+		} catch (InterruptedException e) {
+			
+		}
+		/* TODO: create a console sync with a method that waits for the response */
+		/* result = server.getConsoleSync().getResponse(callback.getId()) ; */ 
+		
+		return result ;
 	}
 
 

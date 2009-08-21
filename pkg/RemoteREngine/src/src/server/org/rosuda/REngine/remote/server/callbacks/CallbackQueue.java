@@ -26,6 +26,7 @@ import java.util.Queue;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 
 /**
+ * FIXME: we don't need the call back queue anymore 
  * Simple queue for the callbacks 
  *  
  * @author Romain Francois
