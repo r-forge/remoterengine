@@ -22,6 +22,7 @@ package org.rosuda.REngine.remote.server;
 
 import org.rosuda.JRI.RMainLoopCallbacks;
 import org.rosuda.JRI.Rengine;
+import org.rosuda.REngine.remote.common.callbacks.ChooseFileCallback;
 import org.rosuda.REngine.remote.common.callbacks.RBusyCallback;
 import org.rosuda.REngine.remote.common.callbacks.RFlushConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
@@ -128,7 +129,21 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	@Override
 	public String rChooseFile(Rengine re, int newFile) {
 		// TODO: choose a file on the client(s), bring the file back and return the name of the file in the server
-		return null;
+		ChooseFileCallback callback = new ChooseFileCallback( ( newFile != 0)  ) ;
+		server.addCallback(callback) ;
+		String result = ""; 
+		/* for now */
+		try {
+			wait( 100 ) ;
+		} catch (InterruptedException e) {
+			
+		}
+		/* TODO: create a console sync with a method that waits for the response */
+		/* result = server.getConsoleSync().getResponse(callback.getId()) ; */ 
+		
+		/* TODO: if a new file has to be returned, maybe it is not worth sending the callback to the client */
+		
+		return result ;
 	}
 
 	/** 

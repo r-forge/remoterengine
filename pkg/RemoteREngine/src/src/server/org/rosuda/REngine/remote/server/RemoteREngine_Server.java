@@ -39,6 +39,7 @@ import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
+import org.rosuda.REngine.remote.common.callbacks.RCallbackWithResponse;
 import org.rosuda.REngine.remote.common.callbacks.ServerDownCallback;
 import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
@@ -425,7 +426,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Sends a response to a callback
 	 */
 	@Override
-	public void sendResponse( CallbackResponse response ) throws RemoteException {
+	public void sendResponse( CallbackResponse<? extends RCallbackWithResponse> response ) throws RemoteException {
 		// TODO: check if the associated callback still needs a response
 		// TODO: put the response in the appropriate response queue ( readconsole, choosefile, ... )
 	}

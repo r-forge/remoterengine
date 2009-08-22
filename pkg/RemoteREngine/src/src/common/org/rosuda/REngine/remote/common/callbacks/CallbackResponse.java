@@ -26,7 +26,7 @@ import java.io.Serializable;
  * 
  * @author Romain Francois
  */
-public abstract class CallbackResponse implements Serializable {
+public abstract class CallbackResponse<T extends RCallbackWithResponse> implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -44,9 +44,19 @@ public abstract class CallbackResponse implements Serializable {
 	}
 	
 	/**
+	 * Constructor using the id of the associated callback 
+	 * @param callback the callback this is responding to
+	 */
+	public CallbackResponse( T callback){
+		this( callback.getId() ) ;
+	}
+	
+	/**
 	 * @return the id of the associated callback
 	 */
 	public int getCallbackId(){
 		return callbackId ; 
 	}
+	
+	
 }

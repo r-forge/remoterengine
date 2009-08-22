@@ -20,32 +20,21 @@
 package org.rosuda.REngine.remote.common.callbacks;
 
 /**
- * Callback sent when R waits for input 
+ * Super class for all callbacks that require a response from the client
  * 
  * @author Romain Francois
+ *
  */
-public class ReadConsoleCallback extends RCallbackWithResponse {
+public abstract class RCallbackWithResponse extends RCallback {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
-	 * The prompt
+	 * Allways returns true
 	 */
-	private String prompt; 
-	
-	/**
-	 * Constructor
-	 * @param prompt the prompt
-	 */
-	public ReadConsoleCallback( String prompt ){
-		super(); 
-		this.prompt = prompt; 
+	@Override
+	public final boolean needsResponse() {
+		return true ;
 	}
-	
-	/**
-	 * @return the console prompt
-	 */
-	public String getPrompt(){
-		return prompt; 
-	}
+
 }

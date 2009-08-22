@@ -19,33 +19,23 @@
  */
 package org.rosuda.REngine.remote.common.callbacks;
 
-/**
- * Callback sent when R waits for input 
- * 
- * @author Romain Francois
- */
-public class ReadConsoleCallback extends RCallbackWithResponse {
+public class ChooseFileCallback extends RCallbackWithResponse {
 
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * The prompt
+	 * Should the file be a new file
 	 */
-	private String prompt; 
+	public boolean newFile ; 
 	
 	/**
 	 * Constructor
-	 * @param prompt the prompt
+	 * @param newFile should the file be a new file 
 	 */
-	public ReadConsoleCallback( String prompt ){
+	public ChooseFileCallback( boolean newFile ){
 		super(); 
-		this.prompt = prompt; 
+		this.newFile = newFile ; 
 	}
 	
-	/**
-	 * @return the console prompt
-	 */
-	public String getPrompt(){
-		return prompt; 
-	}
+
 }
