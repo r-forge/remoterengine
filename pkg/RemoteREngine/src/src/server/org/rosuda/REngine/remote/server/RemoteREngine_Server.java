@@ -431,7 +431,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public void addCallback(RCallback callback){
 		/* TODO: send the callback to the clients and wait for a response if this is a CallbackWithResponse */
-		/* callbackQueue.push(callback) ; */
 	}
 
 	/** 
