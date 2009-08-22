@@ -47,7 +47,6 @@ import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
-import org.rosuda.REngine.remote.server.callbacks.CallbackQueue;
 import org.rosuda.REngine.remote.server.console.ConsoleThread;
 import org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server;
 import org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server;
@@ -72,11 +71,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * The local R engine this server is shadowing
 	 */ 
 	private JRIEngine r ; 
-
-	/**
-	 * The callback queue
-	 */
-	private CallbackQueue callbackQueue ;
 
 	/**
 	 * Captures some of the global variables that are sent to the clients
@@ -127,7 +121,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		this.name = name ; 
 		this.port = port ;
 		clients = new Vector<RemoteREngineClient>(); 
-		callbackQueue = new CallbackQueue(); 
 		r = new JRIEngine( args ) ;
 		
 		/* TODO: forbid the q function */
@@ -437,7 +430,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param callback the callback
 	 */
 	public void addCallback(RCallback callback){
-		callbackQueue.push(callback) ;
+		/* TODO: send the callback to the clients and wait for a response if this is a CallbackWithResponse */
+		/* callbackQueue.push(callback) ; */
 	}
 
 	/** 
