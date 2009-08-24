@@ -91,7 +91,6 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 	}
 	
 	
-	@Override
 	public int available() throws ServerSideIOException {
 		int res = 0; 
 		try{
@@ -102,7 +101,6 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		return res; 
 	}
 
-	@Override
 	public void close() throws ServerSideIOException {
 		try{
 			stream.close() ;
@@ -111,17 +109,14 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		}
 	}
 
-	@Override
 	public void mark(int readlimit) throws RemoteException {
 		stream.mark(readlimit) ;
 	}
 
-	@Override
 	public boolean markSupported() throws RemoteException {
 		return stream.markSupported() ;
 	}
 
-	@Override
 	public void reset() throws ServerSideIOException {
 		try{
 			stream.reset() ;
@@ -130,7 +125,6 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		}
 	}
 
-	@Override
 	public long skip(long n) throws ServerSideIOException {
 		long res = 0; 
 		try{ 
@@ -141,12 +135,10 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		return res; 
 	}
 	
-	@Override
 	public void setBufferSize( int n){
 		buffer = new byte[n] ;
 	}
 	
-	@Override
 	public FileChunk readNextChunk( ) throws ServerSideIOException {
 		int c = 0 ; 
 		try{
@@ -162,12 +154,10 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		}
 	}
 	
-	@Override
 	public int getBufferSize(){
 		return buffer.length ;
 	}
 
-	@Override
 	public boolean delete() throws RemoteException {
 		return file.delete() ;
 	}

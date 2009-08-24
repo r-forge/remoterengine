@@ -54,7 +54,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param text text to display in the console
 	*  @param oType output type (0=regular, 1=error/warning)
     */
-	@Override
 	public void rWriteConsole(Rengine re, String text, int oType) {
 		server.sendCallbackToListeners( new RWriteConsoleCallback( text, oType ) ) ;
 	}
@@ -66,7 +65,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param re calling engine
 	 * @param which identifies whether R enters (1) or exits (0) the busy state
 	 */
-	@Override
 	public void rBusy(Rengine re, int which) {
 		server.sendCallbackToListeners( new RBusyCallback( which == 1 ) ) ;
 	}
@@ -76,7 +74,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
      * 
 	 * @param re calling engine
 	 */	
-	@Override
 	public void rFlushConsole(Rengine re) {
 		server.sendCallbackToListeners( new RFlushConsoleCallback() ) ;
 	}
@@ -88,7 +85,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param re calling engine
 	 * @param message message to display
 	 */
-	@Override
 	public void rShowMessage(Rengine re, String message) {
 		server.sendCallbackToListeners( new RShowMessageCallback( message ) ) ;
 	}
@@ -126,7 +122,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param newFile flag determining whether an existing or new file is to be selected
 	 * @return path/name of the selected file 
 	 */
-	@Override
 	public String rChooseFile(Rengine re, int newFile) {
 		// TODO: choose a file on the client(s), bring the file back and return the name of the file in the server
 		ChooseFileCallback callback = new ChooseFileCallback( ( newFile != 0)  ) ;
@@ -159,7 +154,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param prompt prompt to be displayed at the console prior to user's input
 	 * @param addToHistory flag telling the handler whether the input should be considered for adding to history (!=0) or not (0)
 	 * @return user's input to be passed to R for evaluation */
-	@Override
 	public String rReadConsole(Rengine re, String prompt, int addToHistory) {
 		/* send the callback to clients (they might be interested in the prompt) */
 		/* TODO: maybe change the name of the callback */

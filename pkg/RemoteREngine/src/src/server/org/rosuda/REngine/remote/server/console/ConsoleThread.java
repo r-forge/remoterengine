@@ -117,7 +117,6 @@ public class ConsoleThread extends Thread implements CallbackListener {
 	/**
 	 * Handles a callback sent by the server
 	 */
-	@Override
 	public void handleCallback(RCallback callback) {
 		/* TODO: this need to be handled asynchronously */
 		if( callback instanceof RWriteConsoleCallback ){

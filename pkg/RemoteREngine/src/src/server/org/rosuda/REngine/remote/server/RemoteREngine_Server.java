@@ -357,7 +357,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws RemoteException 
 	 * @throws IOException when the stream cannot be create
 	 */
-	@Override
 	public RemoteFileInputStream openFile( String filename) throws ServerSideIOException, RemoteException{
 		RemoteFileInputStream_Server stream = new RemoteFileInputStream_Server( filename ) ;
 		RemoteFileInputStream stub = (RemoteFileInputStream) UnicastRemoteObject.exportObject(stream);
@@ -372,7 +371,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws RemoteException 
 	 * @throws IOException when the stream cannot be created 
 	 */
-	@Override
 	public RemoteFileOutputStream createFile( String filename, boolean must_be_new) throws ServerSideIOException, FileAlreadyExistsException, RemoteException{
 		if( must_be_new ){
 			if( (new File( filename) ).exists() ){
@@ -404,7 +402,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * 
 	 * @throws AlreadyRegisteredException if the client is already registered with this server
 	 */
-	@Override
 	public synchronized JRIEngineGlobalVariables subscribe(RemoteREngineClient client) throws RemoteException, AlreadyRegisteredException {
 		debug( "registering client" ) ;
 		if( clients.contains( client ) ){
@@ -436,7 +433,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * 
 	 * @throws NotRegisteredException if the client is not registered with this server
 	 */
-	@Override
 	public synchronized void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException {
 		debug( "unregister client" ) ;
 		if( !clients.contains( client) ){
@@ -449,7 +445,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	/**
 	 * Sends a response to a callback
 	 */
-	@Override
 	public void sendResponse( CallbackResponse<? extends RCallbackWithResponse> response ) throws RemoteException {
 		// TODO: check if the associated callback still needs a response
 		// TODO: put the response in the appropriate response queue ( readconsole, choosefile, ... )

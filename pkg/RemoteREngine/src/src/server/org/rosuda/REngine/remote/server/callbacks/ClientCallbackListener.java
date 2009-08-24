@@ -57,7 +57,6 @@ public class ClientCallbackListener implements CallbackListener {
 	 * 
 	 * @see RemoteREngineClient#callback(RCallback)
 	 */
-	@Override
 	public void handleCallback(RCallback callback) {
 		try{
 			client.callback(callback) ;
