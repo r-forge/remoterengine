@@ -23,7 +23,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
+import org.rosuda.REngine.remote.server.callbacks.CallbackListener;
 
 /**
  * The console thread, that allows control of the server on the server side 
@@ -31,7 +33,7 @@ import org.rosuda.REngine.remote.server.RemoteREngine_Server;
  * @author Romain Francois
  *
  */
-public class ConsoleThread extends Thread {
+public class ConsoleThread extends Thread implements CallbackListener {
 	
 	/**
 	 * The server associated with this thread
@@ -59,13 +61,7 @@ public class ConsoleThread extends Thread {
 	 */
 	public void run(){
 		
-		/* TODO: replace this with a more useful console 
-    	 *   - ability to type R commands in (take advantage of REPL)
-    	 *   - abstract this so that backends like gnu readline or 
-    	 *     jline (http://jline.sourceforge.net/project-info.html)
-    	 *     can be used
-    	 * */
-    	rdr = new BufferedReader(new InputStreamReader(System.in));
+		rdr = new BufferedReader(new InputStreamReader(System.in));
     	
     	while (!stop) {
 			System.out.println("Type \"Quit\" to shutdown the server.");
@@ -88,7 +84,7 @@ public class ConsoleThread extends Thread {
 				if ("Quit".equalsIgnoreCase(line)) {
 					stop = true; /* stop this thread */
 					server.shutdown() ; /* let clients know */
-				} else{
+				} else {
 					server.getConsoleSync().addInput( line ) ;
 				}
 			} catch (IOException e) {
@@ -114,6 +110,14 @@ public class ConsoleThread extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
+	}
+
+	/**
+	 * Handles a callback sent by the server
+	 */
+	@Override
+	public void handleCallback(RCallback callback) {
+		/* TODO: handle the callback asynchronously */
 	}
 	
 }

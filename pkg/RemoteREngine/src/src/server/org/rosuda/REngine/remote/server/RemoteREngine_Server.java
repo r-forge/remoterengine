@@ -30,6 +30,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Vector;
 
+import org.rosuda.JRI.Rengine;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
@@ -47,6 +48,8 @@ import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
+import org.rosuda.REngine.remote.server.callbacks.CallbackListener;
+import org.rosuda.REngine.remote.server.callbacks.ClientCallbackListener;
 import org.rosuda.REngine.remote.server.console.ConsoleSync;
 import org.rosuda.REngine.remote.server.console.ConsoleThread;
 import org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server;
@@ -67,6 +70,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	}
 
 	private Vector<RemoteREngineClient> clients ;
+	private Vector<CallbackListener> callbackListeners ; 
 	
 	/** 
 	 * The local R engine this server is shadowing
@@ -105,6 +109,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	
 	private ConsoleSync consoleSync ;
 	
+	
 	/**
 	 * The callback loop
 	 */
@@ -124,6 +129,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		this.name = name ; 
 		this.port = port ;
 		clients = new Vector<RemoteREngineClient>(); 
+		callbackListeners = new Vector<CallbackListener>(); 
 		r = new JRIEngine( args ) ;
 		
 		/* TODO: forbid the q function */
@@ -143,9 +149,10 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		registry.rebind( name, stub ) ;
 		consoleSync = new ConsoleSync(this) ;
 		consoleThread = new ConsoleThread(this);
+		addCallbackListener( consoleThread ) ;
 		
 		callbackLoop = new RemoteRMainLoopCallbacks(this) ;
-		/* r.getRni().addMainLoopCallbacks( callbackLoop ) ; */
+		r.getRni().addMainLoopCallbacks( callbackLoop ) ;
 		
 		debug( "R Engine bound as `"+ name +"` on port " + port ) ;
 		running = true; 
@@ -190,15 +197,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		
 		if( !clients.isEmpty() ){
 			ServerDownCallback dying = new ServerDownCallback() ;
-			for( RemoteREngineClient client: clients){
-				try{
-					client.callback( dying ) ;
-				} catch( RemoteException e){
-					/* don't care */
-				}
-			}
+			sendCallbackToListeners(dying) ;
 		}
-		
+		/* TODO: empty the clients and listeners ? */
 		/* TODO: shutdown R cleanly as well */
 		
 		System.err.println("Unbinding " + name );
@@ -410,9 +411,26 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw new AlreadyRegisteredException(); 
 		}
 		clients.add( client ) ;
+		addCallbackListener( new ClientCallbackListener( client ) ) ;
 		return variables ; 
 	}
 	
+	/**
+	 * Adds a callback listener
+	 * @param listener the callback listener
+	 */
+	public synchronized void addCallbackListener( CallbackListener listener) {
+		callbackListeners.add( listener ) ;
+	}
+	
+	/**
+	 * Removes a callback listener
+	 * @param listener the callback listener to remove
+	 */
+	public synchronized void removeCallbackListener( CallbackListener listener) {
+		callbackListeners.remove( listener ) ;
+	}
+
 	/**
 	 * Unsubscribe a client
 	 * 
@@ -425,6 +443,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw new NotRegisteredException() ; 
 		}
 		clients.remove( client ) ;
+		removeCallbackListener( ClientCallbackListener.popCallbackListener(client) ) ;
 	}
 
 	/**
@@ -437,12 +456,19 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	}
 	
 	/**
-	 * Adds a callback to the queue
+	 * Send a callback to all the listeners associated with this server
 	 * 
 	 * @param callback the callback
 	 */
-	public void addCallback(RCallback callback){
-		/* TODO: send the callback to the clients and wait for a response if this is a CallbackWithResponse */
+	public void sendCallbackToListeners(RCallback callback){
+		
+		if( callback.needsResponse() ){
+			/* TODO : set something that waits for the response (used by the ChooseFile callback) */ 
+		}
+		for( CallbackListener listener: callbackListeners ){
+			listener.handleCallback(callback) ;
+		}
+		
 	}
 
 	/** 
@@ -454,6 +480,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 
 	/**
 	 * convenience that calls rniIdle on the Rengine
+	 * 
+	 * @see Rengine#rniIdle()
 	 */
 	public void rniIdle(){
 		r.getRni().rniIdle() ;

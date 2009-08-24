@@ -56,7 +56,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
     */
 	@Override
 	public void rWriteConsole(Rengine re, String text, int oType) {
-		server.addCallback( new RWriteConsoleCallback( text, oType ) ) ;
+		server.sendCallbackToListeners( new RWriteConsoleCallback( text, oType ) ) ;
 	}
 
     /** 
@@ -68,7 +68,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 */
 	@Override
 	public void rBusy(Rengine re, int which) {
-		server.addCallback( new RBusyCallback( which == 1 ) ) ;
+		server.sendCallbackToListeners( new RBusyCallback( which == 1 ) ) ;
 	}
 	
     /** 
@@ -78,7 +78,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 */	
 	@Override
 	public void rFlushConsole(Rengine re) {
-		server.addCallback( new RFlushConsoleCallback() ) ;
+		server.sendCallbackToListeners( new RFlushConsoleCallback() ) ;
 	}
 	
     /** 
@@ -90,7 +90,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 */
 	@Override
 	public void rShowMessage(Rengine re, String message) {
-		server.addCallback( new RShowMessageCallback( message ) ) ;
+		server.sendCallbackToListeners( new RShowMessageCallback( message ) ) ;
 	}
 	
 	/* history management */
@@ -130,8 +130,8 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	public String rChooseFile(Rengine re, int newFile) {
 		// TODO: choose a file on the client(s), bring the file back and return the name of the file in the server
 		ChooseFileCallback callback = new ChooseFileCallback( ( newFile != 0)  ) ;
-		server.addCallback(callback) ;
-		String result = ""; 
+		server.sendCallbackToListeners(callback) ;
+		/* String result = ""; */ 
 		/* for now */
 		try {
 			wait( 100 ) ;
@@ -164,7 +164,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		/* send the callback to clients (they might be interested in the prompt) */
 		/* TODO: maybe change the name of the callback */
 		ReadConsoleCallback callback = new ReadConsoleCallback( prompt) ;
-		server.addCallback( callback ) ; 
+		server.sendCallbackToListeners( callback ) ; 
 		
 		/* wait for the next available command: this blocks */
 		String result = server.getConsoleSync().waitForInput() ;
