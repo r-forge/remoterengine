@@ -126,13 +126,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		// TODO: choose a file on the client(s), bring the file back and return the name of the file in the server
 		ChooseFileCallback callback = new ChooseFileCallback( ( newFile != 0)  ) ;
 		server.sendCallbackToListeners(callback) ;
-		/* String result = ""; */ 
-		/* for now */
-		try {
-			wait( 100 ) ;
-		} catch (InterruptedException e) {
-			
-		}
+		
 		/* TODO: create a console sync with a method that waits for the response */
 		/* result = server.getConsoleSync().getResponse(callback.getId()) ; */ 
 		
@@ -161,7 +155,11 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		server.sendCallbackToListeners( callback ) ; 
 		
 		/* wait for the next available command: this blocks */
-		String result = server.getConsoleSync().waitForInput() ;
+		String result = server.getConsoleSync().next() ;
+		if( !result.endsWith( "\n" ) ){
+			result += "\n" ;
+		}
+		
 		return result ;
 	}
 

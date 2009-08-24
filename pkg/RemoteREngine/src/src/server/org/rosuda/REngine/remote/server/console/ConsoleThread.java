@@ -23,11 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.rosuda.REngine.remote.common.callbacks.RCallback;
-import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
-import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
-import org.rosuda.REngine.remote.server.callbacks.CallbackListener;
 
 /**
  * The console thread, that allows control of the server on the server side 
@@ -35,7 +31,7 @@ import org.rosuda.REngine.remote.server.callbacks.CallbackListener;
  * @author Romain Francois
  *
  */
-public class ConsoleThread extends Thread implements CallbackListener {
+public class ConsoleThread extends Thread {
 	
 	/**
 	 * The server associated with this thread
@@ -66,7 +62,6 @@ public class ConsoleThread extends Thread implements CallbackListener {
 		rdr = new BufferedReader(new InputStreamReader(System.in));
     	
     	while (!stop) {
-			System.out.println("Type \"Quit\" to shutdown the server.");
 			try {
 				while( !stop && !rdr.ready() ){
 					sleep(100); 
@@ -87,7 +82,7 @@ public class ConsoleThread extends Thread implements CallbackListener {
 					stop = true; /* stop this thread */
 					server.shutdown() ; /* let clients know */
 				} else {
-					server.getConsoleSync().addInput( line ) ;
+					server.getConsoleSync().add( line ) ;
 				}
 			} catch (IOException e) {
 				System.out.println(e.getClass().getName() + " : " + e.getMessage());
@@ -114,16 +109,4 @@ public class ConsoleThread extends Thread implements CallbackListener {
 		} 
 	}
 
-	/**
-	 * Handles a callback sent by the server
-	 */
-	public void handleCallback(RCallback callback) {
-		/* TODO: this need to be handled asynchronously */
-		if( callback instanceof RWriteConsoleCallback ){
-			System.out.println( ((RWriteConsoleCallback)callback).getMessage() ) ;
-		} else if( callback instanceof RShowMessageCallback ) {
-			System.out.println( ((RShowMessageCallback)callback).getMessage() ) ;
-		}
-	}
-	
 }

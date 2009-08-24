@@ -19,53 +19,20 @@
  */
 package org.rosuda.REngine.remote.server.console;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
+import org.rosuda.REngine.remote.common.tools.Synchronizer;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
-public class ConsoleSync {
-
-		/**
-		 * The command queue
-		 */
-		private Queue<String> input ; 
-
-		/**
-		 * Server associated with this synchronizer
-		 */
-		private RemoteREngine_Server server ; 
+public class ConsoleSync extends Synchronizer<String> {
 		
-		/**
-		 * Constructor
-		 */
-		public ConsoleSync(RemoteREngine_Server server) {
-			input = new LinkedList<String>();
-			this.server = server; 
-		}
+	private RemoteREngine_Server server ;
+	
+	public ConsoleSync(RemoteREngine_Server server) {
+		super();
+		this.server = server ; 
+	}
 
-		/**
-		 * Waits until the queue is not empty and returns its head
-		 * @return the head of the command queue
-		 */
-		public synchronized String waitForInput() {
-			while ( input.isEmpty() ){
-				try {
-					wait(100);
-					server.rniIdle() ;
-				} catch (InterruptedException e) { }
-			}
-			return input.poll() ; 
-		}
-
-		/**
-		 * Adds a command to the queue
-		 * @param msg Command
-		 * @param echo should the command be echoed in the console
-		 */
-		public synchronized void addInput(String msg) {
-			input.add(msg); 
-			notifyAll();
-		}
+	public void afterWaiting(){
+		server.rniIdle(); 
+	}
 	
 }

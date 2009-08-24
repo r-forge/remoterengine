@@ -50,6 +50,7 @@ import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
 import org.rosuda.REngine.remote.server.callbacks.CallbackListener;
 import org.rosuda.REngine.remote.server.callbacks.ClientCallbackListener;
+import org.rosuda.REngine.remote.server.console.ConsoleCallbackHandler;
 import org.rosuda.REngine.remote.server.console.ConsoleSync;
 import org.rosuda.REngine.remote.server.console.ConsoleThread;
 import org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server;
@@ -103,6 +104,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	private ConsoleThread consoleThread ; 
 	
+	private ConsoleCallbackHandler consoleCallbackHandler; 
+	
+	
 	private Registry registry ; 
 	
 	private boolean running = false; 
@@ -128,9 +132,21 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		super();
 		this.name = name ; 
 		this.port = port ;
+		
+		/* inform the clients that the jvm of the server is dying */
+		shutdownHook = new RemoteREngineServerShutdownHook() ;
+		Runtime.getRuntime().addShutdownHook( shutdownHook ); 
+		
 		clients = new Vector<RemoteREngineClient>(); 
 		callbackListeners = new Vector<CallbackListener>(); 
-		r = new JRIEngine( args ) ;
+		callbackLoop = new RemoteRMainLoopCallbacks(this) ;
+		consoleSync = new ConsoleSync(this) ;
+		
+		consoleThread = new ConsoleThread(this);
+		consoleCallbackHandler = new ConsoleCallbackHandler(this);
+		addCallbackListener( consoleCallbackHandler ) ;
+		
+		r = new JRIEngine( args, callbackLoop ) ;
 		
 		/* TODO: forbid the q function */
 		
@@ -139,20 +155,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				r.globalEnv, r.emptyEnv, r.baseEnv, 
 				r.nullValueRef, r.nullValue,r.hashCode() ) ;
 		
-		/* inform the clients that the jvm of the server is dying */
-		shutdownHook = new RemoteREngineServerShutdownHook() ;
-		Runtime.getRuntime().addShutdownHook( shutdownHook ); 
 		
 		registry = LocateRegistry.getRegistry(null, port);
 		RemoteREngineInterface stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,0);
 		/* TODO: check if the name is not already being used by another object */ 
 		registry.rebind( name, stub ) ;
-		consoleSync = new ConsoleSync(this) ;
-		consoleThread = new ConsoleThread(this);
-		addCallbackListener( consoleThread ) ;
-		
-		callbackLoop = new RemoteRMainLoopCallbacks(this) ;
-		r.getRni().addMainLoopCallbacks( callbackLoop ) ;
 		
 		debug( "R Engine bound as `"+ name +"` on port " + port ) ;
 		running = true; 
@@ -388,7 +395,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws RemoteException
 	 */
 	public void sendToConsole( String cmd ){
-		consoleSync.addInput( cmd ) ;
+		consoleSync.add( cmd ) ;
 	}
 		
 	private void debug( String message){
@@ -471,6 +478,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public void startConsoleThread() {
 		consoleThread.start(); 
+		consoleCallbackHandler.start(); 
 	}
 
 	/**
