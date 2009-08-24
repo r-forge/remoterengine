@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
+import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
+import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 import org.rosuda.REngine.remote.server.callbacks.CallbackListener;
 
@@ -117,7 +119,12 @@ public class ConsoleThread extends Thread implements CallbackListener {
 	 */
 	@Override
 	public void handleCallback(RCallback callback) {
-		/* TODO: handle the callback asynchronously */
+		/* TODO: this need to be handled asynchronously */
+		if( callback instanceof RWriteConsoleCallback ){
+			System.out.println( ((RWriteConsoleCallback)callback).getMessage() ) ;
+		} else if( callback instanceof RShowMessageCallback ) {
+			System.out.println( ((RShowMessageCallback)callback).getMessage() ) ;
+		}
 	}
 	
 }
