@@ -143,7 +143,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		
 		/* TODO: if a new file has to be returned, maybe it is not worth sending the callback to the client */
 		
-		return result ;
+		return null ;
 	}
 
 	/** 
@@ -161,25 +161,13 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @return user's input to be passed to R for evaluation */
 	@Override
 	public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-		// TODO: capture "Browse[" prompt s and keep the data somewhere (factor this out of orchestra)
-		
-		// TODO: implement rReadConsole callback
-		// - setup some background thread that waits for input
-		// - dispatch to the clients that R is waiting for input
-		// - when some input arrives, send it to R
-		
+		/* send the callback to clients (they might be interested in the prompt) */
+		/* TODO: maybe change the name of the callback */
 		ReadConsoleCallback callback = new ReadConsoleCallback( prompt) ;
 		server.addCallback( callback ) ; 
-		String result = ""; 
-		/* for now */
-		try {
-			wait( 100 ) ;
-		} catch (InterruptedException e) {
-			
-		}
-		/* TODO: create a console sync with a method that waits for the response */
-		/* result = server.getConsoleSync().getResponse(callback.getId()) ; */ 
 		
+		/* wait for the next available command: this blocks */
+		String result = server.getConsoleSync().waitForInput() ;
 		return result ;
 	}
 

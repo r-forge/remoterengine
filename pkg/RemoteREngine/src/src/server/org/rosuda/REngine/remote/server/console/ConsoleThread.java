@@ -88,6 +88,8 @@ public class ConsoleThread extends Thread {
 				if ("Quit".equalsIgnoreCase(line)) {
 					stop = true; /* stop this thread */
 					server.shutdown() ; /* let clients know */
+				} else{
+					server.getConsoleSync().addInput( line ) ;
 				}
 			} catch (IOException e) {
 				System.out.println(e.getClass().getName() + " : " + e.getMessage());

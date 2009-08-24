@@ -47,6 +47,7 @@ import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
+import org.rosuda.REngine.remote.server.console.ConsoleSync;
 import org.rosuda.REngine.remote.server.console.ConsoleThread;
 import org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server;
 import org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server;
@@ -102,6 +103,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	
 	private boolean running = false; 
 	
+	private ConsoleSync consoleSync ;
+	
 	/**
 	 * The callback loop
 	 */
@@ -138,6 +141,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		RemoteREngineInterface stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,0);
 		/* TODO: check if the name is not already being used by another object */ 
 		registry.rebind( name, stub ) ;
+		consoleSync = new ConsoleSync(this) ;
 		consoleThread = new ConsoleThread(this);
 		
 		callbackLoop = new RemoteRMainLoopCallbacks(this) ;
@@ -378,8 +382,16 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		RemoteFileOutputStream stub = (RemoteFileOutputStream)UnicastRemoteObject.exportObject( stream ) ;
 		return stub ;
 	}
-
 	
+	/**
+	 * Called when a client wants to send a command to the REPL
+	 * @param cmd command to send to the REPL
+	 * @throws RemoteException
+	 */
+	public void sendToConsole( String cmd ){
+		consoleSync.addInput( cmd ) ;
+	}
+		
 	private void debug( String message){
 		if( DEBUG ){
 			System.err.println( message ); 
@@ -440,6 +452,19 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		consoleThread.start(); 
 	}
 
+	/**
+	 * convenience that calls rniIdle on the Rengine
+	 */
+	public void rniIdle(){
+		r.getRni().rniIdle() ;
+	}
+
+	/**
+	 * @return the console synchronizer
+	 */
+	public ConsoleSync getConsoleSync() {
+		return consoleSync ;
+	}
 	
 }
 

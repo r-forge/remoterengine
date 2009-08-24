@@ -24,7 +24,7 @@ package org.rosuda.REngine.remote.common.callbacks;
  * 
  * @author Romain Francois
  */
-public class ReadConsoleCallback extends RCallbackWithResponse {
+public class ReadConsoleCallback extends RCallbackNoResponse {
 
 	private static final long serialVersionUID = 1L;
 	

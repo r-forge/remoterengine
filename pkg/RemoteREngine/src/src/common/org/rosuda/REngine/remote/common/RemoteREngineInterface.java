@@ -187,5 +187,13 @@ public interface RemoteREngineInterface extends Remote {
 	 */
 	public void sendResponse( CallbackResponse<? extends RCallbackWithResponse> response ) throws RemoteException ;
 	
+	/**
+	 * Send a command to the server's REPL
+	 * @param cmd command to send to the REPL
+	 * @throws RemoteException
+	 */
+	public void sendToConsole( String cmd ) throws RemoteException ;
+	
+	
 }
 
