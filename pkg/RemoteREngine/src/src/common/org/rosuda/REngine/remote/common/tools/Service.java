@@ -8,6 +8,4 @@ package org.rosuda.REngine.remote.common.tools;
  *
  */
 public interface Service {
-
-	public String getName(); 
 }

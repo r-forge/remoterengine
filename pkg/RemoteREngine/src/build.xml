@@ -57,6 +57,25 @@
 	</target>
 	<!-- }}} -->
 	
+	<!--
+	<path id="service_scanner_classpath">
+		<pathelement location="lib/REngine.jar" />
+		<pathelement location="build/common" />
+	</path>
+	
+	
+	<target name="service-scanner" depends="common">
+		<apt srcdir="src/common"
+     destdir="build/common"
+     debug="on"
+     compile="true"
+     factory="org.rosuda.REngine.remote.common.tools.apt.ServiceImplementationAnnotationProcessorFactory">
+     <classpath refid="service_scanner_classpath" />
+     </apt>
+
+	</target>
+	-->
+	
 	<!--{{{ common -->
 	
 	<path id="common_classpath">

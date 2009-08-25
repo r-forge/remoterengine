@@ -19,15 +19,12 @@
  */
 package org.rosuda.REngine.remote.common.tools;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy; 
-import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /* The idea here is to mark implementations of services with this annotation */
 
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface ServiceImplementation {}
+public @interface ServiceImplementation {
+	String value() ; 
+}

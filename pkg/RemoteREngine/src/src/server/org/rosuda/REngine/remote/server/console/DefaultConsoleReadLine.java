@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.rosuda.REngine.remote.common.console.ConsoleReadLine;
 import org.rosuda.REngine.remote.common.tools.ServiceImplementation;
 
 /**
@@ -31,10 +32,9 @@ import org.rosuda.REngine.remote.common.tools.ServiceImplementation;
  * 
  * @author Romain Francois
  */
-@ServiceImplementation
+@ServiceImplementation( "default" )
 public class DefaultConsoleReadLine implements ConsoleReadLine {
 
-	private static final String name = "default" ;
 	private static final BufferedReader in = new BufferedReader(
 			new InputStreamReader(System.in) );
 
@@ -50,7 +50,4 @@ public class DefaultConsoleReadLine implements ConsoleReadLine {
 		return res; 
 	}
 
-	public String getName(){
-		return name ;
-	}
 }

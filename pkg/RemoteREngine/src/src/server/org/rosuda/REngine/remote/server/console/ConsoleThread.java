@@ -19,6 +19,7 @@
  */
 package org.rosuda.REngine.remote.server.console;
 
+import org.rosuda.REngine.remote.common.console.ConsoleReadLine;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
@@ -30,11 +31,6 @@ import org.rosuda.REngine.remote.server.RemoteREngine_Server;
  */
 public class ConsoleThread extends Thread {
 
-	/* TODO: process the annotation ServiceImplementation and remove this */
-	static{
-		ServiceManager.addService( ConsoleReadLine.class, "default", DefaultConsoleReadLine.class ) ;
-	}
-	
 	/**
 	 * The server associated with this thread
 	 */
