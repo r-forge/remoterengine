@@ -23,6 +23,7 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
+import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 
 /**

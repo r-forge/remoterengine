@@ -1,11 +1,11 @@
 package org.rosuda.REngine.remote.server.console;
 
+import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
 import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
-import org.rosuda.REngine.remote.server.callbacks.CallbackListener;
 
 public class ConsoleCallbackHandler extends Thread implements CallbackListener {
 
