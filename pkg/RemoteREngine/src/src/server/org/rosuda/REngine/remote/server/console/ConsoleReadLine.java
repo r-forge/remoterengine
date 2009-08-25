@@ -19,12 +19,14 @@
  */
 package org.rosuda.REngine.remote.server.console;
 
+import org.rosuda.REngine.remote.common.tools.Service;
+
 /**
  * Cancellable readline. 
  * 
  * @author Romain Francois
  */
-public interface ConsoleReadLine {
+public interface ConsoleReadLine extends Service {
 
 	/**
 	 * Reads a line 

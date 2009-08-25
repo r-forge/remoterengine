@@ -23,14 +23,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.rosuda.REngine.remote.common.tools.ServiceImplementation;
+
 /**
  * Default implementation for the readline. Uses only regular java 
  * classes 
  * 
  * @author Romain Francois
  */
+@ServiceImplementation
 public class DefaultConsoleReadLine implements ConsoleReadLine {
 
+	private static final String name = "default" ;
 	private static final BufferedReader in = new BufferedReader(
 			new InputStreamReader(System.in) );
 
@@ -40,10 +44,13 @@ public class DefaultConsoleReadLine implements ConsoleReadLine {
 	public String readLine() {
 		String res = null ; 
 		try{
-			in.readLine() ;
+			res = in.readLine() ;
 		} catch( IOException e){
 		}
 		return res; 
 	}
 
+	public String getName(){
+		return name ;
+	}
 }

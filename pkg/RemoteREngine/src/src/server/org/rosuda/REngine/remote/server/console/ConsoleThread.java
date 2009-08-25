@@ -19,10 +19,7 @@
  */
 package org.rosuda.REngine.remote.server.console;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
+import org.rosuda.REngine.remote.common.tools.ServiceManager;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
 /**
@@ -32,42 +29,47 @@ import org.rosuda.REngine.remote.server.RemoteREngine_Server;
  *
  */
 public class ConsoleThread extends Thread {
+
+	/* TODO: process the annotation ServiceImplementation and remove this */
+	static{
+		ServiceManager.addService( ConsoleReadLine.class, "default", DefaultConsoleReadLine.class ) ;
+	}
 	
 	/**
 	 * The server associated with this thread
 	 */
 	private RemoteREngine_Server server ; 
-	
+
 	/**
 	 * Should the thread stop
 	 */
 	private boolean stop; 
-	
-	private BufferedReader rdr ;
-	
+
+	/**
+	 * the reader used to get lines 
+	 */
+	private ConsoleReadLine reader ; 
+
 	/**
 	 * The constructor. 
 	 * @param server R engine associated with this console 
 	 */
-	public ConsoleThread( RemoteREngine_Server server){
+	public ConsoleThread( RemoteREngine_Server server ){
+		/* TODO: add the name of the consolereadline service as a parameter */ 
 		this.server = server ; 
 		stop = false; 
+		try {
+			reader = ServiceManager.getService(ConsoleReadLine.class, "default") ;
+		} catch (Exception e) {	e.printStackTrace() ; }
 	}
 	
 	/**
 	 * Prompts continually 
 	 */
 	public void run(){
-		
-		rdr = new BufferedReader(new InputStreamReader(System.in));
-    	
-    	while (!stop) {
+		while (!stop) {
 			try {
-				while( !stop && !rdr.ready() ){
-					sleep(100); 
-				}
-			} catch (IOException e1) {
-				e1.printStackTrace();
+				sleep(100); 
 			} catch (InterruptedException e1) {
 				stop = true;
 				break; 
@@ -75,38 +77,23 @@ public class ConsoleThread extends Thread {
 			if( stop ){
 				break; 
 			}
-			try {
-				/* TODO: need to find a way to interrupt this blocking call */
-				String line = rdr.readLine() ;
-				if ("Quit".equalsIgnoreCase(line)) {
-					stop = true; /* stop this thread */
-					server.shutdown() ; /* let clients know */
-				} else {
-					server.getConsoleSync().add( line ) ;
-				}
-			} catch (IOException e) {
-				System.out.println(e.getClass().getName() + " : " + e.getMessage());
+			String line = reader.readLine() ;
+			if ("Quit".equalsIgnoreCase(line)) {
+				stop = true; /* stop this thread */
+				server.shutdown() ; /* let clients know */
+			} else {
+				server.getConsoleSync().add( line ) ;
 			}
-			
+
 		}
-		try {
-			rdr.close();
-		} catch (IOException e) {
-			// don't care
-		} 
 		System.out.println( "console thread stopped" ) ;
 	}
-	
+
 	/**
 	 * Request that this thread stops
 	 */
 	public void requestStop(){
 		stop = true ;
-		try {
-			rdr.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
 	}
 
 }
