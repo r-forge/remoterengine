@@ -40,6 +40,8 @@
 	<!--{{{ clean -->
 	<target name="clean">
 		<delete dir="build" />
+		<delete dir="jars" />
+		
 		<delete dir="${javadoc.dir}" />
 	</target>
 
@@ -49,32 +51,16 @@
 		<mkdir dir="build/server" />
 		<mkdir dir="build/client" />
 		<mkdir dir="build/stubs"/>
+		<mkdir dir="build/annotations"/>
 		<mkdir dir="build/client-junit"/>
+		
+		<mkdir dir="jars" />
 		
 		<mkdir dir="${javadoc.dir}" />
 		<mkdir dir="${target.dir}" />
 		
 	</target>
 	<!-- }}} -->
-	
-	<!--
-	<path id="service_scanner_classpath">
-		<pathelement location="lib/REngine.jar" />
-		<pathelement location="build/common" />
-	</path>
-	
-	
-	<target name="service-scanner" depends="common">
-		<apt srcdir="src/common"
-     destdir="build/common"
-     debug="on"
-     compile="true"
-     factory="org.rosuda.REngine.remote.common.tools.apt.ServiceImplementationAnnotationProcessorFactory">
-     <classpath refid="service_scanner_classpath" />
-     </apt>
-
-	</target>
-	-->
 	
 	<!--{{{ common -->
 	
@@ -205,6 +191,52 @@
 			classname="org.rosuda.REngine.remote.client.RemoteREngine" />
 	</target>
 	<!--}}}-->
+	
+	<!--{{{ annotation processing -->
+	<path id="annotation_classpath">
+		<pathelement location="lib/REngine.jar" />
+		<pathelement location="build/common" />
+		<pathelement location="build/server" />
+		<pathelement location="build/client" />
+	</path>
+	
+	<target name="annotation-javac" depends="client">
+		<javac srcdir="src/apt" 
+			destdir="build/annotations"  
+			includeJavaRuntime="yes"
+			debug="${compiler.debug}"
+      debuglevel="${compiler.debuglevel}"
+      optimize="${compiler.optimize}"
+      deprecation="${compiler.deprecation}"
+      verbose="${compiler.verbose}"
+      nowarn="${compiler.nowarn}"
+      target="${compiler.target}"
+      source="${compiler.source}" >
+			<classpath refid="annotation_classpath" />
+		</javac>
+	</target>
+	
+	<target name="annotation-jar" depends="annotation-javac">
+		<jar jarfile="jars/RemoteREngine-annotationprocessor.jar">
+			<fileset dir="build/annotations" />
+			<fileset dir="build/common" />
+			<fileset dir="build/server" />
+			<fileset dir="build/client" />
+		</jar>
+	</target>
+	
+	<path id="annotation_factory_path">
+		<pathelement location="jars/RemoteREngine-annotationprocessor.jar" />
+	</path>
+	
+	<target name="annotation" depends="annotation-jar">
+		<apt srcdir="src/server" destdir="build/annotations" debug="on" compile="false"
+     		factory="com.addictedtor.remoterengine.apt.RemoteREngineAnnotationProcessorFactory" >
+     <classpath refid="annotation_factory_path" />
+    </apt>
+	</target>
+	<!--}}}-->
+	
 	
 	<!--{{{ creating the jar -->
 	<target name="makejars" depends="stubs">

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/client"/>
+	<classpathentry kind="src" path="src/apt"/>
 	<classpathentry kind="src" path="src/common"/>
 	<classpathentry kind="src" path="src/server"/>
 	<classpathentry kind="lib" path="lib/JRI.jar"/>
