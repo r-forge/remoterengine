@@ -33,6 +33,7 @@
   
   <property name="target.dir" value="${install.dir}/java" />
   
+  <!-- TODO: remove when we move to testng -->
   <property name="JUNIT_JAR" value="lib/junit-4.7.jar" />
   
   <!--}}}-->
@@ -227,16 +228,20 @@
 	
 	<path id="annotation_factory_path">
 		<pathelement location="jars/RemoteREngine-annotationprocessor.jar" />
+		<!-- TODO: remove when we move to testng -->
+		<pathelement location="${JUNIT_JAR}" />
 	</path>
 	
 	<target name="annotation" depends="annotation-jar">
-		<apt srcdir="src/server" destdir="build/annotations" debug="on" compile="false"
+		<apt destdir="build/annotations" debug="on" compile="false"
      		factory="com.addictedtor.remoterengine.apt.RemoteREngineAnnotationProcessorFactory" >
      <classpath refid="annotation_factory_path" />
+     <src path="src/client" />
+     <src path="src/server" />
+     <src path="src/common" />
     </apt>
 	</target>
 	<!--}}}-->
-	
 	
 	<!--{{{ creating the jar -->
 	<target name="makejars" depends="stubs">

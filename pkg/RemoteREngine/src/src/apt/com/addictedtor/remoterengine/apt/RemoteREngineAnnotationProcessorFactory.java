@@ -29,8 +29,7 @@ public class RemoteREngineAnnotationProcessorFactory implements
 		AnnotationProcessor result;
 		if(declarations.isEmpty()) {
 			result = AnnotationProcessors.NO_OP;
-		}
-		else {
+		} else {
 			result = new RemoteREngineAnnotationProcessor(env); 
 		}
 		return result;
