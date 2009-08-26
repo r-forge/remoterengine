@@ -47,7 +47,7 @@ public class RemoteREngineAnnotationProcessor implements AnnotationProcessor {
 				.getTypeDeclaration("org.rosuda.REngine.remote.common.tools.ServiceImplementation");
 
 		try{
-			File file = new File("services.xml") ;
+			File file = new File("build/services.xml") ;
 			System.out.println( file.getAbsolutePath() );
 			writer = new BufferedWriter( new FileWriter( file ) );
 			writer.append( "<?xml version=\"1.0\"?>\n" ) ;
