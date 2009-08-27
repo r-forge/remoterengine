@@ -244,7 +244,7 @@
 	<!--}}}-->
 	
 	<!--{{{ creating the jar -->
-	<target name="makejars" depends="stubs">
+	<target name="makejars" depends="stubs,annotation">
 		<!-- client jar -->
 		<unjar src="lib/REngine.jar"   	dest="build/client" />
 		<jar jarfile="${target.dir}/RemoteREngine-client.jar">

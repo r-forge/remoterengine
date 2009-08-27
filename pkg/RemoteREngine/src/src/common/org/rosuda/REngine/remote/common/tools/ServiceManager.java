@@ -22,6 +22,15 @@ package org.rosuda.REngine.remote.common.tools;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 /**
  * Simple service manager mechanism.
  * 
@@ -34,7 +43,7 @@ public class ServiceManager {
 	 * map of factories
 	 */
 	private static HashMap<Class<?>,GenericFactory<?>> factories = new HashMap<Class<?>,GenericFactory<?>>(); 
-	
+
 	/**
 	 * Creates an instance of the service defined by the service class for the given name
 	 * 
@@ -53,7 +62,7 @@ public class ServiceManager {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends Service> T getService( Class<T> serviceClass, String name) throws ServiceException {
-		
+
 		if( !factories.containsKey(serviceClass) ){
 			throw new NoFactoryForServiceException( serviceClass ) ;
 		}
@@ -69,7 +78,7 @@ public class ServiceManager {
 		}
 		return s ;
 	}
-	
+
 	/**
 	 * Store a definition of a service 
 	 * 
@@ -86,6 +95,47 @@ public class ServiceManager {
 		GenericFactory<T> factory = (GenericFactory<T>)factories.get(serviceClass) ;
 		factory.addImplementation(name, implementationClass) ;
 	}
+
+	/**
+	 * Initializes the services by reading the services.xml file
+	 */
+	public static void init(){
+
+		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+		domFactory.setNamespaceAware(true);
+		domFactory.setValidating(false);
+
+		try {
+			DocumentBuilder documentBuilder = domFactory.newDocumentBuilder();
+			Document document = documentBuilder.parse(ServiceManager.class.getResourceAsStream("/services.xml")) ;
+			NodeList serviceNodes = document.getElementsByTagName("service") ;
+			for( int i=0; i<serviceNodes.getLength(); i++ ){
+				Node service = serviceNodes.item(i) ;
+				NamedNodeMap attrs = service.getAttributes() ;
+				load( extract( attrs, "class"), extract( attrs, "name"), extract( attrs, "implementation") ) ;
+			}
+			
+		} catch( Exception e){
+			e.printStackTrace();
+		}
 	
+	}
 	
+	@SuppressWarnings("unchecked")
+	private static <T extends Service> void load( String clazz, String name, String impl){
+		Class<T> serviceClass ; 
+		Class<? extends T> implementationClass; 
+		
+		try{
+			// TODO: various checks here. does serviceClass implement Service, ...
+			serviceClass = (Class<T>)Class.forName(clazz) ;
+			implementationClass = (Class<? extends T>)Class.forName(impl) ;
+			addService( serviceClass, name, implementationClass )  ;
+		} catch( ClassNotFoundException cnf){}
+		
+	}
+	
+	private static String extract( NamedNodeMap map, String attr){
+		return ( (Attr)map.getNamedItem( attr ) ).getValue() ;
+	}
 }
