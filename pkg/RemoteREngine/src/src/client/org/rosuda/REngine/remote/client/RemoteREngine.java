@@ -38,11 +38,15 @@ import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REnginePool;
+import org.rosuda.REngine.remote.client.callbacks.ClientCallbackDispatcher;
 import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
+import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
+import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
+import org.rosuda.REngine.remote.common.callbacks.RCallbackWithResponse;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
@@ -100,6 +104,8 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * Shutdown hook for this client
 	 */
 	private RemoteREngineShutdownHook shutdownHook ; 
+	
+	private ClientCallbackDispatcher callbackDispatcher ;
 	
 	/**
 	 * Construct a RemoteREngine
@@ -448,10 +454,10 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	}
 	
 	/**
-	 * Receives a callback from the server
+	 * Receives a callback from the server and dispatchs it to listeners
 	 */
 	public void callback(RCallback callback) throws RemoteException {
-		/* TODO: handle the callback */
+		callbackDispatcher.addToQueue( callback ) ;
 	}
 		
 	/**
@@ -463,5 +469,36 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		super.finalize();
 	}
 
+	/**
+	 * Adds a new callback listener
+	 * 
+	 * @param listener callback listener
+	 * @see ClientCallbackDispatcher#addCallbackListener(CallbackListener)
+	 */
+	public void addCallbackListener( CallbackListener listener){
+		callbackDispatcher.addCallbackListener( listener ) ;
+	}
+	
+	/**
+	 * Removes a callback listener
+	 * @param listener callback listener
+	 * @see ClientCallbackDispatcher#removeCallbackListener(CallbackListener)
+	 */
+	public void removeCallbackListener( CallbackListener listener ){
+		callbackDispatcher.removeCallbackListener( listener ) ;
+	}
+
+	/**
+	 * Send a callback response to the server
+	 * @param response a callback response
+	 */
+	public void sendResponse( CallbackResponse<? extends RCallbackWithResponse> response){
+		try{
+			engine.sendResponse(response) ;
+		} catch( RemoteException re){
+			/*  what */
+		}
+	}
+	
 }
 
