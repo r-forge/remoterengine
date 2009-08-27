@@ -49,6 +49,7 @@ import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
+import org.rosuda.REngine.remote.server.callbacks.CallbackSender;
 import org.rosuda.REngine.remote.server.callbacks.ClientCallbackListener;
 import org.rosuda.REngine.remote.server.console.ConsoleCallbackHandler;
 import org.rosuda.REngine.remote.server.console.ConsoleSync;
@@ -72,6 +73,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 
 	private Vector<RemoteREngineClient> clients ;
 	private Vector<CallbackListener> callbackListeners ; 
+	private CallbackSender callbackSender ; 
 	
 	/** 
 	 * The local R engine this server is shadowing
@@ -144,6 +146,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		
 		consoleThread = new ConsoleThread(this);
 		consoleCallbackHandler = new ConsoleCallbackHandler(this);
+		callbackSender = new CallbackSender(this) ;
 		addCallbackListener( consoleCallbackHandler ) ;
 		
 		r = new JRIEngine( args, callbackLoop ) ;
@@ -462,14 +465,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param callback the callback
 	 */
 	public void sendCallbackToListeners(RCallback callback){
-		
-		if( callback.needsResponse() ){
-			/* TODO : set something that waits for the response (used by the ChooseFile callback) */ 
-		}
-		for( CallbackListener listener: callbackListeners ){
-			listener.handleCallback(callback) ;
-		}
-		
+		callbackSender.addCallback( callback ) ;
 	}
 
 	/** 
@@ -478,6 +474,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public void startConsoleThread() {
 		consoleThread.start(); 
 		consoleCallbackHandler.start(); 
+		callbackSender.start(); 
 	}
 
 	/**
@@ -494,6 +491,14 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public ConsoleSync getConsoleSync() {
 		return consoleSync ;
+	}
+
+	/**
+	 * The listeners associated with this server
+	 * @return 
+	 */
+	public synchronized Vector<CallbackListener> getCallbackListeners() {
+		return callbackListeners ;
 	}
 	
 }

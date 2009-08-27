@@ -23,6 +23,7 @@ package org.rosuda.REngine.remote.server;
 import org.rosuda.JRI.RMainLoopCallbacks;
 import org.rosuda.JRI.Rengine;
 import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
+import org.rosuda.REngine.remote.common.callbacks.CancelCallback;
 import org.rosuda.REngine.remote.common.callbacks.ChooseFileCallback;
 import org.rosuda.REngine.remote.common.callbacks.ChooseFileCallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RBusyCallback;
@@ -175,7 +176,16 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param response the response to a callback
 	 */
 	public void addResponse( CallbackResponse<? extends RCallbackWithResponse> response){
-		waiter.put( new Integer(response.getCallbackId()), response) ;
+		int id = response.getCallbackId() ; 
+		if( waiter.isWaitingFor( id )){
+			
+			/* send a cancel callback */
+			CancelCallback cancel = new CancelCallback( id ) ;
+			server.sendCallbackToListeners( cancel ) ;
+			
+			/* put the response in the queue */
+			waiter.put( new Integer(response.getCallbackId()), response) ;
+		}
 	}
 	
 }
