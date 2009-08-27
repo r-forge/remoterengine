@@ -22,15 +22,31 @@ package org.rosuda.REngine.remote.server.console;
 import org.rosuda.REngine.remote.common.tools.Synchronizer;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
+/**
+ * Console synchronizer. 
+ * 
+ * @author Romain Francois
+ *
+ */
 public class ConsoleSync extends Synchronizer<String> {
 		
+	/**
+	 * associated server
+	 */
 	private RemoteREngine_Server server ;
 	
+	/**
+	 * constructor
+	 * @param server associated server
+	 */
 	public ConsoleSync(RemoteREngine_Server server) {
 		super();
 		this.server = server ; 
 	}
 
+	/**
+	 * calls rniIdle on the Rengine
+	 */
 	public void afterWaiting(){
 		server.rniIdle(); 
 	}

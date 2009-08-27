@@ -65,15 +65,6 @@ public class ConsoleThread extends Thread {
 	 */
 	public void run(){
 		while (!stop) {
-			try {
-				sleep(100); 
-			} catch (InterruptedException e1) {
-				stop = true;
-				break; 
-			}
-			if( stop ){
-				break; 
-			}
 			String line = reader.readLine() ;
 			if ("Quit".equalsIgnoreCase(line)) {
 				stop = true; /* stop this thread */

@@ -123,9 +123,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
     	// TODO: load the history file
     }
 
-
-	/* TODO: the last two callbacks are more tricky, they need interaction between the client and the server */
-	
     /** 
      * called when R expects the user to choose a file
      * 
@@ -161,7 +158,6 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @return user's input to be passed to R for evaluation */
 	public String rReadConsole(Rengine re, String prompt, int addToHistory) {
 		/* send the callback to clients (they might be interested in the prompt) */
-		/* TODO: maybe change the name of the callback */
 		ReadConsoleCallback callback = new ReadConsoleCallback( prompt) ;
 		server.sendCallbackToListeners( callback ) ; 
 		
