@@ -21,48 +21,33 @@ package org.rosuda.REngine.remote.server.callbacks;
 
 import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
-import org.rosuda.REngine.remote.common.tools.StoppableThread;
-import org.rosuda.REngine.remote.common.tools.Synchronizer;
+import org.rosuda.REngine.remote.common.tools.StoppableThreadWithSynchronizer;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
 /**
  * Thread that sends callbacks to callback listeners
  */
-public class CallbackSender extends StoppableThread {
+public class CallbackSender extends StoppableThreadWithSynchronizer<RCallback> {
 
 	/**
 	 * The associated server
 	 */
 	private RemoteREngine_Server server ;
-	
-	/**
-	 * callback synchronizer
-	 */
-	private Synchronizer<RCallback> synchronizer ; 
-	
+		
 	public CallbackSender( RemoteREngine_Server server ){
 		super( "callback sender" ) ;
 		this.server = server ; 
 	}
 	
 	/**
-	 * Get the next callback and send it to all callback listeners associated
+	 * Send the callback to all callback listeners associated
 	 * with the server
 	 */
 	@Override
-	public void loop() {
-		RCallback callback = synchronizer.next() ; 
+	public void dealWith(RCallback callback) {
 		for( CallbackListener listener: server.getCallbackListeners() ){
 			listener.handleCallback( callback ) ;
 		}
-	}
-	
-	/**
-	 * Add a callback to the queue of callbacks to be sent
-	 * @param callback callback that is to be sent to listeners
-	 */
-	public void addCallback( RCallback callback ){
-		synchronizer.add(callback ) ;
 	}
 	
 }

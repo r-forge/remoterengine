@@ -24,75 +24,50 @@ import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
 import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
-import org.rosuda.REngine.remote.common.tools.Synchronizer;
+import org.rosuda.REngine.remote.common.tools.StoppableThreadWithSynchronizer;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
-public class ConsoleCallbackHandler extends Thread implements CallbackListener {
+public class ConsoleCallbackHandler extends StoppableThreadWithSynchronizer<RCallback> implements CallbackListener {
 
 	/**
 	 * The associated server
 	 */
 	@SuppressWarnings("unused")
 	private RemoteREngine_Server server ; 
-	
-	/**
-	 * Should this thread stop
-	 */
-	private boolean stop ; 
-	
-	/**
-	 * the console callback synchronizer
-	 */
-	private Synchronizer<RCallback> sync ; 
-	
+
 	/**
 	 * Constructor. 
 	 * @param server associated R server
 	 */
 	public ConsoleCallbackHandler(RemoteREngine_Server server){
+		super( "console callback handler" ) ;
 		this.server = server ;
-		stop = false; 
-		sync = new Synchronizer<RCallback>(); 
 	}
-	
+
 	/**
-	 * Do this until the thread is requested to stop (with the requestStop method ) :
 	 * - get the next callback
 	 * - handle it
 	 */
-	public void run(){
-		while( !stop ){
-			
-			RCallback callback = sync.next(); 
-			
-			if( callback instanceof RWriteConsoleCallback ){
-				System.out.print( ((RWriteConsoleCallback)callback).getMessage() ) ;
-			} else if( callback instanceof RShowMessageCallback ){
-				System.out.print( ((RShowMessageCallback)callback).getMessage() ) ;
-			} else if( callback instanceof ReadConsoleCallback ){
-				System.out.print( ((ReadConsoleCallback)callback).getPrompt() ) ;
-			} 
-			/* else if( callback instanceof ReadConsoleCallback ){
+	public void dealWith(RCallback callback){
+		if( callback instanceof RWriteConsoleCallback ){
+			System.out.print( ((RWriteConsoleCallback)callback).getMessage() ) ;
+		} else if( callback instanceof RShowMessageCallback ){
+			System.out.print( ((RShowMessageCallback)callback).getMessage() ) ;
+		} else if( callback instanceof ReadConsoleCallback ){
+			System.out.print( ((ReadConsoleCallback)callback).getPrompt() ) ;
+		} 
+		/* else if( callback instanceof ReadConsoleCallback ){
 				System.out.print( "\nEnter file name: " ) ;
 			} */
-			
-			/* TODO: should this handle ChooseFileCallback */
-		}
+		/* TODO: should this handle ChooseFileCallback */
 	}
-	
+
 	/**
 	 * CallbackListener implementation. adds the callback to the queue of 
 	 * callbacks to be handled
 	 */
 	public synchronized void handleCallback(RCallback callback) {
-		sync.add( callback ) ;
-	}
-	
-	/**
-	 * Request that this thread stops
-	 */
-	public void requestStop(){
-		stop= true; 
+		addToQueue( callback ) ;
 	}
 
 }

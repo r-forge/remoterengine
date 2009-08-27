@@ -465,7 +465,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param callback the callback
 	 */
 	public void sendCallbackToListeners(RCallback callback){
-		callbackSender.addCallback( callback ) ;
+		callbackSender.addToQueue( callback ) ;
 	}
 
 	/** 
