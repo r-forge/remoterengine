@@ -35,10 +35,6 @@ public class CallbackResponseWaiter extends Waiter<Integer,CallbackResponse<? ex
 		waiting = new HashSet<Integer>(); 
 	}
 	
-	public synchronized CallbackResponse<? extends RCallbackWithResponse> get(int key) {
-		return get(new Integer(key));
-	}
-	
 	@Override
 	public synchronized CallbackResponse<? extends RCallbackWithResponse> get(Integer key) {
 		CallbackResponse<? extends RCallbackWithResponse> response = super.get(key);
@@ -46,11 +42,11 @@ public class CallbackResponseWaiter extends Waiter<Integer,CallbackResponse<? ex
 		return response; 
 	}
 
-	public void waitingFor(int id) {
+	public synchronized void waitingFor(int id) {
 		waiting.add( id ) ;
 	}
 	
-	public boolean isWaitingFor( int id) {
+	public synchronized boolean isWaitingFor( int id) {
 		return waiting.contains( id) ;
 	}
 	
