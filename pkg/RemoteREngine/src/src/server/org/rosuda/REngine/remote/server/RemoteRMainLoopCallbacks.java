@@ -22,12 +22,16 @@ package org.rosuda.REngine.remote.server;
 
 import org.rosuda.JRI.RMainLoopCallbacks;
 import org.rosuda.JRI.Rengine;
+import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.ChooseFileCallback;
+import org.rosuda.REngine.remote.common.callbacks.ChooseFileCallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RBusyCallback;
+import org.rosuda.REngine.remote.common.callbacks.RCallbackWithResponse;
 import org.rosuda.REngine.remote.common.callbacks.RFlushConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
 import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
+import org.rosuda.REngine.remote.server.callbacks.CallbackResponseWaiter;
 
 /**
  * Remote main loop callbacks 
@@ -40,11 +44,18 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	private RemoteREngine_Server server ; 
 	
 	/**
+	 * waiter for the callback response
+	 */
+	/* TODO: maybe this is not the best place for the CallbackResponseWaiter */
+	private CallbackResponseWaiter waiter ; 
+	
+	/**
 	 * Constructor, holds the server instance
 	 * @param server R server associated with this callback  
 	 */
 	public RemoteRMainLoopCallbacks(RemoteREngine_Server server){
 		this.server = server ;
+		waiter = new CallbackResponseWaiter() ;
 	}
 	
     /**
@@ -125,14 +136,14 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	public String rChooseFile(Rengine re, int newFile) {
 		// TODO: choose a file on the client(s), bring the file back and return the name of the file in the server
 		ChooseFileCallback callback = new ChooseFileCallback( ( newFile != 0)  ) ;
+		waiter.waitingFor( callback.getId() ) ; 
+		
 		server.sendCallbackToListeners(callback) ;
 		
-		/* TODO: create a console sync with a method that waits for the response */
-		/* result = server.getConsoleSync().getResponse(callback.getId()) ; */ 
-		
 		/* TODO: if a new file has to be returned, maybe it is not worth sending the callback to the client */
+		ChooseFileCallbackResponse response = (ChooseFileCallbackResponse)waiter.get( callback.getId() ) ;
 		
-		return null ;
+		return response.getFilename() ;
 	}
 
 	/** 
@@ -163,6 +174,12 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		return result ;
 	}
 
-
+	/** 
+	 * Adds a response to a callback 
+	 * @param response the response to a callback
+	 */
+	public void addResponse( CallbackResponse<? extends RCallbackWithResponse> response){
+		waiter.put( new Integer(response.getCallbackId()), response) ;
+	}
 	
 }

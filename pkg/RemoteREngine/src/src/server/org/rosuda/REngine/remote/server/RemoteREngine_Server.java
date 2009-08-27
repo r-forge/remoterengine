@@ -453,8 +453,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Sends a response to a callback
 	 */
 	public void sendResponse( CallbackResponse<? extends RCallbackWithResponse> response ) throws RemoteException {
-		// TODO: check if the associated callback still needs a response
-		// TODO: put the response in the appropriate response queue ( readconsole, choosefile, ... )
+		callbackLoop.addResponse(response) ;
 	}
 	
 	/**

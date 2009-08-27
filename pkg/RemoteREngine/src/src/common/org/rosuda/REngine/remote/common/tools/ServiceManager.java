@@ -19,7 +19,6 @@
  */
 package org.rosuda.REngine.remote.common.tools;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -51,14 +50,7 @@ public class ServiceManager {
 	 * @param serviceClass service class
 	 * @param name name of the implementation of the service
 	 * @return
-	 * @throws NoFactoryForServiceException
-	 * @throws ServiceImplementationNotFoundException
-	 * @throws SecurityException
-	 * @throws IllegalArgumentException
-	 * @throws NoSuchMethodException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
+	 * @throws ServiceException
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends Service> T getInstance( Class<T> serviceClass, String name) throws ServiceException {
@@ -78,7 +70,7 @@ public class ServiceManager {
 		}
 		return s ;
 	}
-
+	
 	/**
 	 * Store a definition of a service 
 	 * 

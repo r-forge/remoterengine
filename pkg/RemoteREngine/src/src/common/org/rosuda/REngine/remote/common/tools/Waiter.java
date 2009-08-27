@@ -19,52 +19,45 @@
  */
 package org.rosuda.REngine.remote.common.tools;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.HashMap;
 
 /**
- * Simple synchronization mechanism. This wraps a {@link Queue} 
- * and provides a next method that waits until an element gets
- * added to the queue
  * 
  * @author Romain Francois
  *
- * @param <T> 
+ * @param <K>
+ * @param <V>
  */
-public class Synchronizer<T> {
+public class Waiter<K,V> {
 
-	/**
-	 * The command queue
-	 */
-	protected Queue<T> queue ; 
+	protected HashMap<K,V> map ; 
+	
+	public Waiter( ){
+		map = new HashMap<K, V>(); 
+	}
 	
 	/**
-	 * Constructor
+	 * Waits until the map has a value for the key 
+	 * 
+	 * @param key the key
+	 * @return the value of the given key
 	 */
-	public Synchronizer() {
-		queue = new LinkedList<T>();
-	}
-
-	/**
-	 * Waits until the queue is not empty and returns its head
-	 * @return the head of the command queue
-	 */
-	public synchronized T next() {
-		while ( queue.isEmpty() ){
+	public synchronized V get(K key) {
+		while ( map.isEmpty() || !map.containsKey(key)){
 			try {
 				wait(100);
 				afterWaiting(); 
 			} catch (InterruptedException e) { }
 		}
-		return queue.poll() ; 
+		return map.remove( key ) ; 
 	}
 
 	/**
 	 * Adds an object to the queue
 	 * @param o object to add in the tail of the queue
 	 */
-	public synchronized void add(T o) {
-		queue.add(o); 
+	public synchronized void put(K key, V value) {
+		map.put(key, value); 
 		notifyAll();
 	}
 	
