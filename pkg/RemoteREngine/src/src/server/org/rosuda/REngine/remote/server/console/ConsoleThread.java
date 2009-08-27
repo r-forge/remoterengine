@@ -56,7 +56,7 @@ public class ConsoleThread extends Thread {
 		this.server = server ; 
 		stop = false; 
 		try {
-			reader = ServiceManager.getService(ConsoleReadLine.class, "default") ;
+			reader = ServiceManager.getInstance(ConsoleReadLine.class, "default") ;
 		} catch (ServiceException e) {	e.printStackTrace() ; }
 	}
 	

@@ -61,7 +61,7 @@ public class ServiceManager {
 	 * @throws InvocationTargetException
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends Service> T getService( Class<T> serviceClass, String name) throws ServiceException {
+	public static <T extends Service> T getInstance( Class<T> serviceClass, String name) throws ServiceException {
 
 		if( !factories.containsKey(serviceClass) ){
 			throw new NoFactoryForServiceException( serviceClass ) ;
@@ -88,7 +88,7 @@ public class ServiceManager {
 	 * @param implementationClass the class implementing the service
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends Service> void addService( Class<T> serviceClass, String name, Class<? extends T> implementationClass){
+	public static <T extends Service> void addServiceImplementation( Class<T> serviceClass, String name, Class<? extends T> implementationClass){
 		if( !factories.containsKey(serviceClass) ){
 			factories.put(serviceClass, new GenericFactory<T>() ) ;
 		}
@@ -130,7 +130,7 @@ public class ServiceManager {
 			// TODO: various checks here. does serviceClass implement Service, ...
 			serviceClass = (Class<T>)Class.forName(clazz) ;
 			implementationClass = (Class<? extends T>)Class.forName(impl) ;
-			addService( serviceClass, name, implementationClass )  ;
+			addServiceImplementation( serviceClass, name, implementationClass )  ;
 		} catch( ClassNotFoundException cnf){}
 		
 	}
