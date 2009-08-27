@@ -42,7 +42,11 @@ import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
 import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.callbacks.RCallbackWithResponse;
+import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.ServerDownCallback;
+import org.rosuda.REngine.remote.common.console.Command;
+import org.rosuda.REngine.remote.common.console.CommandSender;
+import org.rosuda.REngine.remote.common.console.RemoteREngineClientSender;
 import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
 import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
@@ -394,11 +398,14 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	
 	/**
 	 * Called when a client wants to send a command to the REPL
+	 * 
 	 * @param cmd command to send to the REPL
+	 * @param client the client that sent the command
+	 * 
 	 * @throws RemoteException
 	 */
-	public void sendToConsole( String cmd ){
-		consoleSync.add( cmd ) ;
+	public void sendToConsole( String cmd, RemoteREngineClient origin ){
+		consoleSync.add( new Command( cmd, new RemoteREngineClientSender(origin) ) );
 	}
 		
 	private void debug( String message){
@@ -467,6 +474,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public void sendCallbackToListeners(RCallback callback){
 		callbackSender.addToQueue( callback ) ;
 	}
+	
+	public void sendCallbackToOtherListeners(ReadConsoleCallback callback,
+			CommandSender sender) {
+		
+	}
+	
 
 	/** 
 	 * start the console thread
@@ -500,6 +513,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public synchronized Vector<CallbackListener> getCallbackListeners() {
 		return callbackListeners ;
 	}
-	
+
 }
 

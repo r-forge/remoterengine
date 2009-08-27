@@ -26,12 +26,14 @@ import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.CancelCallback;
 import org.rosuda.REngine.remote.common.callbacks.ChooseFileCallback;
 import org.rosuda.REngine.remote.common.callbacks.ChooseFileCallbackResponse;
+import org.rosuda.REngine.remote.common.callbacks.InputCallback;
 import org.rosuda.REngine.remote.common.callbacks.RBusyCallback;
 import org.rosuda.REngine.remote.common.callbacks.RCallbackWithResponse;
 import org.rosuda.REngine.remote.common.callbacks.RFlushConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
 import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
+import org.rosuda.REngine.remote.common.console.Command;
 import org.rosuda.REngine.remote.server.callbacks.CallbackResponseWaiter;
 
 /**
@@ -163,11 +165,15 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		server.sendCallbackToListeners( callback ) ; 
 		
 		/* wait for the next available command: this blocks */
-		String result = server.getConsoleSync().next() ;
+		Command cmd = server.getConsoleSync().next() ;
+		String result = cmd.getCommand() ;
+		
+		InputCallback input = new InputCallback( result, cmd.getSender() ) ;
+		server.sendCallbackToListeners( input ) ; 
+		
 		if( !result.endsWith( "\n" ) ){
 			result += "\n" ;
 		}
-		
 		return result ;
 	}
 

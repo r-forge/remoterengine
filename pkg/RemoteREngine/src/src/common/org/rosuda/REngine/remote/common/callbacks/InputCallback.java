@@ -17,39 +17,35 @@
  * You should have received a copy of the GNU General Public License
  * along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.rosuda.REngine.remote.server.console;
+package org.rosuda.REngine.remote.common.callbacks;
 
-import org.rosuda.REngine.remote.common.console.Command;
-import org.rosuda.REngine.remote.common.tools.Synchronizer;
-import org.rosuda.REngine.remote.server.RemoteREngine_Server;
+import org.rosuda.REngine.remote.common.console.CommandSender;
 
 /**
- * Console synchronizer. 
+ * Callback sent when another client has sent a command 
  * 
  * @author Romain Francois
  *
  */
-public class ConsoleSync extends Synchronizer<Command> {
-		
-	/**
-	 * associated server
-	 */
-	private RemoteREngine_Server server ;
-	
-	/**
-	 * constructor
-	 * @param server associated server
-	 */
-	public ConsoleSync(RemoteREngine_Server server) {
-		super();
-		this.server = server ; 
-	}
+public class InputCallback extends RestrictedCallback {
 
-	/**
-	 * calls rniIdle on the Rengine
-	 */
-	public void afterWaiting(){
-		server.rniIdle(); 
+	private static final long serialVersionUID = 1L;
+
+	protected String command ;
+	
+	protected transient CommandSender sender; 
+	
+	public InputCallback( String command, CommandSender sender){
+		this.command = command; 
+		this.sender = sender; 
+	}
+	
+	public String getCommand(){
+		return command; 
+	}
+	
+	public CommandSender getSender(){
+		return sender; 
 	}
 	
 }

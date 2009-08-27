@@ -19,6 +19,7 @@
  */
 package org.rosuda.REngine.remote.server.console;
 
+import org.rosuda.REngine.remote.common.console.Command;
 import org.rosuda.REngine.remote.common.console.ConsoleReadLine;
 import org.rosuda.REngine.remote.common.tools.ServiceException;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
@@ -66,7 +67,8 @@ public class ConsoleThread extends StoppableThread {
 			requestStop(); 
 			server.shutdown() ; /* let clients know */
 		} else {
-			server.getConsoleSync().add( line ) ;
+			Command command =  new Command( line, new ServerConsoleSender(this) )  ;
+			server.getConsoleSync().add( command ) ;
 		}
 	}
 

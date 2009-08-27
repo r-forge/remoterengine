@@ -192,7 +192,7 @@ public interface RemoteREngineInterface extends Remote {
 	 * @param cmd command to send to the REPL
 	 * @throws RemoteException
 	 */
-	public void sendToConsole( String cmd ) throws RemoteException ;
+	public void sendToConsole( String cmd, RemoteREngineClient client ) throws RemoteException ;
 	
 	
 }

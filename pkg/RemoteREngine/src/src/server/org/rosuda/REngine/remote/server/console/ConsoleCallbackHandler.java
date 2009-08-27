@@ -20,6 +20,7 @@
 package org.rosuda.REngine.remote.server.console;
 
 import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
+import org.rosuda.REngine.remote.common.callbacks.InputCallback;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.callbacks.RShowMessageCallback;
 import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
@@ -49,13 +50,16 @@ public class ConsoleCallbackHandler extends StoppableThreadWithSynchronizer<RCal
 	 * - handle it
 	 */
 	public void dealWith(RCallback callback){
+		
 		if( callback instanceof RWriteConsoleCallback ){
 			System.out.print( ((RWriteConsoleCallback)callback).getMessage() ) ;
 		} else if( callback instanceof RShowMessageCallback ){
 			System.out.print( ((RShowMessageCallback)callback).getMessage() ) ;
 		} else if( callback instanceof ReadConsoleCallback ){
 			System.out.print( ((ReadConsoleCallback)callback).getPrompt() ) ;
-		} 
+		} else if( callback instanceof InputCallback ){
+			System.out.print( ((InputCallback)callback).getCommand() + "\n") ;
+		}
 		/* else if( callback instanceof ReadConsoleCallback ){
 				System.out.print( "\nEnter file name: " ) ;
 			} */

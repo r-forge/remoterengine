@@ -60,4 +60,13 @@ public abstract class RCallback implements Serializable{
 	 */
 	public abstract boolean needsResponse() ;
 	
+	/**
+	 * Is this callback restricted to a subset of clients
+	 * 
+	 * @return true if the callback is restricted
+	 */
+	public boolean isRestricted(){
+		return false; 
+	}
+	
 }

@@ -74,4 +74,11 @@ public class ClientCallbackListener implements CallbackListener {
 		return map.remove(client) ;
 	}
 
+	/**
+	 * @return The client associated with this listener
+	 */
+	public RemoteREngineClient getClient(){
+		return client; 
+	}
+	
 }

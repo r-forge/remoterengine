@@ -125,6 +125,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			/* System.out.println( "subscribe to the server" ) ; */
 			UnicastRemoteObject.exportObject(this) ;
 			JRIEngineGlobalVariables variables = engine.subscribe(this) ;
+			callbackDispatcher = new ClientCallbackDispatcher(this) ;
 			callbackDispatcher.start(); 
 			serverHashCode = variables.hashCode ;
 			globalEnv    = variables.globalEnv ;
@@ -501,6 +502,18 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		} catch( RemoteException re){
 			/*  what */
 		}
+	}
+	
+	/**
+	 * Send a command to the console
+	 * @param command command to send 
+	 */
+	public void sendToConsole( String command ){
+		try {
+			engine.sendToConsole(command, this ) ;
+		} catch (RemoteException e) {
+			/* what now */
+		} 
 	}
 	
 }
