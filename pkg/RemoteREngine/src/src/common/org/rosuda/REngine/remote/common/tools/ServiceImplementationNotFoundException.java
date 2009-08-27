@@ -26,7 +26,7 @@ package org.rosuda.REngine.remote.common.tools;
  * @author Romain Francois
  *
  */
-public class ServiceImplementationNotFoundException extends Exception {
+public class ServiceImplementationNotFoundException extends ServiceException {
 
 	private static final long serialVersionUID = 1L;
 

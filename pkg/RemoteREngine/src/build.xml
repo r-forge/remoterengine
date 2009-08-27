@@ -251,6 +251,7 @@
 			<fileset dir="build/client" />
 			<fileset dir="build/common" />
 			<fileset dir="build/stubs" />
+			<fileset file="build/services.xml" />
 		</jar>
 		
 		<!-- server jar -->
@@ -262,6 +263,7 @@
 			<fileset dir="build/server" />
 			<fileset dir="build/common" />
 			<fileset dir="build/stubs" />
+			<fileset file="build/services.xml" />
 		</jar>
 
 	</target>
@@ -300,6 +302,7 @@
 			<fileset dir="build/client-junit" />
 			<fileset dir="build/common" />
 			<fileset dir="build/stubs" />
+			<fileset file="build/services.xml" />
 		</jar>
 		
 	</target>

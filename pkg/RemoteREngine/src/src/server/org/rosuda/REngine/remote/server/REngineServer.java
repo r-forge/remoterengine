@@ -32,8 +32,8 @@ import java.util.Map;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.remote.common.CommandLineArgs;
 import org.rosuda.REngine.remote.common.console.ConsoleReadLine;
+import org.rosuda.REngine.remote.common.console.DefaultConsoleReadLine;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
-import org.rosuda.REngine.remote.server.console.DefaultConsoleReadLine;
 
 /**
  * This is an utility class to start the server

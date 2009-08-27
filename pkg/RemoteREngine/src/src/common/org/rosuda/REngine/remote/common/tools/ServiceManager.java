@@ -52,7 +52,7 @@ public class ServiceManager {
 	 * @throws InvocationTargetException
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends Service> T getService( Class<T> serviceClass, String name) throws NoFactoryForServiceException, ServiceImplementationNotFoundException, SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	public static <T extends Service> T getService( Class<T> serviceClass, String name) throws ServiceException {
 		
 		if( !factories.containsKey(serviceClass) ){
 			throw new NoFactoryForServiceException( serviceClass ) ;
@@ -61,7 +61,13 @@ public class ServiceManager {
 		if( !factory.defines( name) ){
 			throw new ServiceImplementationNotFoundException( serviceClass, name ) ;
 		}
-		return factory.getImplementation( name ) ; 
+		T s = null ;
+		try{
+			s = factory.getImplementation( name ) ; 
+		} catch( Exception e){
+			throw new ServiceWrappedException( e ) ;
+		}
+		return s ;
 	}
 	
 	/**

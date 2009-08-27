@@ -25,7 +25,7 @@ package org.rosuda.REngine.remote.common.tools;
  * 
  * @author Romain Francois
  */
-public class NoFactoryForServiceException extends Exception {
+public class NoFactoryForServiceException extends ServiceException {
 	
 	private static final long serialVersionUID = 1L;
 	

@@ -20,6 +20,7 @@
 package org.rosuda.REngine.remote.server.console;
 
 import org.rosuda.REngine.remote.common.console.ConsoleReadLine;
+import org.rosuda.REngine.remote.common.tools.ServiceException;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
@@ -56,7 +57,7 @@ public class ConsoleThread extends Thread {
 		stop = false; 
 		try {
 			reader = ServiceManager.getService(ConsoleReadLine.class, "default") ;
-		} catch (Exception e) {	e.printStackTrace() ; }
+		} catch (ServiceException e) {	e.printStackTrace() ; }
 	}
 	
 	/**
