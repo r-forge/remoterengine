@@ -22,6 +22,7 @@ package org.rosuda.REngine.remote.server.console;
 import org.rosuda.REngine.remote.common.console.ConsoleReadLine;
 import org.rosuda.REngine.remote.common.tools.ServiceException;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
+import org.rosuda.REngine.remote.common.tools.StoppableThread;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
 
 /**
@@ -30,17 +31,12 @@ import org.rosuda.REngine.remote.server.RemoteREngine_Server;
  * @author Romain Francois
  *
  */
-public class ConsoleThread extends Thread {
+public class ConsoleThread extends StoppableThread {
 
 	/**
 	 * The server associated with this thread
 	 */
 	private RemoteREngine_Server server ; 
-
-	/**
-	 * Should the thread stop
-	 */
-	private boolean stop; 
 
 	/**
 	 * the reader used to get lines 
@@ -52,36 +48,31 @@ public class ConsoleThread extends Thread {
 	 * @param server R engine associated with this console 
 	 */
 	public ConsoleThread( RemoteREngine_Server server ){
+		super( "console thread" ) ;
 		/* TODO: add the name of the consolereadline service as a parameter */ 
 		this.server = server ; 
-		stop = false; 
 		try {
 			reader = ServiceManager.getInstance(ConsoleReadLine.class, "default") ;
 		} catch (ServiceException e) {	e.printStackTrace() ; }
 	}
-	
+
 	/**
 	 * Prompts continually 
 	 */
-	public void run(){
-		while (!stop) {
-			String line = reader.readLine() ;
-			if ("Quit".equalsIgnoreCase(line)) {
-				stop = true; /* stop this thread */
-				server.shutdown() ; /* let clients know */
-			} else {
-				server.getConsoleSync().add( line ) ;
-			}
-
+	@Override
+	public void loop(){
+		String line = reader.readLine() ;
+		if ("Quit".equalsIgnoreCase(line)) {
+			requestStop(); 
+			server.shutdown() ; /* let clients know */
+		} else {
+			server.getConsoleSync().add( line ) ;
 		}
-		System.out.println( "console thread stopped" ) ;
 	}
 
-	/**
-	 * Request that this thread stops
-	 */
-	public void requestStop(){
-		stop = true ;
+	@Override
+	public void end() {
+		System.out.println( "console thread stopped" ) ;
 	}
 
 }
