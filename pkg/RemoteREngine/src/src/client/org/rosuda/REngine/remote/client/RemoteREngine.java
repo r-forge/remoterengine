@@ -125,6 +125,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			/* System.out.println( "subscribe to the server" ) ; */
 			UnicastRemoteObject.exportObject(this) ;
 			JRIEngineGlobalVariables variables = engine.subscribe(this) ;
+			callbackDispatcher.start(); 
 			serverHashCode = variables.hashCode ;
 			globalEnv    = variables.globalEnv ;
 			emptyEnv     = variables.emptyEnv ; 
@@ -147,6 +148,8 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		
 		/* let the server know when the jvm of this client closes */
 		Runtime.getRuntime().addShutdownHook( shutdownHook ) ;
+		
+		
 	}
 	
 	/**
