@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd inst/java_src
+"${R_HOME}/bin/Rscript" -e "ant::ant()"
+
