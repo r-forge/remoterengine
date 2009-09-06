@@ -1,4 +1,0 @@
-all:
-	ant all
-
-clean:
