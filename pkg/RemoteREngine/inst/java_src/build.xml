@@ -319,7 +319,7 @@
 	</path>
 	
 	<target name="eclipse">
-		<javac destdir="bin">
+		<javac destdir=".classes">
 			<src path="src/client" />
 			<src path="src/common" />
 			<src path="src/server" />
