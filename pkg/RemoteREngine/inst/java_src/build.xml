@@ -308,6 +308,27 @@
 	</target>
 	<!--}}}-->
 	
-	<target name="all" depends="javadoc,makejars,build-client-junit" />
+	<!--{{{ fake target to facilitate creating the project in eclipse -->
+	
+	<path id="eclipse_classpath">
+		<pathelement location="lib/REngine.jar" />
+		<pathelement location="build/common" />
+		<pathelement location="build/server" />
+		<pathelement location="build/client" />
+		<pathelement location="${JUNIT_JAR}" />
+	</path>
+	
+	<target name="eclipse">
+		<javac destdir="bin">
+			<src path="src/client" />
+			<src path="src/common" />
+			<src path="src/server" />
+			<src path="src/apt" />
+			<classpath refid="annotation_classpath" />
+		</javac>
+	</target>
+	<!--}}}-->
+	
+<target name="all" depends="javadoc,makejars,build-client-junit" />
 
 </project>
