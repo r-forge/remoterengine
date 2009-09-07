@@ -8,10 +8,6 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
-import com.addictedtor.remoterengine.apt.exceptions.IsNotAServiceException;
-import com.addictedtor.remoterengine.apt.exceptions.RemoteREngineAnnotationException;
-import com.addictedtor.remoterengine.apt.exceptions.ShouldBeClassDeclarationException;
-import com.addictedtor.remoterengine.apt.exceptions.ShouldHaveADefaultConstructorException;
 import com.sun.mirror.apt.AnnotationProcessor;
 import com.sun.mirror.apt.AnnotationProcessorEnvironment;
 import com.sun.mirror.declaration.AnnotationMirror;

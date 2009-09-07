@@ -1,4 +1,4 @@
-package com.addictedtor.remoterengine.apt.exceptions;
+package com.addictedtor.remoterengine.apt;
 
 import com.sun.mirror.declaration.ClassDeclaration;
 

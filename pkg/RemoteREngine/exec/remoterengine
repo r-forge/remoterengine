@@ -53,7 +53,7 @@ Sys.setenv( R_DEFAULT_PACKAGES = R_DEFAULT_PACKAGES)
 
 # {{{ java environment variables
 # {{{ JRI_LD_PATH
-SEP <- ":"
+SEP <- if( .Platform$OS.type == "windows" ) ";" else":"
 JRI_LD_PATH <- paste( 
 	system.file( "jri", package = "rJava" ), 
 	file.path( R_HOME, "bin" ),
