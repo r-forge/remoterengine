@@ -42,8 +42,6 @@
 	<target name="clean">
 		<delete dir="build" />
 		<delete dir="jars" />
-		
-		<delete dir="${javadoc.dir}" />
 	</target>
 
 	<target name="init" depends="clean"> 	
