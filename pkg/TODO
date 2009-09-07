@@ -1,17 +1,1 @@
 
-we probably need to set up a wiki page somewhere to discuss these details instead of this TODO file
-
-callbacks: 
-	I (RF) have created class RemoteRMainLoopCallbacks for this purpose, 
-
-	there are basically two types of callbacks: 
-		- ones called when R needs to inform the clients, 
-		about its state (rBusy, ...), which are going to be easy to do I guess. 
-
-		- two (rReadConsole, rChooseFile) that need information back from the clients, which are 
-		going to be slightly more tricky. They probably require to set up some sort of background thread
-		that waits until the client has made the response available
-
-graphics:
-	...
-
