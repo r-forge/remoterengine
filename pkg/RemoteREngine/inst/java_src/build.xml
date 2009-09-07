@@ -320,10 +320,10 @@
 	
 	<target name="eclipse">
 		<javac destdir=".classes">
-			<src path="src/client" />
-			<src path="src/common" />
-			<src path="src/server" />
-			<src path="src/apt" />
+			<src defaultexcludes="true" path="src/client" />
+			<src defaultexcludes="true" path="src/common" />
+			<src defaultexcludes="true" path="src/server" />
+			<src defaultexcludes="true" path="src/apt" />
 			<classpath refid="annotation_classpath" />
 		</javac>
 	</target>
