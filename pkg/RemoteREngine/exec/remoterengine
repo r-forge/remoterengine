@@ -120,8 +120,8 @@ java.home <- function( set = FALSE ){
 	if( JAVA_HOME != "" ){
 		# then find it from rJava
 		library( utils )
-		require( "methods", silent = TRUE, character.only = TRUE )
-		require( "rJava", silent = TRUE, character.only = TRUE )
+		require( "methods", quietly = TRUE, character.only = TRUE )
+		require( "rJava", quietly = TRUE, character.only = TRUE )
 		.jinit()
 		JAVA_HOME <- .jcall( "java.lang.System", "S", "getProperty", "java.home" )
 		if( set ) Sys.setenv( JAVA_HOME = JAVA_HOME )
