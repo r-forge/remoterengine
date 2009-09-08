@@ -475,12 +475,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		callbackSender.addToQueue( callback ) ;
 	}
 	
-	public void sendCallbackToOtherListeners(ReadConsoleCallback callback,
-			CommandSender sender) {
-		
-	}
-	
-
 	/** 
 	 * start the console thread
 	 */
