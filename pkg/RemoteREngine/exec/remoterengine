@@ -119,6 +119,7 @@ java.home <- function( set = FALSE ){
 	JAVA_HOME <- Sys.getenv( "JAVA_HOME", unset = "" )
 	if( JAVA_HOME != "" ){
 		# then find it from rJava
+		library( utils )
 		require( "methods", silent = TRUE, character.only = TRUE )
 		require( "rJava", silent = TRUE, character.only = TRUE )
 		.jinit()
