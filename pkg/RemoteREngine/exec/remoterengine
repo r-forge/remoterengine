@@ -114,8 +114,47 @@ if( is.null(arguments) || length(arguments) == 0 ){
 }
 # }}}
 
-cmd <- sprintf( 'java -cp "%s" -Djava.library.path="%s"  -Xmx1024M -Drjava.path="%s" -Drjava.class.path="%s" -Djava.rmi.server.codebase="%s" -Djava.security.policy="%s" org.rosuda.REngine.remote.server.REngineServer %s', 
-	CP, LD_LIBRARY_PATH, RJAVA, RJAVA_CP, codebase, policy, arguments )
+# {{{ these functions might move to rJava at some point
+java.home <- function( set = FALSE ){
+	JAVA_HOME <- Sys.getenv( "JAVA_HOME", unset = "" )
+	if( JAVA_HOME != "" ){
+		.jinit()
+		JAVA_HOME <- .jcall( "java.lang.System", "S", "getProperty", "java.home" )
+		if( set ) Sys.setenv( JAVA_HOME = JAVA_HOME )
+	}
+	JAVA_HOME
+}
+
+java.cmd <- function( JAVA_HOME = java.home(), set = FALSE ){
+	JAVACMD <- Sys.getenv( "JAVACMD", unset = "" )
+	if( JAVACMD == "" ){
+		# IBM's JDK on AIX uses strange locations for the executables
+	    if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "sh", "java" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "bin", "java" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "bin", "java" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "bin", "java.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "bin", "java.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "bin", "javaw.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "bin", "javaw.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else {
+	    	stop( paste( "could not find java command, is java installed in : '" , JAVA_HOME , "' ?" ) )
+		}
+	}
+	if( set ) Sys.setenv( JAVACMD = JAVACMD )
+	JAVACMD
+}
+JAVACMD <- java.cmd( )
+# }}}
+
+cmd <- sprintf( '"%s" -cp "%s" -Djava.library.path="%s"  -Xmx1024M -Drjava.path="%s" -Drjava.class.path="%s" -Djava.rmi.server.codebase="%s" -Djava.security.policy="%s" org.rosuda.REngine.remote.server.REngineServer %s', 
+	JAVACMD, CP, LD_LIBRARY_PATH, RJAVA, RJAVA_CP, codebase, policy, arguments )
 
 system( cmd, wait = TRUE )
 # cat( cmd, "\n" )

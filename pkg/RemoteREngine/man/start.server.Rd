@@ -5,21 +5,25 @@
 Utility to start the R server
 }
 \description{
-Utility to start the R server
+	Utility to start the R server. This calls the script \code{remoterengine}
+	contained in the \code{exec} directory of the package. See examples below
 }
 \usage{
-start.server(name = "test", port = 1099, registry.host = "localhost", 
-	run = TRUE, arguments = commandArgs(TRUE))
+start.server(run = TRUE, arguments = commandArgs(TRUE))
 }
 \arguments{
-  \item{name}{name of the R engine in the rmi registry}
-  \item{port}{port used by the rmi registry}
-  \item{registry.host}{hostname where the rmi registry runs}
   \item{run}{logical, if TRUE the command is run. Otherwise it is just returned}
   \item{arguments}{Additional arguments, typically used by the command line}
 }
 \author{
 Romain Francois <francoisromain@free.fr>
+}
+\examples{
+# the script that gets called
+script <- system.file( "exec", "remoterengine", package = "RemoteREngine" )
+
+# make sure the file exists
+stopifnot( file.exists( script ) )
 }
 \keyword{manip}
 
