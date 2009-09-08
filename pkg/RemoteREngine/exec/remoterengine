@@ -118,8 +118,11 @@ if( is.null(arguments) || length(arguments) == 0 ){
 java.home <- function( set = FALSE ){
 	JAVA_HOME <- Sys.getenv( "JAVA_HOME", unset = "" )
 	if( JAVA_HOME != "" ){
-		rJava::.jinit()
-		JAVA_HOME <- rJava::.jcall( "java.lang.System", "S", "getProperty", "java.home" )
+		# then find it from rJava
+		require( "methods", silent = TRUE, character.only = TRUE )
+		require( "rJava", silent = TRUE, character.only = TRUE )
+		.jinit()
+		JAVA_HOME <- .jcall( "java.lang.System", "S", "getProperty", "java.home" )
 		if( set ) Sys.setenv( JAVA_HOME = JAVA_HOME )
 	}
 	JAVA_HOME
