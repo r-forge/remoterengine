@@ -6,7 +6,7 @@ callback <- function( signature = "", object = NULL ){
 	signature <- signature[1]
 	
 	cb <- if( is.null( object ) ){
-		.jnew( "org/rosuda/REngine/remote/common/callbacks", signature )
+		.jnew( "org/rosuda/REngine/remote/common/callbacks/SignedCallback", signature )
 	} else {
 		# TODO: bring "object" into java
 		warning( "ObjectCallback not yet supported" )
