@@ -274,7 +274,7 @@
 		<pathelement location="${JUNIT_JAR}" />
 	</path>
 
-	<target name="compile-client-junit" depends="client">
+	<target name="compile-client-junit" depends="client,annotation,stubs">
 			<javac
 				destdir="build/client-junit"  
 				includeJavaRuntime="yes"
