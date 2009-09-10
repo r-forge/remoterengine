@@ -39,4 +39,6 @@ public class RemoteREngineConstants {
 	/**  The default chunk size for byte[] buffer */
 	public static final int CHUNKSIZE = 8192 ; 
 	
+	/** The default port for the RMI Server instance to bind to */
+	public static final int DEFAULTSERVERPORT = 0;  // RMI Dynamically allocates a port number
 }

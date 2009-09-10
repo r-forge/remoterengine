@@ -18,11 +18,12 @@
  * along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.rosuda.REngine.remote.server ;
+package org.rosuda.REngine.remote.server;
 
 import java.io.File;
 import java.io.IOException;
 import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -37,6 +38,7 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.JRI.JRIEngine;
 import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
+import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
 import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
@@ -103,7 +105,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	/**
 	 * Port of the RMI registry
 	 */
-	private int port ;
+	private int registryPort ;
 	
 	/**
 	 * The console thread associated with this engine
@@ -137,7 +139,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public RemoteREngine_Server(String name, int port, String[] args) throws REngineException, RemoteException, AccessException {
 		super();
 		this.name = name ; 
-		this.port = port ;
+		this.registryPort = port ;
 		
 		/* inform the clients that the jvm of the server is dying */
 		shutdownHook = new RemoteREngineServerShutdownHook() ;
@@ -162,12 +164,52 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				r.globalEnv, r.emptyEnv, r.baseEnv, 
 				r.nullValueRef, r.nullValue,r.hashCode() ) ;
 		
+		// TODO Add a mechanism to allow the user to set the port number
+		// for the server to support controlled access through firewalls
+		int serverPort = RemoteREngineConstants.DEFAULTSERVERPORT;
 		
-		registry = LocateRegistry.getRegistry(null, port);
-		RemoteREngineInterface stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,0);
-		/* TODO: check if the name is not already being used by another object */ 
-		registry.rebind( name, stub ) ;
-		
+		try {
+			// Locate a local registry as RMI Servers can't register with Remote Registries
+			registry = LocateRegistry.getRegistry(null, port);
+		} catch (RemoteException r) {
+			// Unable to locate the registry, so try and create one
+			System.out.println("Unable to locate registry, so creating a new RMI Registry locally");
+		}
+		try {
+			if (registry==null) registry = LocateRegistry.createRegistry(port);
+		} catch (RemoteException e) {
+			System.err.println(e.getClass().getName() + ": While trying to create registery on port " + port + 
+					": " + e.getMessage());
+			System.err.println(e.getCause());
+			throw e;
+		}
+
+		RemoteREngineInterface stub = null;
+		try {
+			stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,serverPort);
+		} catch (RemoteException e) {
+			System.err.println("Unable to serialize server on " + serverPort + ": " + e.getMessage());
+			throw e;
+		}
+
+		try {
+			registry.bind(name, stub);
+		} catch (AlreadyBoundException e) {
+			debug(name + " already bound, attempting to rebind");
+			try {
+				registry.rebind(name, stub);
+			} catch (AccessException ae) {
+				System.err.println("AccessException while rebinding server to registry: " + ae.getMessage());
+				throw ae;
+			}catch (RemoteException re) {
+				System.err.println("Unable to rebind server to port " + serverPort + ": " + re.getMessage());
+				throw re;
+			}
+		} catch (RemoteException e) {
+			System.err.println("Unable to bind server(" + name + ") to port " + serverPort + ": " + e.getMessage());
+			throw e;
+		}
+
 		debug( "R Engine bound as `"+ name +"` on port " + port ) ;
 		running = true; 
 	}
@@ -241,7 +283,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @return the port on which the RMI registry runs
 	 */
 	public int getPort(){
-		return port ; 
+		return registryPort ; 
 	}
 	
 	/**                                                    
