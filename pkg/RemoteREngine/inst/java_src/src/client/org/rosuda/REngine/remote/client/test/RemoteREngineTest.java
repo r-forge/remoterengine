@@ -188,20 +188,20 @@ public class RemoteREngineTest {
 				{
 					System.out.println("* Test file transfer");
 					System.out.println("  generating pdf file in the server side");
-					eng.parseAndEval( "pdf('test.pdf'); plot( rnorm(10) ) ;dev.off()" ) ;
+					eng.parseAndEval( "pdf('rgeneratedtest.pdf'); plot( rnorm(10) ) ;dev.off()" ) ;
 					System.out.println("  bring the file to the client");
-					eng.fetchFile("test.pdf", "test.pdf", true) ;
-					File clientfile = new File( "test.pdf" ) ;
+					eng.fetchFile("fetchedfile.pdf", "rgeneratedtest.pdf", true) ;
+					File clientfile = new File( System.getProperty("user.dir") + System.getProperty("file.separator") + "fetchedfile.pdf" ) ;
 					if( !clientfile.exists() ){
 						 throw new TestException("Could not bring file from server");
 					}
 					System.out.println("  check that the server file has been deleted");
-					boolean ok = ( (REXPLogical)eng.parseAndEval(" ! file.exists( 'test.pdf' ) ") ).isTRUE()[0] ;
+					boolean ok = ( (REXPLogical)eng.parseAndEval(" ! file.exists( 'rgeneratedtest.pdf' ) ") ).isTRUE()[0] ;
 					if( !ok ){
 						 throw new TestException("server file was not deleted");
 					}
 					System.out.println("  push file to the server");
-					eng.pushFile( "test.pdf", "filefromclient.pdf" , true ) ;
+					eng.pushFile( "fetchedfile.pdf", "filefromclient.pdf" , true ) ;
 					ok = ( (REXPLogical)eng.parseAndEval("file.exists( 'filefromclient.pdf' ) ") ).isTRUE()[0] ;
 					if( !ok ){
 						 throw new TestException("  file was not transferred to the server");
