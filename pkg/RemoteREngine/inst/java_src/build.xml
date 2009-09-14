@@ -240,12 +240,37 @@
     </apt>
 	</target>
 	<!--}}}-->
-	
+
+	<target name="do.copy" description="copy the manifest file and licenses">
+		<mkdir dir="build/common/licenses"/>
+		<copy todir="build/common/licenses">
+			<fileset dir="lib/licenses">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<copy todir="build">
+			<fileset dir=".">
+				<include name="MANIFEST.MF"/>
+			</fileset>
+		</copy>
+		<tstamp>
+		     <format property="date.year" pattern="d-MMMM-yyyy hh:mm aa" locale="en,UK" />
+		</tstamp>
+		<replace file="build/MANIFEST.MF">
+			<replacefilter token="{project.name}" value="${project.name}" />
+			<replacefilter token="{version}" value="${version}" />
+			<replacefilter token="{build.time}" value="${date.year}" />
+			<replacefilter token="{build.user}" value="${user.name}" />
+			<replacefilter token="{build.os}" value="${os.name}-${os.version}" />
+			<replacefilter token="{vendor}" value="${vendor}" />
+		</replace>
+	</target>
+
 	<!--{{{ creating the jar -->
-	<target name="makejars" depends="stubs,annotation">
+	<target name="makejars" depends="stubs,annotation,do.copy">
 		<!-- client jar -->
 		<unjar src="lib/REngine.jar"   	dest="build/client" />
-		<jar jarfile="${target.dir}/RemoteREngine-client.jar">
+		<jar jarfile="${target.dir}/RemoteREngine-client.jar" manifest="build/MANIFEST.MF">
 			<fileset dir="build/client" />
 			<fileset dir="build/common" />
 			<fileset dir="build/stubs" />
@@ -257,7 +282,7 @@
 		<unjar src="lib/JRIEngine.jar" dest="build/server" />
 		<unjar src="lib/REngine.jar"   dest="build/server" />
 		
-		<jar jarfile="${target.dir}/RemoteREngine-server.jar">
+		<jar jarfile="${target.dir}/RemoteREngine-server.jar" manifest="build/MANIFEST.MF">
 			<fileset dir="build/server" />
 			<fileset dir="build/common" />
 			<fileset dir="build/stubs" />
