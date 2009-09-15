@@ -165,10 +165,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				r.globalEnv, r.emptyEnv, r.baseEnv, 
 				r.nullValueRef, r.nullValue,r.hashCode() ) ;
 		
-		// TODO Add a mechanism to allow the user to set the port number
-		// for the server to support controlled access through firewalls
-		int serverPort = RemoteREngineConstants.DEFAULTSERVERPORT;
-		
 		try {
 			// Locate a local registry as RMI Servers can't register with Remote Registries
 			registry = LocateRegistry.getRegistry(null, registryPort);
@@ -187,9 +183,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 
 		RemoteREngineInterface stub = null;
 		try {
-			stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,serverPort);
+			stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,servicePort);
 		} catch (RemoteException e) {
-			System.err.println("Unable to serialize server on " + serverPort + ": " + e.getMessage());
+			System.err.println("Unable to serialize server on " + servicePort + ": " + e.getMessage());
 			throw e;
 		}
 
@@ -203,15 +199,15 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				System.err.println("AccessException while rebinding server to registry: " + ae.getMessage());
 				throw ae;
 			}catch (RemoteException re) {
-				System.err.println("Unable to rebind server to port " + serverPort + ": " + re.getMessage());
+				System.err.println("Unable to rebind server to port " + servicePort + ": " + re.getMessage());
 				throw re;
 			}
 		} catch (RemoteException e) {
-			System.err.println("Unable to bind server(" + name + ") to port " + serverPort + ": " + e.getMessage());
+			System.err.println("Unable to bind server(" + name + ") to port " + servicePort + ": " + e.getMessage());
 			throw e;
 		}
 
-		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + serverPort + " to local RMIRegistry running on port " + registryPort );
+		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + servicePort + " to local RMIRegistry running on port " + registryPort );
 		running = true; 
 	}
 
