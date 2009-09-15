@@ -22,19 +22,8 @@
 
 	<!--{{{ Properties -->
   <property file="./build.properties"/>
-  <property name="compiler.debug"         value="on" />
-  <property name="compiler.debuglevel"    value="lines,vars,source" />
-  <property name="compiler.optimize"      value="off" />
-  <property name="compiler.deprecation"   value="off" />
-  <property name="compiler.verbose"       value="off" />
-  <property name="compiler.nowarn"        value="off" />
-  <property name="compiler.target"        value="1.5" />
-  <property name="compiler.source"        value="1.5" />
-  
-  <property name="target.dir" value="${install.dir}/java" />
-  
-  <!-- TODO: remove when we move to testng -->
-  <property name="JUNIT_JAR" value="lib/junit-4.7.jar" />
+		
+	<taskdef resource="testngtasks" classpath="${jdk15.testing.jar}" />
   
   <!--}}}-->
     
@@ -45,19 +34,20 @@
 	</target>
 
 	<target name="init" depends="clean"> 	
-		<mkdir dir="build" />
-		<mkdir dir="build/common" />
-		<mkdir dir="build/server" />
-		<mkdir dir="build/client" />
-		<mkdir dir="build/stubs"/>
-		<mkdir dir="build/annotations"/>
-		<mkdir dir="build/client-junit"/>
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${common.dir}" />
+		<mkdir dir="${server.dir}" />
+		<mkdir dir="${client.dir}" />
+		<mkdir dir="${stubs.dir}"/>
+		<mkdir dir="${annotations.dir}"/>
+		<mkdir dir="${client.dir}-junit"/>
 		
 		<mkdir dir="jars" />
 		
 		<mkdir dir="${javadoc.dir}" />
-		<mkdir dir="${target.dir}" />
-		
+		<mkdir dir="${jar.dir}" />
+		<mkdir dir="${testng.build}" />
+		<mkdir dir="${testng.reports}" />
 	</target>
 	<!-- }}} -->
 	
@@ -69,7 +59,7 @@
 	
 	<target name="common" depends="init">
 		<javac srcdir="src/common" 
-			destdir="build/common"  
+			destdir="${common.dir}"  
 			includeJavaRuntime="yes"
 			debug="${compiler.debug}"
       debuglevel="${compiler.debuglevel}"
@@ -117,7 +107,7 @@
 	<!--{{{ server side -->
 	
 	<path id="server_classpath">
-		<pathelement location="build/common" />
+		<pathelement location="${common.dir}" />
 		<pathelement location="lib/REngine.jar" />
 		<pathelement location="lib/JRIEngine.jar" />
 		<pathelement location="lib/JRI.jar" />
@@ -125,7 +115,7 @@
 	
 	<target name="server" depends="common">
 		<javac srcdir="src/server" 
-			destdir="build/server"  
+			destdir="${server.dir}"  
 			includeJavaRuntime="yes"
 			debug="${compiler.debug}"
       debuglevel="${compiler.debuglevel}"
@@ -142,13 +132,13 @@
 	
 	<!--{{{ client side -->
 	<path id="client_classpath">
-		<pathelement location="build/common" />
+		<pathelement location="${common.dir}" />
 		<pathelement location="lib/REngine.jar" />
 	</path>
 	
 	<target name="client" depends="common,server">
 		<javac
-				destdir="build/client"  
+				destdir="${client.dir}"  
 				includeJavaRuntime="yes"
 				debug="${compiler.debug}"
       	debuglevel="${compiler.debuglevel}"
@@ -170,9 +160,9 @@
 	
 	<!--{{{ client and server stubs -->
 	<path id="stubs_classpath">
-		<pathelement location="build/server" />
-		<pathelement location="build/common" />
-		<pathelement location="build/client" />
+		<pathelement location="${server.dir}" />
+		<pathelement location="${common.dir}" />
+		<pathelement location="${client.dir}" />
 		<pathelement location="lib/REngine.jar" />
 		<pathelement location="lib/JRIEngine.jar" />
 		<pathelement location="lib/JRI.jar" />
@@ -181,12 +171,12 @@
 
 	<target name="stubs" depends="common,client,server">
 		<!-- server stubs -->
-		<rmic base="build/stubs" classpathref="stubs_classpath" 
+		<rmic base="${stubs.dir}" classpathref="stubs_classpath" 
 			classname="org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server" />
-		<rmic base="build/stubs" classpathref="stubs_classpath"  
+		<rmic base="${stubs.dir}" classpathref="stubs_classpath"  
 			classname="org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server" />
 		<!-- client stubs (callbacks) -->
-		<rmic base="build/stubs" classpathref="stubs_classpath"  
+		<rmic base="${stubs.dir}" classpathref="stubs_classpath"  
 			classname="org.rosuda.REngine.remote.client.RemoteREngine" />
 	</target>
 	<!--}}}-->
@@ -194,14 +184,14 @@
 	<!--{{{ annotation processing -->
 	<path id="annotation_classpath">
 		<pathelement location="lib/REngine.jar" />
-		<pathelement location="build/common" />
-		<pathelement location="build/server" />
-		<pathelement location="build/client" />
+		<pathelement location="${common.dir}" />
+		<pathelement location="${server.dir}" />
+		<pathelement location="${client.dir}" />
 	</path>
 	
 	<target name="annotation-javac" depends="client">
 		<javac srcdir="src/apt" 
-			destdir="build/annotations"  
+			destdir="${annotations.dir}"  
 			includeJavaRuntime="yes"
 			debug="${compiler.debug}"
       debuglevel="${compiler.debuglevel}"
@@ -217,10 +207,10 @@
 	
 	<target name="annotation-jar" depends="annotation-javac">
 		<jar jarfile="jars/RemoteREngine-annotationprocessor.jar">
-			<fileset dir="build/annotations" />
-			<fileset dir="build/common" />
-			<fileset dir="build/server" />
-			<fileset dir="build/client" />
+			<fileset dir="${annotations.dir}" />
+			<fileset dir="${common.dir}" />
+			<fileset dir="${server.dir}" />
+			<fileset dir="${client.dir}" />
 		</jar>
 	</target>
 	
@@ -231,7 +221,7 @@
 	</path>
 	
 	<target name="annotation" depends="annotation-jar">
-		<apt destdir="build/annotations" debug="on" compile="false"
+		<apt destdir="${annotations.dir}" debug="on" compile="false"
      		factory="com.addictedtor.remoterengine.apt.RemoteREngineAnnotationProcessorFactory" >
      <classpath refid="annotation_factory_path" />
      <src path="src/client" />
@@ -242,8 +232,8 @@
 	<!--}}}-->
 
 	<target name="do.copy" description="copy the manifest file and licenses">
-		<mkdir dir="build/common/licenses"/>
-		<copy todir="build/common/licenses">
+		<mkdir dir="${common.dir}/licenses"/>
+		<copy todir="${common.dir}/licenses">
 			<fileset dir="lib/licenses">
 				<include name="**/*"/>
 			</fileset>
@@ -269,39 +259,97 @@
 	<!--{{{ creating the jar -->
 	<target name="makejars" depends="stubs,annotation,do.copy">
 		<!-- client jar -->
-		<unjar src="lib/REngine.jar"   	dest="build/client" />
-		<jar jarfile="${target.dir}/RemoteREngine-client.jar" manifest="build/MANIFEST.MF">
-			<fileset dir="build/client" />
-			<fileset dir="build/common" />
-			<fileset dir="build/stubs" />
+		<unjar src="lib/REngine.jar"   	dest="${client.dir}" />
+		<jar jarfile="${jar.dir}/RemoteREngine-client.jar" manifest="build/MANIFEST.MF">
+			<fileset dir="${client.dir}" />
+			<fileset dir="${common.dir}" />
+			<fileset dir="${stubs.dir}" />
 			<fileset file="build/services.xml" />
 		</jar>
 		
 		<!-- server jar -->
-		<unjar src="lib/JRI.jar"       dest="build/server" />
-		<unjar src="lib/JRIEngine.jar" dest="build/server" />
-		<unjar src="lib/REngine.jar"   dest="build/server" />
+		<unjar src="lib/JRI.jar"       dest="${server.dir}" />
+		<unjar src="lib/JRIEngine.jar" dest="${server.dir}" />
+		<unjar src="lib/REngine.jar"   dest="${server.dir}" />
 		
-		<jar jarfile="${target.dir}/RemoteREngine-server.jar" manifest="build/MANIFEST.MF">
-			<fileset dir="build/server" />
-			<fileset dir="build/common" />
-			<fileset dir="build/stubs" />
+		<jar jarfile="${jar.dir}/RemoteREngine-server.jar" manifest="build/MANIFEST.MF">
+			<fileset dir="${server.dir}" />
+			<fileset dir="${common.dir}" />
+			<fileset dir="${stubs.dir}" />
 			<fileset file="build/services.xml" />
 		</jar>
 
 	</target>
 	<!--}}}-->
+
+	<path id="compiletests.classpath">
+		<pathelement location="${jdk15.testing.jar}" />
+		<pathelement location="${common.dir}" />
+		<pathelement location="lib/REngine.jar" />
+	</path>
+	<target name="testng-compile" depends="client,annotation,stubs">
+		<javac
+			destdir="${testng.build}"  
+			includeJavaRuntime="yes"
+			debug="${compiler.debug}"
+  			debuglevel="${compiler.debuglevel}"
+  			optimize="${compiler.optimize}"
+  			deprecation="${compiler.deprecation}"
+  			verbose="${compiler.verbose}"
+  			nowarn="${compiler.nowarn}"
+  			target="${compiler.target}"
+  			source="${compiler.source}">
+  
+			<src path="test" />
+			<src path="src/client" />
+			<include name="**/*.java"/>
+			<exclude name="**/test/*"/>
+			<classpath refid="compiletests.classpath" />
+		</javac>
+	</target>
+
+	<path id="testng.classpath">
+		<dirset dir="${build.dir}">
+			<include name="*" />
+			<exclude name="testng_reports"/>
+		</dirset>
+		<pathelement location="lib/REngine.jar" />
+	</path>
+	<target name="setup.rmicodebase" description="Build codebase for TestNG tests to use class files" >
+		<!-- Convert the classpath into a URL based path -->
+	    <pathconvert targetos="unix" property="rmicodebase" refid="testng.classpath" >
+			<map from="C:" to="file:/c:" />
+	    	<map from="D:" to="file:/d:" />
+			<map from="E:" to="file:/e:" />
+			<map from="F:" to="file:/f:" />
+			<map from="G:" to="file:/g:" />
+	    </pathconvert>
+	</target>
+	<!-- TODO Create a target to start the test server -->
+	<target name="runtests" depends="testng-compile,setup.rmicodebase" description="Run TestNG Unit Tests">
+		<testng 
+			classpathref="testng.classpath"	
+			outputDir="${testng.reports}"
+			verbose="2"
+			haltonfailure="true">
+			<jvmarg value="-Djava.security.policy=../policy/server.policy" />
+			<jvmarg value="-Djava.rmi.server.codebase=${rmicodebase}" />
+			<classfileset dir="${testng.build}" includes="**/*.class" />
+		</testng>
+	</target>
+
+
 	
 	<!--{{{ creating the jar containing unit tests -->
 	<path id="client_junit_classpath">
-		<pathelement location="build/common" />
+		<pathelement location="${common.dir}" />
 		<pathelement location="lib/REngine.jar" />
 		<pathelement location="${JUNIT_JAR}" />
 	</path>
 
 	<target name="compile-client-junit" depends="client,annotation,stubs">
 			<javac
-				destdir="build/client-junit"  
+				destdir="${client.dir}-junit"  
 				includeJavaRuntime="yes"
 				debug="${compiler.debug}"
       	debuglevel="${compiler.debuglevel}"
@@ -319,12 +367,12 @@
 	
 	<target name="build-client-junit" depends="compile-client-junit,stubs">
 		<!-- client jar -->
-		<unjar src="lib/REngine.jar"   	dest="build/client-junit" />
-		<unjar src="${JUNIT_JAR}" dest="build/client-junit" />
-		<jar jarfile="${target.dir}/RemoteREngine-client-junit.jar">
-			<fileset dir="build/client-junit" />
-			<fileset dir="build/common" />
-			<fileset dir="build/stubs" />
+		<unjar src="lib/REngine.jar"   	dest="${client.dir}-junit" />
+		<unjar src="${JUNIT_JAR}" dest="${client.dir}-junit" />
+		<jar jarfile="${jar.dir}/RemoteREngine-client-junit.jar">
+			<fileset dir="${client.dir}-junit" />
+			<fileset dir="${common.dir}" />
+			<fileset dir="${stubs.dir}" />
 			<fileset file="build/services.xml" />
 		</jar>
 		
