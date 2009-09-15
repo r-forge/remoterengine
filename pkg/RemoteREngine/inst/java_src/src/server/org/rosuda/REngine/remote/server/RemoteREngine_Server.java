@@ -131,15 +131,16 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Constructor. Initiates the local R engine that this engine shadows
 	 * 
 	 * @param name name of this engine in the RMI registry
-	 * @param port port used by the RMI registry
+	 * @param servicePort Port number for this service to use for recieving requests
+	 * @param registryPort port used by the RMI registry
 	 * @param args arguments for R 
 	 * 
 	 * @throws REngineException Error creating the R instance
 	 */ 
-	public RemoteREngine_Server(String name, int port, String[] args) throws REngineException, RemoteException, AccessException {
+	public RemoteREngine_Server(String name, int servicePort, int registryPort, String[] args) throws REngineException, RemoteException, AccessException {
 		super();
 		this.name = name ; 
-		this.registryPort = port ;
+		this.registryPort = registryPort ;
 		
 		/* inform the clients that the jvm of the server is dying */
 		shutdownHook = new RemoteREngineServerShutdownHook() ;
@@ -170,15 +171,15 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		
 		try {
 			// Locate a local registry as RMI Servers can't register with Remote Registries
-			registry = LocateRegistry.getRegistry(null, port);
+			registry = LocateRegistry.getRegistry(null, registryPort);
 		} catch (RemoteException r) {
 			// Unable to locate the registry, so try and create one
 			System.out.println("Unable to locate registry, so creating a new RMI Registry locally");
 		}
 		try {
-			if (registry==null) registry = LocateRegistry.createRegistry(port);
+			if (registry==null) registry = LocateRegistry.createRegistry(registryPort);
 		} catch (RemoteException e) {
-			System.err.println(e.getClass().getName() + ": While trying to create registery on port " + port + 
+			System.err.println(e.getClass().getName() + ": While trying to create registery on port " + registryPort + 
 					": " + e.getMessage());
 			System.err.println(e.getCause());
 			throw e;
@@ -210,12 +211,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw e;
 		}
 
-		debug( "R Engine bound as `"+ name +"` on port " + port ) ;
+		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + serverPort + " to local RMIRegistry running on port " + registryPort );
 		running = true; 
 	}
 
 	/**
-	 * Constructor initializing R with the default arguments
+	 * Constructor initializing R with the default arguments - service will run on a randomly assigned port
 	 * 
 	 * @param name name of this engine in the MRI registry
  	 * @param port port used by the RMI registry
@@ -225,9 +226,24 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws AccessException
 	 */
 	public RemoteREngine_Server(String name, int port) throws REngineException, RemoteException, AccessException{
-		this( name, port, null) ;
+		this( name, 0, port, null) ;
 	}
 	
+	/**
+	 * Constructor initializing R with the default arguments - service will run on a randomly assigned port
+	 * 
+	 * @param name name of this engine in the MRI registry
+	 * @param servicePort Port used by the service to receive requests
+ 	 * @param registryPort port used by the RMI registry
+ 	 * 
+	 * @throws REngineException
+	 * @throws RemoteException
+	 * @throws AccessException
+	 */
+
+	public RemoteREngine_Server(String name, int servicePort, int registryPort) throws REngineException, RemoteException, AccessException{
+		this( name, servicePort, registryPort, null) ;
+	}
 	/**
 	 * Shutdown hook that indicates to clients of this server 
 	 * that the server is dying 

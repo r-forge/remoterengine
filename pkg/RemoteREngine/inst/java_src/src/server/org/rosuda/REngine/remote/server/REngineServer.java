@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.remote.common.CommandLineArgs;
+import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
 
 /**
@@ -49,6 +50,7 @@ public class REngineServer {
 		
 		String rmiName = DEFAULTNAME;
 		int rmiPort = RMIPORT;
+		int servicePort = RemoteREngineConstants.DEFAULTSERVERPORT;
 		
 		/* print the help if see the -h or --help flags */
 		if (args.length > 0) {
@@ -59,8 +61,21 @@ public class REngineServer {
 		}
 		Map<String,String> arguments = CommandLineArgs.arguments(args) ;
 		
-		if( arguments.containsKey( "port" )){
-			rmiPort = Integer.parseInt( arguments.get("port") )  ;
+		if( arguments.containsKey( "registryPort" )){
+			try {
+			rmiPort = Integer.parseInt( arguments.get("registryPort") )  ;
+			} catch (NumberFormatException e) {
+				System.err.println("Unable to parse " + arguments.get("registryPort") + " as an Integer");
+				printMenu();
+			}
+		}
+		if( arguments.containsKey( "servicePort" )){
+			try {
+				servicePort = Integer.parseInt( arguments.get("servicePort") )  ;
+			} catch (NumberFormatException e) {
+				System.err.println("Unable to parse " + arguments.get("servicePort") + " as an Integer");
+				printMenu();
+			}
 		}
 		if( arguments.containsKey( "name" )){
 			rmiName = arguments.get("name") ;
@@ -76,7 +91,7 @@ public class REngineServer {
 	    Registry registry = null ; 
 	    RemoteREngine_Server engine = null;
 	    try {
-	    	engine = new RemoteREngine_Server(rmiName, rmiPort, null);
+	    	engine = new RemoteREngine_Server(rmiName, servicePort, rmiPort, null);
 	    } catch (REngineException e) {
 	    	System.err.println(e.getClass().getName() +": While creating the R Engine, " + e.getMessage());
 	    	e.printStackTrace();
@@ -115,11 +130,17 @@ public class REngineServer {
 	private static void printMenu() {
 		System.out.println("Expected arguments are:");
 		
-		System.out.println("  [--name name]    : RMI name to register server under");
-		System.out.println("                     default: 'RemoteREngine' ");
+		System.out.println("  [--name name]    		: RMI name to register server under");
+		System.out.println("                     	default: '" + RemoteREngineConstants.DEFAULTNAME+ "' ");
 		
-		System.out.println("  [--port port]    : RMI Registry port number");
-		System.out.println("                     default: '1099' ");
+		System.out.println("  [--servicePort port]	: Service port number");
+		System.out.println("                     	default: '" + RemoteREngineConstants.DEFAULTSERVERPORT + "' ");
+		
+		System.out.println("  [--registryPort port] : RMI Registry port number");
+		System.out.println("                     	default: '" + RemoteREngineConstants.RMIPORT + "' ");
+		
+		System.out.println("  [--debug]    			: Print out additional debug information");
+		System.out.println("                     	default: 'No' ");
 		
 	}
 	
