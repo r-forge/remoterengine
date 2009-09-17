@@ -17,7 +17,8 @@
 	  system.file( "policy", "server.policy", package = "RemoteREngine" )
 	</r-set>
 
-
+	
+	
 	<path id="project.classpath">
 		<pathelement location="${client.jar}" />
 		<pathelement location="${jdk15.testing.jar}" />
@@ -70,8 +71,30 @@
 		
 	</target>
 	
+	<target name="generate-build-properties">
+			<r-run><![CDATA[
+			R_PACKAGE_DIR <- Sys.getenv( "R_PACKAGE_DIR" ) 
+			testng.jar    <- file.path( R_PACKAGE_DIR, "java_src", "lib", "testng-5.10-jdk15.jar" )
+			client.jar    <- system.file( "java", "RemoteREngine-client.jar", package = "RemoteREngine" )
+			testcases.jar <- file.path( R_PACKAGE_DIR, "java", "RemoteREngine-test.jar" )
+			rmicodebase   <- paste( "file:/", system.file( "java", "RemoteREngine-client.jar", package = "RemoteREngine" ), sep = "" )
+			client.policy <- system.file( "policy", "client.policy", package = "RemoteREngine" ) 
+			server.policy <- system.file( "policy", "server.policy", package = "RemoteREngine" ) 
+			
+			cat( 
+				"testng.jar=", testng.jar, "\n", 
+				"client.jar=", client.jar, "\n", 
+				"testcases.jar=", testcases.jar, "\n", 
+				"rmicodebase=", rmicodebase, "\n", 
+				"client.policy=", client.policy, "\n" ,
+				"server.policy=", server.policy, "\n", 
+				file = "../testng/build.properties", sep = "" )
+			]]>
+		</r-run>
+
+	</target>
 	
-	<target name="all" depends="compile,build,testng-standalone" />
+	<target name="all" depends="compile,build,testng-standalone,generate-build-properties" />
 	
 </project>
 

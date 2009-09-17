@@ -1,18 +1,23 @@
 <?xml version="1.0"?>
 <project name="RemoteREngine.runtests">
+	
+	<property file="./build.properties" />
 
-	<property file="./build.properties" /> 
-	
-	<property name="testng.reports" value="reports" />
-	
 	<path id="testng.classpath">
 		<pathelement location="${client.jar}" />
 		<pathelement location="${testcases.jar}" />
 	</path>
 	
 	<taskdef resource="testngtasks" classpath="${testng.jar}"/>
+
 	<target name="runtests" description="Run TestNG Unit Tests">
 		<mkdir dir="${testng.reports}" />
+		
+		<!-- is there another way to get the full path ? -->
+		<path id="codebasepath">
+			<pathelement location="${client.jar}" />
+		</path>
+		<pathconvert targetos="unix" property="rmicodebase" refid="codebasepath" />
 		
 		<testng 
 			classpathref="testng.classpath"	
@@ -20,8 +25,8 @@
 			verbose="2"
 			haltonfailure="true" >
 				
-				<jvmarg value="-Djava.security.policy=${client.policy}" />
-				<jvmarg value="-Djava.rmi.server.codebase=${rmicodebase}" />
+				<jvmarg value="-Djava.security.policy=policy/client.policy" />
+				<jvmarg value="-Djava.rmi.server.codebase=file:/${rmicodebase}" />
 				
 				<xmlfileset dir="." includes="testng.xml"/>
 		</testng>
