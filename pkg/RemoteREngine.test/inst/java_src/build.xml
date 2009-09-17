@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<project default="all">
+
+	<property file="build.properties"/>
+	
+	<r-set property="client.jar">
+		system.file( "java", "RemoteREngine-client.jar", 
+			package = "RemoteREngine" )
+	</r-set>
+
+	<path id="project.classpath">
+		<pathelement location="${client.jar}" />
+		<pathelement location="${testng.jar}" />
+	</path>
+	
+	<target name="compile">
+		
+		<mkdir dir="build" />
+		<javac
+			destdir="${build.dir}"  
+			includeJavaRuntime="yes"
+			debug="${compiler.debug}"
+			debuglevel="${compiler.debuglevel}"
+			optimize="${compiler.optimize}"
+			deprecation="${compiler.deprecation}"
+			verbose="${compiler.verbose}"
+			nowarn="${compiler.nowarn}"
+			target="${compiler.target}"
+			source="${compiler.source}">
+  
+			<src path="src" />
+			<include name="**/*.java"/>
+			<classpath refid="project.classpath" />
+		</javac>
+	</target>
+	          
+	<target name="build">
+		<jar jarfile="${inst.dir}/RemoteREngine-test.jar">
+			<fileset dir="${build.dir}" />
+		</jar>
+	</target>
+	
+	<target name="all" depends="compile,build" />
+	
+</project>
+

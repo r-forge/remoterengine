@@ -1,3 +1,7 @@
+
+callback.env <- new.env()
+callback.env$count <- 0L
+
 callback <- function( signature = "", object = NULL ){
 	
 	if( !is.character( signature ) ){

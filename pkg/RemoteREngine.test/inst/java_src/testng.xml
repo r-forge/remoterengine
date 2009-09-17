@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="RemoteREngine Test Suite" verbose="2">
+  <test name="Start Up Test">
+    <classes>
+      <class name="org.rosuda.REngine.remote.client.TestFactors"/>
+    </classes>
+  </test>
+</suite>

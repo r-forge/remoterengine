@@ -1,0 +1,4 @@
+#!/bin/bash 
+
+"${R_HOME}/bin/Rscript" --default-packages="base,utils,methods,rJava,ant" configure.R
+

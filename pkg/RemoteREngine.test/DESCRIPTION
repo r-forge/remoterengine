@@ -1,0 +1,12 @@
+Package: RemoteREngine.test
+Type: Package
+Title: Unit test suite for the Remote R engine
+Version: 0.0-0
+Date: 2009-09-16
+Author: Romain Francois 
+Maintainer: Romain Francois <francoisromain@free.fr>
+Description: Test suite for the Remote R engine package
+License: GPL (>=3)
+LazyLoad: yes
+Depends: RemoteREngine (>= 0.0-3), ant (>= 0.0-6)
+
