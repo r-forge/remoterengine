@@ -1,0 +1,12 @@
+Package: RemoteREngine.examples
+Type: Package
+Title: Examples of client code using the Remote R engine
+Version: 0.0-0
+Date: 2009-09-15
+Author: Romain Francois 
+Maintainer: Romain Francois <francoisromain@free.fr>
+Description: Examples of client code using the RemoteREngine package
+License: GPL (>=3)
+LazyLoad: yes
+Depends: RemoteREngine (>= 0.0-3), ant (>= 0.0-6)
+
