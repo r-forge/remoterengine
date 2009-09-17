@@ -17,7 +17,7 @@ rscript <- function( package, script, arguments = commandArgs(TRUE), run = TRUE,
 	if( run ){
 		system( cmd )
 	} else {
-		cmd
+		cat( cmd )
 	}
 }
 
