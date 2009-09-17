@@ -67,8 +67,6 @@ testng.jar    : ${testng.jar}
 				<jvmarg value="-Djava.rmi.server.codebase=${rmicodebase}" />
 				
 				<xmlfileset dir="." includes="testng.xml"/>
-
-				<!-- <classfileset dir="${testng.build}" includes="**/*.class" /> -->
 		</testng>
 	</target>
 
