@@ -1,0 +1,106 @@
+#!/bin/env Rscript
+
+# {{{ Copyright (c) 2009, Romain Francois <francoisromain@free.fr>
+# :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
+#
+# This file is part of the RemoteREngine project
+#
+# The RemoteREngine project is free software: 
+# you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# The RemoteREngine project is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with the RemoteREngine project. If not, see <http://www.gnu.org/licenses/>.
+# }}}
+
+SEP <- .Platform$path.sep
+client.dir <- system.file( "java", package = "RemoteREngine.examples" ) 
+print.clientlist <- function(){
+	clients <- dir( client.dir , pattern = "\\.jar$" )
+	for( cl in clients ){
+		cat( cl, " : " , "\n" )
+	}
+}
+
+# {{{ command line args
+arguments <- commandArgs(TRUE)
+
+if( is.null(arguments) || length(arguments) == 0 ){
+	print.clientlist()
+	q("no", status = 1 )
+} 
+# }}}
+
+client <- arguments[1]
+client.jar <- file.path( client.dir, sprintf( "example-%s.jar", client ) ) 
+
+metadata <- readLines( system.file( "examples", "metadata.properties", 
+	package = "RemoteREngine.examples") )
+client.mainclass <- sub( " +", "", sub( "^.*=", "", grep( sprintf( "%s[.]mainclass", client), metadata, value = TRUE) ) ) 
+
+# {{{ classpath
+CP <- paste( 
+	system.file( "java", "RemoteREngine-client.jar", package = "RemoteREngine" ), 
+	client.jar, 
+	sep = SEP )
+# }}}
+
+# {{{ policy file
+policy <- system.file( "policy", "client.policy", package = "RemoteREngine" )
+# }}}
+
+# {{{ these functions might move to rJava at some point
+java.home <- function( set = FALSE ){
+	JAVA_HOME <- Sys.getenv( "JAVA_HOME", unset = "" )
+	if( JAVA_HOME != "" ){
+		# then find it from rJava
+		library( utils )
+		require( "methods", quietly = TRUE, character.only = TRUE )
+		require( "rJava", quietly = TRUE, character.only = TRUE )
+		.jinit()
+		JAVA_HOME <- .jcall( "java.lang.System", "S", "getProperty", "java.home" )
+		if( set ) Sys.setenv( JAVA_HOME = JAVA_HOME )
+	}
+	JAVA_HOME
+}
+
+java.cmd <- function( JAVA_HOME = java.home(), set = FALSE ){
+	JAVACMD <- Sys.getenv( "JAVACMD", unset = "" )
+	if( JAVACMD == "" ){
+		# IBM's JDK on AIX uses strange locations for the executables
+	    if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "sh", "java" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "bin", "java" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "bin", "java" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "bin", "java.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "bin", "java.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "jre", "bin", "javaw.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else if( file.exists( cmd <- file.path( JAVA_HOME, "bin", "javaw.exe" ) ) ){
+	    	JAVACMD <- cmd
+	    } else {
+	    	stop( paste( "could not find java command, is java installed in : '" , JAVA_HOME , "' ?" ) )
+		}
+	}
+	if( set ) Sys.setenv( JAVACMD = JAVACMD )
+	JAVACMD
+}
+JAVACMD <- java.cmd( )
+# }}}
+
+cmd <- sprintf( '"%s" -cp "%s" -Xmx1024M -Djava.security.policy="%s" %s', 
+	JAVACMD, CP, policy, client.mainclass )
+cat( "command: \n\n", cmd, "\n\nresult:\n\n" )
+system( cmd )
+# }}}
