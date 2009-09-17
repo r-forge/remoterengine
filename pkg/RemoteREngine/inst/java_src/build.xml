@@ -23,9 +23,8 @@
 
 	<!--{{{ Properties -->
   <property file="./build.properties"/>
-	<!--}}}-->
-    
-	<!--{{{ clean -->
+  
+  <!--{{{ clean -->
 	<target name="clean">
 		<delete dir="build" />
 		<delete dir="jars" />
@@ -68,8 +67,20 @@
 		</javac>	
 		
 	</target>
+	
+	<path id="javadoc_classpath">
+		<pathelement location="${common.dir}" />
+		<pathelement location="${client.dir}" />
+		<pathelement location="${server.dir}" />
+		<pathelement location="${rengine.jar}" />
+		<pathelement location="${jriengine.jar}" />
+		<pathelement location="${jri.jar}" />
+	</path>
+	
+	
 	<target name="javadoc"
 		description="Compile the Javadoc API documentation to dist dir">
+			
 		<javadoc
 		           destdir="${javadoc.dir}"
 		           author="true"

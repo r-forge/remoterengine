@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-<project default="all">
+<project default="all" name="RemoteREngine.test">
 
 	<property file="build.properties"/>
+	
 	<taskdef resource="testngtasks" classpath="${jdk15.testing.jar}" />
   
 	<r-set property="client.jar">
@@ -11,7 +12,7 @@
 
 	<path id="project.classpath">
 		<pathelement location="${client.jar}" />
-		<pathelement location="${testng.jar}" />
+		<pathelement location="${jdk15.testing.jar}" />
 	</path>
 	
 	<target name="compile">
@@ -41,33 +42,7 @@
 		</jar>
 	</target>
 	
-	<path id="compiletests.classpath">
-		<pathelement location="${jdk15.testing.jar}" />
-		<pathelement location="${common.dir}" />
-		<pathelement location="lib/REngine.jar" />
-	</path>
-	
-	<target name="testng-compile" depends="client,annotation,stubs">
-		<javac
-			destdir="${testng.build}"  
-			includeJavaRuntime="yes"
-			debug="${compiler.debug}"
-  			debuglevel="${compiler.debuglevel}"
-  			optimize="${compiler.optimize}"
-  			deprecation="${compiler.deprecation}"
-  			verbose="${compiler.verbose}"
-  			nowarn="${compiler.nowarn}"
-  			target="${compiler.target}"
-  			source="${compiler.source}">
-  
-			<src path="test" />
-			<src path="src/client" />
-			<include name="**/*.java"/>
-			<exclude name="**/test/*"/>
-			<classpath refid="compiletests.classpath" />
-		</javac>
-	</target>
-
+	<!--
 	<path id="testng.classpath">
 		<dirset dir="${build.dir}">
 			<include name="*" />
@@ -75,9 +50,9 @@
 		</dirset>
 		<pathelement location="lib/REngine.jar" />
 	</path>
+	
 	<target name="setup.rmicodebase" description="Build codebase for TestNG tests to use class files" >
-		<!-- Convert the classpath into a URL based path -->
-	    <pathconvert targetos="unix" property="rmicodebase" refid="testng.classpath" >
+		  <pathconvert targetos="unix" property="rmicodebase" refid="testng.classpath" >
 			<map from="C:" to="file:/c:" />
 	    	<map from="D:" to="file:/d:" />
 			<map from="E:" to="file:/e:" />
@@ -85,7 +60,6 @@
 			<map from="G:" to="file:/g:" />
 	    </pathconvert>
 	</target>
-	<!-- TODO Create a target to start the test server -->
 	<target name="runtests" depends="testng-compile,setup.rmicodebase" description="Run TestNG Unit Tests">
 		<testng 
 			classpathref="testng.classpath"	
@@ -97,7 +71,7 @@
 			<classfileset dir="${testng.build}" includes="**/*.class" />
 		</testng>
 	</target>
-	
+	-->
 	
 	
 	<target name="all" depends="compile,build" />
