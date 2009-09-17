@@ -42,38 +42,6 @@
 		</jar>
 	</target>
 	
-	<!--
-	<path id="testng.classpath">
-		<dirset dir="${build.dir}">
-			<include name="*" />
-			<exclude name="testng_reports"/>
-		</dirset>
-		<pathelement location="lib/REngine.jar" />
-	</path>
-	
-	<target name="setup.rmicodebase" description="Build codebase for TestNG tests to use class files" >
-		  <pathconvert targetos="unix" property="rmicodebase" refid="testng.classpath" >
-			<map from="C:" to="file:/c:" />
-	    	<map from="D:" to="file:/d:" />
-			<map from="E:" to="file:/e:" />
-			<map from="F:" to="file:/f:" />
-			<map from="G:" to="file:/g:" />
-	    </pathconvert>
-	</target>
-	<target name="runtests" depends="testng-compile,setup.rmicodebase" description="Run TestNG Unit Tests">
-		<testng 
-			classpathref="testng.classpath"	
-			outputDir="${testng.reports}"
-			verbose="2"
-			haltonfailure="true">
-			<jvmarg value="-Djava.security.policy=../policy/server.policy" />
-			<jvmarg value="-Djava.rmi.server.codebase=${rmicodebase}" />
-			<classfileset dir="${testng.build}" includes="**/*.class" />
-		</testng>
-	</target>
-	-->
-	
-	
 	<target name="all" depends="compile,build" />
 	
 </project>
