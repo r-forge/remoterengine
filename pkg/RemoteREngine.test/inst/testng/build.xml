@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<project name="RemoteREngine.runtests">
+
+	<r-set property="testng.jar">
+		system.file( "java_src", "lib", "testng-5.10-jdk15.jar", package = "RemoteREngine.test" )
+	</r-set>
+
+	<r-set property="client.jar">
+		system.file( "java", "RemoteREngine-client.jar", package = "RemoteREngine" )
+	</r-set>
+	
+	<r-set property="testcases.jar">
+		system.file( "java", "RemoteREngine-test.jar", package = "RemoteREngine.test" )
+	</r-set>
+	
+	<r-set property="rmicodebase">
+	  paste( "file:/", system.file( "java", "RemoteREngine-client.jar", package = "RemoteREngine" ), sep = "" )
+	</r-set>
+
+	<r-set property="client.policy">
+	  system.file( "policy", "client.policy", package = "RemoteREngine" )
+	</r-set>
+
+	<r-set property="server.policy">
+	  system.file( "policy", "client.policy", package = "RemoteREngine" )
+	</r-set>
+	
+	<property name="testng.reports" value="reports" />
+	
+	<path id="testng.classpath">
+		<pathelement location="${client.jar}" />
+		<pathelement location="${testcases.jar}" />
+	</path>
+	
+	<taskdef resource="testngtasks" classpath="${testng.jar}"/>
+	
+	<!--
+		<target name="setup.rmicodebase" description="Build codebase for TestNG tests to use class files" >
+		  <pathconvert targetos="unix" property="rmicodebase" refid="testng.classpath" >
+				<map from="C:" to="file:/c:" />
+	    	<map from="D:" to="file:/d:" />
+				<map from="E:" to="file:/e:" />
+				<map from="F:" to="file:/f:" />
+				<map from="G:" to="file:/g:" />
+	    </pathconvert>
+	</target>
+	-->
+	                 
+	<target name="runtests" description="Run TestNG Unit Tests">
+		<echo>
+client.jar    : ${client.jar}
+testcases.jar : ${testcases.jar}
+rmicodebase   : ${rmicodebase}
+client.policy : ${client.policy}
+server.policy : ${server.policy}
+testng.jar    : ${testng.jar}
+		</echo>
+		<mkdir dir="${testng.reports}" />
+		
+		<testng 
+			classpathref="testng.classpath"	
+			outputDir="${testng.reports}"
+			verbose="2"
+			haltonfailure="true" >
+				
+				<jvmarg value="-Djava.security.policy=${client.policy}" />
+				<jvmarg value="-Djava.rmi.server.codebase=${rmicodebase}" />
+				
+				<xmlfileset dir="." includes="testng.xml"/>
+
+				<!-- <classfileset dir="${testng.build}" includes="**/*.class" /> -->
+		</testng>
+	</target>
+
+</project>
