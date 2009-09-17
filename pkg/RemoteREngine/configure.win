@@ -1,4 +1,3 @@
 #!/bin/sh
+"${R_HOME}/bin/Rscript" --default-packages="base,utils,methods,rJava,ant" econfigure.R
 
-cd inst/java_src
-"${R_HOME}/bin/Rscript" -e "ant::ant()"
