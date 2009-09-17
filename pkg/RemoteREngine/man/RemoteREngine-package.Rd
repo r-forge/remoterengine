@@ -13,8 +13,8 @@ RMI based implementation of the REngine API
 \tabular{ll}{
 Package: \tab RemoteREngine\cr
 Type: \tab Package\cr
-Version: \tab 0.0-0\cr
-Date: \tab 2009-08-03\cr
+Version: \tab 0.0-4\cr
+Date: \tab 2009-09-17\cr
 License: \tab GPL (>= 3)\cr
 LazyLoad: \tab yes\cr
 }

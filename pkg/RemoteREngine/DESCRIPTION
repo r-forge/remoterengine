@@ -1,11 +1,11 @@
 Package: RemoteREngine
 Type: Package
 Title: RMI based REngine implementation 
-Version: 0.0-3
-Date: 2009-09-06
+Version: 0.0-4
+Date: 2009-09-17
 Author: Romain Francois 
 Maintainer: Romain Francois <francoisromain@free.fr>
 Description: RMI based REngine implementation
 License: GPL (>=3)
 LazyLoad: yes
-Depends:rJava (>= 0.7-0), ant (>= 0.0-4)
+Depends:rJava (>= 0.7-0), ant (>= 0.0-6)
