@@ -6,9 +6,17 @@
 	<taskdef resource="testngtasks" classpath="${jdk15.testing.jar}" />
   
 	<r-set property="client.jar">
-		system.file( "java", "RemoteREngine-client.jar", 
-			package = "RemoteREngine" )
+		system.file( "java", "RemoteREngine-client.jar", package = "RemoteREngine" )
 	</r-set>
+	
+	<r-set property="client.policy">
+	  system.file( "policy", "client.policy", package = "RemoteREngine" )
+	</r-set>
+
+	<r-set property="server.policy">
+	  system.file( "policy", "server.policy", package = "RemoteREngine" )
+	</r-set>
+
 
 	<path id="project.classpath">
 		<pathelement location="${client.jar}" />
@@ -42,7 +50,28 @@
 		</jar>
 	</target>
 	
-	<target name="all" depends="compile,build" />
+	<target name="testng-standalone">
+		<property name="dir.lib" value="../testng-standalone/lib" />
+		<property name="dir.policy" value="../testng-standalone/policy" />
+		
+		<mkdir dir="${dir.lib}" />
+		<copy file="${inst.dir}/RemoteREngine-test.jar" todir="${dir.lib}" />
+		<copy file="${jdk15.testing.jar}" todir="${dir.lib}" />
+		<copy file="${client.jar}" todir="${dir.lib}" />
+		
+		<mkdir dir="${dir.policy}" />
+		<copy file="${client.policy}" todir="${dir.policy}" />
+		<copy file="${server.policy}" todir="${dir.policy}" />
+		
+		<copy file="../testng/testng.xml" todir="../testng-standalone" />
+		
+		<zip destfile="../testng.zip" basedir="../testng-standalone" />
+		<delete dir="../testng-standalone" />
+		
+	</target>
+	
+	
+	<target name="all" depends="compile,build,testng-standalone" />
 	
 </project>
 
