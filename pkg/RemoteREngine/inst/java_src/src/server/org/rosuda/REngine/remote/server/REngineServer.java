@@ -120,7 +120,11 @@ public class REngineServer {
     		}
     	}
     	
-    	engine.startConsoleThread(); 
+    	if (engine != null) {
+    		engine.startConsoleThread();
+    	} else {
+    		System.err.println("Null RemoteREngine_Server returned from startup.");
+    	}
     	
 	}
 	
