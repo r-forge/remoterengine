@@ -30,6 +30,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Map;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
@@ -39,6 +40,7 @@ import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REnginePool;
 import org.rosuda.REngine.remote.client.callbacks.ClientCallbackDispatcher;
+import org.rosuda.REngine.remote.common.CommandLineArgs;
 import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
@@ -186,7 +188,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * @param registryHost host name
 	 */
 	public RemoteREngine(String name, String registryHost ){
-		this( name, registryHost, 1099 ) ;
+		this( name, registryHost, RemoteREngineConstants.RMIPORT ) ;
 	}
 
 	/**                                                    
@@ -381,22 +383,37 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * @param client_file the name of the file in the client to write into
 	 * @param server_file the name of the server file to fetch
 	 * @param delete delete the file after fetching it ?
+	 * @return true if the file transfer has completed successfully
 	 * @throws IOException 
 	 */
-	public void fetchFile( String client_file, String server_file, boolean delete ) throws IOException, ServerSideIOException {
-		BufferedOutputStream client_out = new BufferedOutputStream( new FileOutputStream( client_file ) ) ;
-		RemoteFileInputStream server_in = engine.openFile(server_file) ;
-
-		FileChunk chunk = server_in.readNextChunk() ;
-		while( ! chunk.isEmpty() ){
-			client_out.write(chunk.buffer, 0, chunk.size ) ;
-			chunk = server_in.readNextChunk() ;
+	public boolean fetchFile( String client_file, String server_file, boolean delete ) throws IOException, ServerSideIOException {
+		BufferedOutputStream client_out = null;
+		RemoteFileInputStream server_in = null;
+		boolean success = false;
+		try {
+			client_out = new BufferedOutputStream( new FileOutputStream( client_file ) ) ;
+			server_in = engine.openFile(server_file) ;
+		
+			FileChunk chunk = server_in.readNextChunk() ;
+			while( ! chunk.isEmpty() ){
+				client_out.write(chunk.buffer, 0, chunk.size ) ;
+				chunk = server_in.readNextChunk() ;
+			}
+			success = true;
+		} finally {
+			try {
+				server_in.close() ;
+			} catch (Exception e) {}
+			try {
+				client_out.close(); 
+			} catch (Exception e) {}
+			if( delete ){
+				server_in.delete(); 
+			}
+			server_in = null;
+			client_out = null;
 		}
-		server_in.close() ;
-		client_out.close(); 
-		if( delete ){
-			server_in.delete(); 
-		}
+		return success;
 	}
 
 	/** 
@@ -515,6 +532,5 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			/* what now */
 		} 
 	}
-	
 }
 
