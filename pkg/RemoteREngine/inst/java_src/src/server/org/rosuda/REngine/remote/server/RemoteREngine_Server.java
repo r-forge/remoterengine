@@ -116,6 +116,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	
 	
 	private Registry registry ; 
+	private RemoteREngineInterface stub = null;
 	
 	private boolean running = false; 
 	
@@ -181,7 +182,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw e;
 		}
 
-		RemoteREngineInterface stub = null;
 		try {
 			stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,servicePort);
 		} catch (RemoteException e) {
@@ -272,11 +272,23 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		
 		System.err.println("Unbinding " + name );
 		try {
-			registry.unbind( name );
+			if (registry != null) registry.unbind( name );
+			if (stub != null) {
+				if (UnicastRemoteObject.unexportObject(stub, false)) {
+					System.out.println(name + " successfully unexported");
+				} else {
+					System.out.println("Unable to Unexport " + name);
+				}
+			}
 		} catch (NotBoundException e) {
 			// don't care
 		} catch (RemoteException e) {
-			System.err.println(e.getClass().getName() + ": " + e.getMessage() + ". While unbinding " + name );
+			StringBuffer buf = new StringBuffer(e.getClass().getName() + ": " + e.getMessage() + ". While unbinding " + name);
+			Throwable cause = e.getCause();
+			if (cause != null) {
+				buf.append(cause.getClass().getName() + ": " + cause.getMessage());
+			}
+			System.err.println( buf.toString());
 		}
 		System.out.println("Stopping the JVM");
 		System.exit(0);
@@ -412,8 +424,16 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Parse and eval text
 	 */
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException {
-		debug( ">> parseAndEval" ) ;
-		return r.parseAndEval( text, where, resolve ); 
+		debug( ">> parseAndEval: " + text ) ;
+		try {
+			return r.parseAndEval( text, where, resolve );
+		} catch (Throwable t) {
+			System.err.println(t.getClass().getName() + ": " + t.getMessage() + "\nWhile running: '" + text + "'\n");
+			if (t.getCause() != null) {System.err.println(t.getCause().getClass().getName() + ": " + t.getCause().getMessage());
+
+			}
+		}
+		return null;
 	}
 
 
