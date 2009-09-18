@@ -34,7 +34,9 @@ import java.util.Vector;
 import org.rosuda.JRI.Rengine;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngineException;
+import org.rosuda.REngine.REngineRegistry;
 import org.rosuda.REngine.JRI.JRIEngine;
 import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
@@ -163,8 +165,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		
 		/* capture global variables of the JRIEngine */
 		variables = new JRIEngineGlobalVariables( 
-				r.globalEnv, r.emptyEnv, r.baseEnv, 
-				r.nullValueRef, r.nullValue,r.hashCode() ) ;
+				getPointer( r.globalEnv ), 
+				getPointer( r.emptyEnv ) , 
+				getPointer( r.baseEnv ), 
+				getPointer( r.nullValueRef) , 
+				REngineRegistry.getId(r) ) ;
 		
 		try {
 			// Locate a local registry as RMI Servers can't register with Remote Registries
@@ -210,7 +215,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + servicePort + " to local RMIRegistry running on port " + registryPort );
 		running = true; 
 	}
-
+	
 	/**
 	 * Constructor initializing R with the default arguments - service will run on a randomly assigned port
 	 * 
@@ -574,5 +579,10 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		return callbackListeners ;
 	}
 
+	
+	private long getPointer( REXPReference ref){
+		return ( (Long)ref.getHandle() ).longValue() ;
+	}
+	
 }
 

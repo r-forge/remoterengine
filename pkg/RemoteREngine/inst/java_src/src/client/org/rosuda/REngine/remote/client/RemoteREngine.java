@@ -30,7 +30,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Map;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
@@ -38,9 +37,9 @@ import org.rosuda.REngine.REXPNull;
 import org.rosuda.REngine.REXPReference;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.REnginePool;
+import org.rosuda.REngine.REngineRegistry;
+import org.rosuda.REngine.UniqueID;
 import org.rosuda.REngine.remote.client.callbacks.ClientCallbackDispatcher;
-import org.rosuda.REngine.remote.common.CommandLineArgs;
 import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
@@ -95,7 +94,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	/** 
 	 * the hashcode of the server this shadows
 	 */
-	private int serverHashCode ; 
+	private UniqueID engine_id ; 
 	
 	/**
 	 * Is this engine valid ?
@@ -119,6 +118,8 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		if (name == null || name.length()==0) {
 			System.err.println("RMI Name of remote engine not defined");
 		}
+		nullValue    = new REXPNull()  ; 
+		
 		try{
 			Registry reg = LocateRegistry.getRegistry(registryHost, port);
 			engine = (RemoteREngineInterface) reg.lookup(name);
@@ -128,18 +129,18 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			UnicastRemoteObject.exportObject(this) ;
 			JRIEngineGlobalVariables variables = engine.subscribe(this) ;
 			callbackDispatcher = new ClientCallbackDispatcher(this) ;
-			callbackDispatcher.start(); 
-			serverHashCode = variables.hashCode ;
-			globalEnv    = variables.globalEnv ;
-			emptyEnv     = variables.emptyEnv ; 
-			baseEnv      = variables.baseEnv ; 
-			nullValueRef = variables.nullValueRef ;
-			nullValue    = variables.nullValue ; 
+			engine_id    = variables.engine_id ;
+			
+			globalEnv    = new REXPReference( this, new Long( variables.p_globalEnv ) ) ;
+			emptyEnv     = new REXPReference( this, new Long( variables.p_emptyEnv ) ); 
+			baseEnv      = new REXPReference( this, new Long( variables.p_baseEnv)) ; 
+			nullValueRef = new REXPReference( this, new Long( variables.p_nullValueRef ) );
 			
 			/* store this engine in the pool */
-			REnginePool.add( this, serverHashCode ); 
-			valid = true; 
+			REngineRegistry.add( this, engine_id ); 
+			callbackDispatcher.start();
 			
+			valid = true; 
 		} catch ( NotBoundException nb) {
 			System.out.println("Unable to locate " + name + " within RMI Registry");
 		} catch( Exception e ){
@@ -471,7 +472,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		baseEnv = null ; 
 		nullValueRef = null; 
 		nullValue = null; 
-		serverHashCode = Integer.MIN_VALUE ;
+		engine_id = null; 
 	}
 	
 	/**

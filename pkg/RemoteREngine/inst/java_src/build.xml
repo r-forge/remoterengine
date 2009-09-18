@@ -74,7 +74,6 @@
 		<pathelement location="${server.dir}" />
 		<pathelement location="${rengine.jar}" />
 		<pathelement location="${jriengine.jar}" />
-		<pathelement location="${jri.jar}" />
 	</path>
 	
 	
@@ -115,7 +114,6 @@
 		<pathelement location="${common.dir}" />
 		<pathelement location="${rengine.jar}" />
 		<pathelement location="${jriengine.jar}" />
-		<pathelement location="${jri.jar}" />
 	</path>
 	
 	<target name="server" depends="common">
@@ -170,7 +168,6 @@
 		<pathelement location="${client.dir}" />
 		<pathelement location="${rengine.jar}" />
 		<pathelement location="${jriengine.jar}" />
-		<pathelement location="${jri.jar}" />
 	</path>
 	
 
@@ -274,7 +271,6 @@
 		
 		<!-- server jar -->
 		<unjar src="${jriengine.jar}" dest="${server.dir}" />
-		<unjar src="${jri.jar}"       dest="${server.dir}" />
 		<unjar src="${rengine.jar}"   dest="${server.dir}" />
 		
 		<jar jarfile="${jar.dir}/RemoteREngine-server.jar" manifest="build/MANIFEST.MF">

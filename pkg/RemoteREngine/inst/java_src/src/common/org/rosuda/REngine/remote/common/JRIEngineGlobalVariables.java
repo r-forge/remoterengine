@@ -21,8 +21,8 @@ package org.rosuda.REngine.remote.common;
 
 import java.io.Serializable;
 
-import org.rosuda.REngine.REXPNull;
 import org.rosuda.REngine.REXPReference;
+import org.rosuda.REngine.UniqueID;
 
 /**
  * Encapsulates global variables of the JRIEngine 
@@ -35,41 +35,35 @@ public class JRIEngineGlobalVariables implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/** reference to the global environment */
-	public REXPReference globalEnv ; 
+	public long p_globalEnv ; 
 	
 	/** reference to the empty environment */
-	public REXPReference emptyEnv ; 
+	public long p_emptyEnv ; 
 	
 	/** reference to the base environment */
-	public REXPReference baseEnv ; 
+	public long p_baseEnv ; 
 	
 	/** reference to the NULL value */
-	public REXPReference nullValueRef;
-	
-	/** canonical NULL object */
-	public REXPNull nullValue;
-	
-	/** hash code of the engine */
-	public int hashCode ; 
+	public long p_nullValueRef;
+		
+	/** identifier of the server side (real) engine */
+	public UniqueID engine_id; 
 	
 	/**
 	 * Constructor. Holds the values of the engine
-	 * @param r Real server side R engine
-	 */
+	*/
 	public JRIEngineGlobalVariables( 
-			REXPReference globalEnv, 
-			REXPReference emptyEnv, 
-			REXPReference baseEnv, 
-			REXPReference nullValueRef, 
-			REXPNull nullValue, 
-			int hashCode
+			long p_globalEnv, 
+			long p_emptyEnv, 
+			long p_baseEnv, 
+			long p_nullValueRef, 
+			UniqueID engine_id
 			){
-		this.globalEnv = globalEnv ;
-		this.emptyEnv = emptyEnv ;
-		this.baseEnv = baseEnv ;
-		this.nullValue = nullValue ;
-		this.nullValueRef = nullValueRef ;
-		this.hashCode = hashCode ;
+		this.p_globalEnv = p_globalEnv ;
+		this.p_emptyEnv = p_emptyEnv ;
+		this.p_baseEnv = p_baseEnv ;
+		this.p_nullValueRef = p_nullValueRef ;
+		this.engine_id = engine_id ;
 	}
 	
 }
