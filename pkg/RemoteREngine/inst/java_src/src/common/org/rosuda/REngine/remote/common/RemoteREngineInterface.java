@@ -109,16 +109,16 @@ public interface RemoteREngineInterface extends Remote {
 	public void finalizeReference(REXP ref) throws REngineException, REXPMismatchException, RemoteException;
 
 	/**
-	 * get the parent environemnt of an environment
+	 * get the parent environment of an environment
 	 *
 	 * @param env environment to query
 	 * @param resolve whether to resolve the resulting environment reference
-	 * @return parent environemnt of env
+	 * @return parent environment of env
 	 */
 	public REXP getParentEnvironment(REXP env, boolean resolve) throws REngineException, REXPMismatchException, RemoteException;
 
 	/**
-	 * create a new environemnt
+	 * create a new environment
 	 *
 	 * @param parent parent environment
 	 * @param resolve whether to resolve the reference to the environement (usually <code>false</code> since the returned environment will be empty)
