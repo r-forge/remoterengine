@@ -568,7 +568,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @see Rengine#rniIdle()
 	 */
 	public void rniIdle(){
-		r.getRni().rniIdle() ;
+		if ((r != null) && (r.getRni() != null ))r.getRni().rniIdle() ;
 	}
 
 	/**
