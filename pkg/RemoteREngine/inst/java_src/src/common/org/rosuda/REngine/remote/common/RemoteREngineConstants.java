@@ -41,4 +41,6 @@ public class RemoteREngineConstants {
 	
 	/** The default port for the RMI Server instance to bind to */
 	public static final int DEFAULTSERVERPORT = 0;  // RMI Dynamically allocates a port number
+	/** Representation of the NA string returned by REngine */
+	public static final String NAN = "NaN";
 }
