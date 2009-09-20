@@ -347,7 +347,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param env environment to assign to (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine
 	 */
 	public void assign(String symbol, REXP value, REXP env) throws REngineException, REXPMismatchException{ 
-		debug( ">> assign" ) ;
+		debug( ">> assign(" + symbol + ")") ;
 		r.assign( symbol, value, env ); 
 	}
 
@@ -429,8 +429,15 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Parse and eval text
 	 */
 	public REXP parseAndEval(String text, REXP where, boolean resolve) throws REngineException, REXPMismatchException {
-		debug( ">> parseAndEval" ) ;
-		return r.parseAndEval( text, where, resolve ); 
+		debug( ">> parseAndEval(" + text + ")" ) ;
+		REXP result = null;
+		try {
+			result = r.parseAndEval( text, where, resolve );
+		} catch (REngineException e) {
+			debug(e.getClass().getName() + ": " + e.getMessage() + " while processing " + text);
+			throw e;
+		}
+		return result;
 	}
 
 
