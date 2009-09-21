@@ -369,13 +369,16 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		byte [] b = new byte[ RemoteREngineConstants.CHUNKSIZE ];
 
 		/* typical java IO stuff */
-		int c = client_in.read(b) ; 
-		while( c >= 0 ){
-			server_out.write( b, 0, c ) ;
-			c = client_in.read(b) ;
+		try {
+			int c = client_in.read(b) ; 
+			while( c >= 0 ){
+				server_out.write( b, 0, c ) ;
+				c = client_in.read(b) ;
+			}
+		} finally {
+			if (server_out != null) server_out.close();
+			if (client_in != null) client_in.close();
 		}
-		server_out.close();
-		client_in.close(); 
 	}
 
 	/**
@@ -403,13 +406,13 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			success = true;
 		} finally {
 			try {
-				server_in.close() ;
+				if (server_in != null) server_in.close() ;
 			} catch (Exception e) {}
 			try {
-				client_out.close(); 
+				if (client_out != null) client_out.close(); 
 			} catch (Exception e) {}
 			if( delete ){
-				server_in.delete(); 
+				if (server_in != null) server_in.delete(); 
 			}
 			server_in = null;
 			client_out = null;
