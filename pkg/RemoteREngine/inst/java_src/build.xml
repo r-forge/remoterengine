@@ -23,6 +23,7 @@
 
 	<!--{{{ Properties -->
   <property file="./build.properties"/>
+  <!--}}} -->
   
   <!--{{{ clean -->
 	<target name="clean">
@@ -283,6 +284,8 @@
 	</target>
 	<!--}}}-->
 
-<target name="all" depends="javadoc,makejars" />
-
+	<!--{{{ all target -->
+	<target name="all" depends="javadoc,makejars" />
+	<!--}}}-->
+	
 </project>
