@@ -140,7 +140,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			REngineRegistry.add( this, engine_id ); 
 			callbackDispatcher.start();
 			
-			valid = true; 
+			valid = testConnection(); 
 		} catch ( NotBoundException nb) {
 			System.out.println("Unable to locate " + name + " within RMI Registry");
 		} catch( Exception e ){
@@ -532,6 +532,20 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		} catch (RemoteException e) {
 			/* what now */
 		} 
+	}
+	
+	/**
+	 * Check to see if we can run a command against the server
+	 * @return true if the command returns successfully
+	 */
+	private boolean testConnection() {
+		try {
+			REXP rexp = parseAndEval("R.version$version.string");
+			return rexp != null;
+		} catch (Throwable t) {
+			System.err.println(t.getClass().getName() + ": while testing connection to engine; " + t.getMessage());
+			return false;
+		}
 	}
 }
 
