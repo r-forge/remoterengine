@@ -35,8 +35,7 @@ generate.build.properties <- function(  ){
 		"rmicodebase=", rmicodebase, "\n", 
 		"client.policy=", client.policy, "\n" ,
 		"server.policy=", server.policy, "\n", sep = "" )
-	cat( generated.properties, file = "generated.properties" ,	sep = "", 
-		append = TRUE )
+	cat( generated.properties, file = "generated.properties" ,	sep = "")
 }			
 # }}}
 
