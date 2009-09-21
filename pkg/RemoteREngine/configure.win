@@ -1,3 +1,4 @@
 #!/bin/sh
-"${R_HOME}/bin/Rscript" --default-packages="base,utils,methods,rJava,ant" econfigure.R
+
+"${R_HOME}/bin/Rscript" --default-packages="base,utils,methods,rJava,ant" configure.R
 
