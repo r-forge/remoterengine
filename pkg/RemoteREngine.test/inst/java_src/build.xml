@@ -25,10 +25,6 @@
   <property file="./build.properties"/>
   <!--}}}-->
 	
-  <!--{{{ define testng tasks -->
-	<!-- <taskdef resource="testngtasks" classpath="${testng.jar}" /> -->
-	<!--}}}-->
-  
 	<!--{{{ classpath -->
 	<path id="project.classpath">
 		<pathelement location="${client.jar}" />

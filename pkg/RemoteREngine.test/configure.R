@@ -28,23 +28,22 @@ generate.build.properties <- function(  ){
 	client.policy <- system.file( "policy", "client.policy", package = "RemoteREngine" ) 
 	server.policy <- system.file( "policy", "server.policy", package = "RemoteREngine" ) 
 	
-	cat( "\n\n\n# generated content below\n\n",
+	generated.properties <- paste( "\n\n\n# generated content below\n\n",
 		"testng.jar=", testng.jar, "\n", 
 		"client.jar=", client.jar, "\n", 
 		"testcases.jar=", testcases.jar, "\n", 
 		"rmicodebase=", rmicodebase, "\n", 
 		"client.policy=", client.policy, "\n" ,
-		"server.policy=", server.policy, "\n", 
-		file = "build.properties" ,	sep = "", 
+		"server.policy=", server.policy, "\n", sep = "" )
+	cat( generated.properties, file = "build.properties" ,	sep = "", 
 		append = TRUE )
+	cat( generated.properties, file = "../testng/build.properties", sep = "" )
 }			
 # }}}
 
 require( ant ) 
 
-rscript <- file.path( R.home(), "bin", "Rscript" )
 root <- getwd()
-dir.create( "inst/java" )
 setwd( "inst/java_src" )
 
 java_src.dir <- getwd()
