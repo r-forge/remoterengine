@@ -57,6 +57,7 @@
 	          
 	<!--{{{ build -->
 	<target name="build">
+		<mkdir dir="${inst.dir}" />
 		<jar jarfile="${inst.dir}/RemoteREngine-test.jar">
 			<fileset dir="${build.dir}" />
 		</jar>
