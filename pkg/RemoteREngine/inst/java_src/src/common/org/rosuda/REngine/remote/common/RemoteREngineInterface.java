@@ -56,7 +56,7 @@ public interface RemoteREngineInterface extends Remote {
 	/** 
 	 * evaluate an expression vector
 	 * @param what an expression (or vector of such) to evaluate
-	 * @param where environment to evaluate in (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine)
+	 * @param where environment to evaluate in (use <code>null</code> for the global environment and/or if environments are not supported by the engine)
 	 * @param resolve resolve the resulting REXP or just return a reference
 	 * @return the result of the evaluation of the last expression 
 	 */
@@ -67,14 +67,14 @@ public interface RemoteREngineInterface extends Remote {
 	 *
 	 * @param symbol symbol name
 	 * @param value value to assign
-	 * @param env environment to assign to (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine
+	 * @param env environment to assign to (use <code>null</code> for the global environment and/or if environments are not supported by the engine
 	 */
 	public void assign(String symbol, REXP value, REXP env) throws REngineException, REXPMismatchException, RemoteException;
 
 	/**
 	 * get a value from an environment
 	 * @param symbol symbol name
-	 * @param env environment (use <code>null</code> for the global environemnt and/or if environments are not supported by the engine)
+	 * @param env environment (use <code>null</code> for the global environment and/or if environments are not supported by the engine)
 	 * @param resolve resolve the resulting REXP or just return a reference		
 	 * @return value
 	 */
@@ -83,20 +83,19 @@ public interface RemoteREngineInterface extends Remote {
 	/** 
 	 * fetch the contents of the given reference. 
 	 * The resulting REXP may never be REXPReference. 
-	 * The engine should raise a {@link #REngineException} exception
-	 * if {@link #supportsReferences()} returns <code>false</code>.
 	 * 
 	 * @param ref reference to resolve
 	 * @return resolved reference
+	 * @throws REngineException if references are not supported
 	 */
 	public REXP resolveReference(REXP ref) throws REngineException, REXPMismatchException, RemoteException;
 
 	/** 
 	 * create a reference by pushing local data to R and returning a reference to the data. If ref is a reference it is returned as-is. 
-	 * The engine should raise a {@link #REngineException} exception if {@link #supportsReferences()} returns <code>false</code>.
 	 * 
 	 * @param value to create reference to
 	 * @return reference to the value
+	 * @throws REngineException if references are not supported by the engine
 	 */
 	public REXP createReference(REXP value) throws REngineException, REXPMismatchException, RemoteException;
 

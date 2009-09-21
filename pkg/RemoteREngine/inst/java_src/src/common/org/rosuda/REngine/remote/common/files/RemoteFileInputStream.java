@@ -54,7 +54,7 @@ public interface RemoteFileInputStream extends Remote {
 	/**
 	 * Tests if this input stream supports the mark and reset methods
 	 * 
-	 * @return
+	 * @return true if this input stream supports the mark and reset methods
 	 */
 	public boolean 	markSupported() throws RemoteException ;
     
@@ -64,11 +64,10 @@ public interface RemoteFileInputStream extends Remote {
 	 */
 	public void reset() throws RemoteException, ServerSideIOException ; 
      
-    /**
-     * Skips over and discards n bytes of data from this input stream.
-     * @param n
-     * @return
-     * @throws ServerSideIOException when an IO exception happens on the server side 
+  /**
+   * Skips over and discards n bytes of data from this input stream.
+   * @param n
+   * @throws ServerSideIOException when an IO exception happens on the server side 
 	 */
 	public long skip(long n) throws RemoteException, ServerSideIOException ;
    

@@ -261,11 +261,10 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	/** 
 	 * fetch the contents of the given reference. 
 	 * The resulting REXP may never be REXPReference. 
-	 * The engine should raise a {@link #REngineException} exception
-	 * if {@link #supportsReferences()} returns <code>false</code>.
 	 * 
 	 * @param ref reference to resolve
 	 * @return resolved reference
+	 * @throws REngineException if references are not supported
 	 */
 	public REXP resolveReference(REXP ref) throws REngineException, REXPMismatchException{
 		REXP res = null ; 
@@ -278,8 +277,9 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	}
 
 	/** 
-	 * create a reference by pushing local data to R and returning a reference to the data. If ref is a reference it is returned as-is. 
-	 * The engine should raise a {@link #REngineException} exception if {@link #supportsReferences()} returns <code>false</code>.
+	 * create a reference by pushing local data to R and returning a reference to the data. 
+	 * If ref is a reference it is returned as-is. 
+	 * The engine should raise a <code>REngineException</code> exception if {@link #supportsReferences()} returns <code>false</code>.
 	 * 
 	 * @param value to create reference to
 	 * @return reference to the value

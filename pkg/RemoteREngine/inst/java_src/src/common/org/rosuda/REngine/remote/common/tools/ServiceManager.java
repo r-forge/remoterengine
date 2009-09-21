@@ -49,7 +49,7 @@ public class ServiceManager {
 	 * @param <T> the type of {@link Service}
 	 * @param serviceClass service class
 	 * @param name name of the implementation of the service
-	 * @return
+	 * @return an instance of the requested service
 	 * @throws ServiceException
 	 */
 	@SuppressWarnings("unchecked")

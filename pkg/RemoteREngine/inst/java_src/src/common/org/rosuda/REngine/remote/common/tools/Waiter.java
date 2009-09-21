@@ -41,6 +41,8 @@ public class Waiter<K,V> {
 	 * 
 	 * @param key the key
 	 * @return the value of the given key
+	 * 
+	 * FIXME: this is not correct as it blocks on the first asked key
 	 */
 	public synchronized V get(K key) {
 		while ( map.isEmpty() || !map.containsKey(key)){
@@ -53,8 +55,10 @@ public class Waiter<K,V> {
 	}
 
 	/**
-	 * Adds an object to the queue
-	 * @param o object to add in the tail of the queue
+	 * Adds an object to the map
+	 * 
+	 * @param key key 
+	 * @param value value
 	 */
 	public synchronized void put(K key, V value) {
 		map.put(key, value); 

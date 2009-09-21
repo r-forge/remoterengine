@@ -216,6 +216,15 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		running = true; 
 	}
 	
+	/** 
+	 * utility to extract the long pointer from a reference. This is only used when making the variables 
+	 * object because it needs to transfer to the client before the client can resolve references
+	 */
+	private long getPointer( REXPReference ref){
+		return ( (Long)ref.getHandle() ).longValue() ;
+	}
+	
+	
 	/**
 	 * Constructor initializing R with the default arguments - service will run on a randomly assigned port
 	 * 
@@ -367,11 +376,10 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	/** 
 	 * fetch the contents of the given reference. 
 	 * The resulting REXP may never be REXPReference. 
-	 * The engine should raise a {@link #REngineException} exception
-	 * if {@link #supportsReferences()} returns <code>false</code>.
 	 * 
 	 * @param ref reference to resolve
 	 * @return resolved reference
+	 * @throws REngineException when references are not supported
 	 */
 	public REXP resolveReference(REXP ref) throws REngineException, REXPMismatchException{ 
 		debug( ">> resolveReference" ) ;
@@ -379,11 +387,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	}
 
 	/** 
-	 * create a reference by pushing local data to R and returning a reference to the data. If ref is a reference it is returned as-is. 
-	 * The engine should raise a {@link #REngineException} exception if {@link #supportsReferences()} returns <code>false</code>.
+	 * create a reference by pushing local data to R and returning a reference to the data. 
+	 * If <code>value</code> is a reference it is returned as-is. 
 	 * 
 	 * @param value to create reference to
 	 * @return reference to the value
+	 * @throws REngineException if references are not supported
 	 */
 	public REXP createReference(REXP value) throws REngineException, REXPMismatchException{
 		debug( ">> createReference" ) ;
@@ -478,7 +487,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Called when a client wants to send a command to the REPL
 	 * 
 	 * @param cmd command to send to the REPL
-	 * @param client the client that sent the command
+	 * @param origin the client that sent the command
 	 * 
 	 * @throws RemoteException
 	 */
@@ -579,16 +588,10 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	}
 
 	/**
-	 * The listeners associated with this server
-	 * @return 
+	 * @return The listeners associated with this server  
 	 */
 	public synchronized Vector<CallbackListener> getCallbackListeners() {
 		return callbackListeners ;
-	}
-
-	
-	private long getPointer( REXPReference ref){
-		return ( (Long)ref.getHandle() ).longValue() ;
 	}
 	
 }

@@ -44,8 +44,7 @@ public class ClientCallbackDispatcher extends StoppableThreadWithSynchronizer<RC
 	protected Vector<CallbackListener> listeners ; 
 	
 	/**
-	 * Constructor
-	 * @param client
+	 * @param engine associated remote R engine
 	 */
 	public ClientCallbackDispatcher(RemoteREngine engine) {
 		super("client callback dispatcher");

@@ -90,7 +90,7 @@
 		           windowtitle="Remote R Server Javadoc"
 				   classpathref="server_classpath">
 
-		    <fileset dir="src" defaultexcludes="yes">	
+				<fileset dir="src/common" defaultexcludes="yes">	
 		    	<exclude name="**/*.xml"/>
 		    	<exclude name="**/*.properties"/>
 		    	<exclude name="**/*.html"/>
@@ -101,6 +101,30 @@
 		    	<exclude name="**/All*Tests.java"/>
 		    </fileset>
 
+				   
+		    <fileset dir="src/client" defaultexcludes="yes">	
+		    	<exclude name="**/*.xml"/>
+		    	<exclude name="**/*.properties"/>
+		    	<exclude name="**/*.html"/>
+		    	<exclude name="**/*.htm"/>
+		    	<exclude name="**/test/*"/>
+		    	<exclude name="**/*Test.java"/>
+		    	<exclude name="**/All*Test.java"/>
+		    	<exclude name="**/All*Tests.java"/>
+		    </fileset>
+
+		    <fileset dir="src/server" defaultexcludes="yes">	
+		    	<exclude name="**/*.xml"/>
+		    	<exclude name="**/*.properties"/>
+		    	<exclude name="**/*.html"/>
+		    	<exclude name="**/*.htm"/>
+		    	<exclude name="**/test/*"/>
+		    	<exclude name="**/*Test.java"/>
+		    	<exclude name="**/All*Test.java"/>
+		    	<exclude name="**/All*Tests.java"/>
+		    </fileset>
+
+		    
 		    <doctitle><![CDATA[<h1>Remote R Server Javadoc</h1>]]></doctitle>
 		    <bottom><![CDATA[<i>Copyright &#169; 2009, Romain Francois <a href="mailto://francoisromain@free.fr">francoisromain@free.fr</a></i>]]></bottom>
 		    <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>

@@ -150,7 +150,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * called when R waits for user input. During the duration of this callback it 
 	 * is safe to re-enter R, and very often it is also the only time. The implementation 
 	 * is free to block on this call until the user hits Enter, but in JRI it is 
-	 * a good idea to call {@link Rengine.rniIdle()} occasionally to allow other 
+	 * a good idea to call <code>Rengine.rniIdle()</code> occasionally to allow other 
 	 * event handlers (e.g graphics device UIs) to run. Implementations should NEVER return 
 	 * immediately even if there is no input - such behavior will result in a fast cycling event 
 	 * loop which makes the use of R pretty much impossible.
