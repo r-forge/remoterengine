@@ -28,16 +28,15 @@ generate.build.properties <- function(  ){
 	client.policy <- system.file( "policy", "client.policy", package = "RemoteREngine" ) 
 	server.policy <- system.file( "policy", "server.policy", package = "RemoteREngine" ) 
 	
-	generated.properties <- paste( "\n\n\n# generated content below\n\n",
+	generated.properties <- paste( 
 		"testng.jar=", testng.jar, "\n", 
 		"client.jar=", client.jar, "\n", 
 		"testcases.jar=", testcases.jar, "\n", 
 		"rmicodebase=", rmicodebase, "\n", 
 		"client.policy=", client.policy, "\n" ,
 		"server.policy=", server.policy, "\n", sep = "" )
-	cat( generated.properties, file = "build.properties" ,	sep = "", 
+	cat( generated.properties, file = "generated.properties" ,	sep = "", 
 		append = TRUE )
-	cat( generated.properties, file = "../testng/build.properties", sep = "" )
 }			
 # }}}
 
