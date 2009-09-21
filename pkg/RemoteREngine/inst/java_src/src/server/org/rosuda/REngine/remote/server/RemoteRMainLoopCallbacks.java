@@ -159,7 +159,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param prompt prompt to be displayed at the console prior to user's input
 	 * @param addToHistory flag telling the handler whether the input should be considered for adding to history (!=0) or not (0)
 	 * @return user's input to be passed to R for evaluation */
-	public String rReadConsole(Rengine re, String prompt, int addToHistory) {
+	public synchronized String rReadConsole(Rengine re, String prompt, int addToHistory) {
 		/* send the callback to clients (they might be interested in the prompt) */
 		ReadConsoleCallback callback = new ReadConsoleCallback( prompt) ;
 		server.sendCallbackToListeners( callback ) ; 
