@@ -86,9 +86,9 @@
 		           author="true"
 		           version="true"
 		           use="true"
-				   private="true"
+		           private="true"
 		           windowtitle="Remote R Server Javadoc"
-				   classpathref="server_classpath">
+		           classpathref="server_classpath">
 
 				<fileset dir="src/common" defaultexcludes="yes">	
 		    	<exclude name="**/*.xml"/>
@@ -127,9 +127,8 @@
 		    
 		    <doctitle><![CDATA[<h1>Remote R Server Javadoc</h1>]]></doctitle>
 		    <bottom><![CDATA[<i>Copyright &#169; 2009, Romain Francois <a href="mailto://francoisromain@free.fr">francoisromain@free.fr</a></i>]]></bottom>
-		    <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
-		    <link href="http://www.rforge.net/org/docs/" />
-		    <link href="."/>
+		    <link href="http://java.sun.com/j2se/1.5.0/docs/api/" offline="true" packageListLoc="packageList/java" />
+		    <link href="http://www.rforge.net/org/docs/" offline="true" packagelistLoc="packagelist/rosuda/" />		    
 		</javadoc>
 	</target>
 	<!--}}}-->
