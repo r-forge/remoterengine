@@ -53,7 +53,8 @@ public class RemoteREngineTestBase {
 				System.setSecurityManager(new SecurityManager());
 			}
 			r = new RemoteREngine( name , RemoteREngineConstants.RMIHOSTNAME , registryPort );
-			System.out.println("Connected to " + name + " via " + RemoteREngineConstants.RMIHOSTNAME + 
+			 
+			System.out.println(((r != null) ? "Connected to " : "Failed to connect to ") + name + " via " + RemoteREngineConstants.RMIHOSTNAME + 
 					" registry on port " + registryPort);
 		} catch( Exception e ){
 			System.err.println( "cannot connect to R engine" ) ;
