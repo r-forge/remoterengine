@@ -32,6 +32,10 @@ import org.rosuda.REngine.remote.common.RemoteREngineTestBase;
  */
 public class TestFactors extends RemoteREngineTestBase {
 
+	public TestFactors() throws Exception {
+		super();
+	}
+	
 	@Test
 	public void testFactors() throws Exception {
 		System.out.println("* Test support of factors");

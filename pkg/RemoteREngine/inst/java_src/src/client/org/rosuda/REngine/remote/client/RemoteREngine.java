@@ -113,8 +113,9 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * @param registryHost Name or IP Address of the host containing the RMI registry
 	 * @param name Name of the Remote server registered within the Registry
 	 * @param port port to use to connect to the server
+	 * @throws EngineNotAvailableException Failed to connect to remote R engine
 	 */
-	public RemoteREngine(String name, String registryHost, int port){
+	public RemoteREngine(String name, String registryHost, int port) throws EngineNotAvailableException {
 		if (name == null || name.length()==0) {
 			System.err.println("RMI Name of remote engine not defined");
 		}
@@ -142,10 +143,10 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			
 			valid = testConnection(); 
 		} catch ( NotBoundException nb) {
-			System.out.println("Unable to locate " + name + " within RMI Registry");
+			throw new EngineNotAvailableException("Unable to locate " + name + " within RMI Registry on " + 
+					registryHost,nb);
 		} catch( Exception e ){
-			System.out.println( e.getClass().getName() + " creating the RemoteREngine" ) ;
-			e.printStackTrace();
+			throw new EngineNotAvailableException("Unable to create RemoteREngine",e);
 		}
 		
 		shutdownHook = new RemoteREngineShutdownHook(); 
@@ -187,8 +188,9 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * @see RemoteREngineConstants#RMIPORT for the default value
 	 * @param name name of the remote object in the registry
 	 * @param registryHost host name
+	 * @throws EngineNotAvailableException Failed to connect to remote R engine
 	 */
-	public RemoteREngine(String name, String registryHost ){
+	public RemoteREngine(String name, String registryHost ) throws EngineNotAvailableException {
 		this( name, registryHost, RemoteREngineConstants.RMIPORT ) ;
 	}
 

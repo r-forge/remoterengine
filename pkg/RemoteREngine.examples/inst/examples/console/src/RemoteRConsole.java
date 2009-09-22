@@ -15,6 +15,7 @@ public class RemoteRConsole {
 			ConsoleThread console = new ConsoleThread( r ) ; 
 			console.start( ) ; 
 	  } catch( Exception e){
+		System.err.println(e.getClass().getName() + ": " + e.getMessage());
 	  	e.printStackTrace(); 
 	  }
 	}

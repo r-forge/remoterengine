@@ -3,6 +3,7 @@ package org.rosuda.REngine.remote.common;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.rosuda.REngine.remote.client.EngineNotAvailableException;
 import org.rosuda.REngine.remote.client.RemoteREngine;
 import org.testng.annotations.BeforeSuite;
 
@@ -28,23 +29,27 @@ import org.testng.annotations.BeforeSuite;
  * @version $Rev: 129 $ as of $Date: 2009-09-15 12:18:19 +0200 (Tue, 15 Sep 2009) $
  * <p>URL : $HeadURL: svn+ssh://romain@svn.r-forge.r-project.org/svnroot/remoterengine/pkg/RemoteREngine/inst/java_src/test/org/rosuda/REngine/remote/common/RemoteREngineTestBase.java $
  */
-public class RemoteREngineTestBase {
+public abstract class RemoteREngineTestBase {
 	/** Instance of the Remote R Engine available for tests */
-	protected static RemoteREngine r = init();
+	protected static RemoteREngine r = null;
 
+	/**
+	 * Call init() to connect to an instance of the RemoteREngine
+	 * @throws EngineNotAvailableException
+	 */
+	protected RemoteREngineTestBase() throws EngineNotAvailableException {
+		super();
+		init();
+	}
+	
 	/**
 	 * Create a connection to a running remote server
 	 * @return Reference to a remote engine
+	 * @throws EngineNotAvailableException Failed to connect to remote R engine
 	 */
 	@BeforeSuite
-	protected static RemoteREngine init(){
-/*		Properties props = System.getProperties();
-		for (Enumeration<?> enumerator = props.keys(); enumerator.hasMoreElements(); ) {
-			String key = (String)enumerator.nextElement();
-			String value = props.getProperty(key);
-			System.out.println(key + " : " + value);
-		}
-*/
+	protected static RemoteREngine init() throws EngineNotAvailableException {
+
 		RemoteREngine r = null ;
 		String name = "RemoteREngineTest";
 		int registryPort = RemoteREngineConstants.RMIPORT;
