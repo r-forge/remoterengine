@@ -25,7 +25,6 @@ import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -113,9 +112,8 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * @param registryHost Name or IP Address of the host containing the RMI registry
 	 * @param name Name of the Remote server registered within the Registry
 	 * @param port port to use to connect to the server
-	 * @throws EngineNotAvailableException Failed to connect to remote R engine
 	 */
-	public RemoteREngine(String name, String registryHost, int port) throws EngineNotAvailableException {
+	public RemoteREngine(String name, String registryHost, int port){
 		if (name == null || name.length()==0) {
 			System.err.println("RMI Name of remote engine not defined");
 		}
@@ -142,11 +140,8 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			callbackDispatcher.start();
 			
 			valid = testConnection(); 
-		} catch ( NotBoundException nb) {
-			throw new EngineNotAvailableException("Unable to locate " + name + " within RMI Registry on " + 
-					registryHost,nb);
-		} catch( Exception e ){
-			throw new EngineNotAvailableException("Unable to create RemoteREngine",e);
+		} catch (Throwable e){
+			new REngineConnectException("Unable to connect to R server "+registryHost+":"+port+"/"+name, e);
 		}
 		
 		shutdownHook = new RemoteREngineShutdownHook(); 
@@ -188,9 +183,8 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 	 * @see RemoteREngineConstants#RMIPORT for the default value
 	 * @param name name of the remote object in the registry
 	 * @param registryHost host name
-	 * @throws EngineNotAvailableException Failed to connect to remote R engine
 	 */
-	public RemoteREngine(String name, String registryHost ) throws EngineNotAvailableException {
+	public RemoteREngine(String name, String registryHost ){
 		this( name, registryHost, RemoteREngineConstants.RMIPORT ) ;
 	}
 
@@ -352,7 +346,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		try{
 			res = engine.parseAndEval( text, where, resolve ) ;
 		} catch( RemoteException e){
-			RemoteExceptionManager.send( e, "parseAndEval" );
+			throw new REngineEvaluationException(where, "Error in evaluate expression '" + text + "', cause "+e.getMessage(), e);
 		}
 		return res ; 
 	}
@@ -553,4 +547,3 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 		}
 	}
 }
-
