@@ -193,6 +193,11 @@ public interface RemoteREngineInterface extends Remote {
 	 */
 	public void sendToConsole( String cmd, RemoteREngineClient client ) throws RemoteException ;
 	
-	
+	/**
+	 * Shut down the RServer and underlying R process. NOTE: This will terminate all the connections
+	 * to the R Server and should only be called if the intention is to shut down the whole system.
+	 * @throws RemoteException Error executing shutdown
+	 */
+	public void shutdown() throws RemoteException;
 }
 
