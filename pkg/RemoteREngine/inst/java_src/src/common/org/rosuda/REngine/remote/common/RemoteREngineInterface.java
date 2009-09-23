@@ -173,7 +173,7 @@ public interface RemoteREngineInterface extends Remote {
 	public JRIEngineGlobalVariables subscribe( RemoteREngineClient client) throws RemoteException, AlreadyRegisteredException ;
 
 	/**
-	 * Close the engine. Ends the subscription 
+	 * Close the client connection to the engine. Ends the subscription 
 	 * @throws RemoteException
 	 */
 	public void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException ;  
