@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -160,7 +161,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		addCallbackListener( consoleCallbackHandler ) ;
 		
 		r = new JRIEngine( args, callbackLoop ) ;
-		
+
 		/* TODO: forbid the q function */
 		
 		/* capture global variables of the JRIEngine */
@@ -181,7 +182,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		try {
 			if (registry==null) registry = LocateRegistry.createRegistry(registryPort);
 		} catch (RemoteException e) {
-			System.err.println(e.getClass().getName() + ": While trying to create registery on port " + registryPort + 
+			System.err.println(e.getClass().getName() + ": While trying to create registry on port " + registryPort + 
 					": " + e.getMessage());
 			System.err.println(e.getCause());
 			throw e;
@@ -197,7 +198,17 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		try {
 			registry.bind(name, stub);
 		} catch (AlreadyBoundException e) {
-			debug(name + " already bound, attempting to rebind");
+			debug(name + " already bound, attempting to shut down previous server");
+			
+//			try {
+//				RemoteREngineInterface previousServer = (RemoteREngineInterface)registry.lookup(name);
+//				previousServer.shutdown();
+//			} catch (RemoteException re) {
+//				System.err.println(re.getClass().getName() + " while trying to shut down previous server");
+//			} catch (NotBoundException nbe) { 
+//				// Do nothing - it has just unbound!	
+//			} 
+
 			try {
 				registry.rebind(name, stub);
 			} catch (AccessException ae) {
@@ -296,6 +307,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			}
 		} catch (NotBoundException e) {
 			// don't care
+		} catch (NoSuchObjectException e) {
+			// don't care about this either - we are just trying to clean up
 		} catch (RemoteException e) {
 			StringBuffer buf = new StringBuffer(e.getClass().getName() + ": " + e.getMessage() + ". While unbinding " + name);
 			Throwable cause = e.getCause();
