@@ -30,6 +30,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Calendar;
 import java.util.Vector;
 
 import org.rosuda.JRI.Rengine;
@@ -41,16 +42,13 @@ import org.rosuda.REngine.REngineRegistry;
 import org.rosuda.REngine.JRI.JRIEngine;
 import org.rosuda.REngine.remote.common.JRIEngineGlobalVariables;
 import org.rosuda.REngine.remote.common.RemoteREngineClient;
-import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
 import org.rosuda.REngine.remote.common.callbacks.CallbackListener;
 import org.rosuda.REngine.remote.common.callbacks.CallbackResponse;
 import org.rosuda.REngine.remote.common.callbacks.RCallback;
 import org.rosuda.REngine.remote.common.callbacks.RCallbackWithResponse;
-import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.ServerDownCallback;
 import org.rosuda.REngine.remote.common.console.Command;
-import org.rosuda.REngine.remote.common.console.CommandSender;
 import org.rosuda.REngine.remote.common.console.RemoteREngineClientSender;
 import org.rosuda.REngine.remote.common.exceptions.AlreadyRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.FileAlreadyExistsException;
@@ -210,6 +208,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 //			} 
 
 			try {
+				// Note, by automatically rebinding we risk orphaning the previous server and leaving
+				// process leaks
 				registry.rebind(name, stub);
 			} catch (AccessException ae) {
 				System.err.println("AccessException while rebinding server to registry: " + ae.getMessage());
@@ -281,23 +281,27 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Shutdown the server
 	 */
 	public synchronized void shutdown(){
-		System.err.println( "shutdown" ) ;
+		System.err.println( "R Server: shutdown" ) ;
+		
 		if( !running ) return; 
 		running = false; 
 		
-		consoleThread.requestStop() ;
-		consoleThread.interrupt() ;
+		if (consoleThread != null) consoleThread.requestStop() ;
+		if (consoleThread != null) consoleThread.interrupt() ;
 		
 		if( !clients.isEmpty() ){
 			ServerDownCallback dying = new ServerDownCallback() ;
 			sendCallbackToListeners(dying) ;
 		}
 		/* TODO: empty the clients and listeners ? */
-		/* TODO: shutdown R cleanly as well */
 		
 		System.err.println("Unbinding " + name );
 		try {
-			if (registry != null) registry.unbind( name );
+			if (registry != null) {
+				registry.unbind( name );
+				System.out.println(name + " unbound from registry ");
+			}
+			
 			if (stub != null) {
 				if (UnicastRemoteObject.unexportObject(stub, false)) {
 					System.out.println(name + " successfully unexported");
@@ -317,11 +321,45 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			}
 			System.err.println( buf.toString());
 		}
-		System.out.println("Stopping the JVM");
+		System.out.println("Stopping R");
+		/* : shutdown R cleanly as well */
+		try {
+			RTermination rterminator = new RTermination();
+			rterminator.start();
+		} catch (Exception e) {
+			System.err.println(e.getClass().getName() + " while closing R session; " + e.getMessage());
+		}
+		System.out.println("\n" + Calendar.getInstance().getTime() + ": Stopping the JVM in 3 seconds.");
+		int seconds = 3000;
+		for (int i=0; i < seconds; i+=100) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {}
+			System.out.print(".");
+		}
+		System.out.println("\nJava Shut down");
 		System.exit(0);
 		
 		
 	}
+
+	/**
+	 * Thread to shut down the R process underneath this engine.
+	 */
+	private class RTermination extends Thread{
+		public void run(){
+			try {
+				System.out.println("Terminating R");
+				Rengine theEngine = r.getRni();
+				if (theEngine != null && theEngine.isAlive()) theEngine.end();
+				System.out.println("R Terminated at " + Calendar.getInstance().getTime() );
+			} catch (Exception e) {
+				System.err.println(e.getClass().getName() + " while closing R session; " + e.getMessage());
+			}
+			return;
+		}
+	}
+
 	
 	/**
 	 * @return the name of this engine in the RMI registry
