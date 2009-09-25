@@ -141,7 +141,7 @@ public class RemoteREngine extends REngine implements RemoteREngineClient {
 			
 			valid = testConnection(); 
 		} catch (Throwable e){
-			new REngineConnectException("Unable to connect to R server "+registryHost+":"+port+"/"+name, e);
+			throw new REngineConnectException("Unable to connect to R server "+registryHost+":"+port+"/"+name, e);
 		}
 		
 		shutdownHook = new RemoteREngineShutdownHook(); 
