@@ -3,7 +3,6 @@ package org.rosuda.REngine.remote.common;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.rosuda.REngine.remote.client.EngineNotAvailableException;
 import org.rosuda.REngine.remote.client.RemoteREngine;
 import org.testng.annotations.BeforeSuite;
 
@@ -35,9 +34,8 @@ public abstract class RemoteREngineTestBase {
 
 	/**
 	 * Call init() to connect to an instance of the RemoteREngine
-	 * @throws EngineNotAvailableException
 	 */
-	protected RemoteREngineTestBase() throws EngineNotAvailableException {
+	protected RemoteREngineTestBase() {
 		super();
 		init();
 	}
@@ -45,12 +43,9 @@ public abstract class RemoteREngineTestBase {
 	/**
 	 * Create a connection to a running remote server
 	 * @return Reference to a remote engine
-	 * @throws EngineNotAvailableException Failed to connect to remote R engine
 	 */
-	@BeforeSuite
-	protected static RemoteREngine init() throws EngineNotAvailableException {
+	protected static RemoteREngine init() {
 
-		RemoteREngine r = null ;
 		String name = "RemoteREngineTest";
 		int registryPort = RemoteREngineConstants.RMIPORT;
 		try{
