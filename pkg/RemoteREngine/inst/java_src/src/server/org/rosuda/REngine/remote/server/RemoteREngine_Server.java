@@ -22,6 +22,7 @@ package org.rosuda.REngine.remote.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NoSuchObjectException;
@@ -31,6 +32,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.rosuda.JRI.Rengine;
@@ -223,7 +225,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw e;
 		}
 
-		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + servicePort + " to local RMIRegistry running on port " + registryPort );
+		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + servicePort + 
+				" to local RMIRegistry running on port " + registryPort + ", running under Id: " + getPID());
 		running = true; 
 	}
 	
@@ -645,5 +648,24 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		return callbackListeners ;
 	}
 	
+	/**
+	 * Method to return an estimate of the JVM's process Id. This implementation is not guaranteed to work
+	 * on all OSs - no Java PID solution is, however it appears to work on most common ones.
+	 * @return ProcessId of the JVM
+	 */
+	public String getPID() {
+		try {
+			String name = ManagementFactory.getRuntimeMXBean().getName();
+			if (name.indexOf("@") > 0) {
+				StringTokenizer tok = new StringTokenizer(name,"@");
+				return tok.nextToken();
+			} else  {
+				return name;
+			}
+		} catch (Exception e) {
+			if (DEBUG) System.out.println(e.getClass().getName() + " while trying to determine process Id; " + e.getMessage());
+			return "";
+		}
+	}
 }
 
