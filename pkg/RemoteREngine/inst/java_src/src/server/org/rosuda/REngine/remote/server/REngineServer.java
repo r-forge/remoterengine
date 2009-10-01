@@ -105,7 +105,7 @@ public class REngineServer {
 	    try {
 	    	logger.debug("About to start R Server using: rmiName {}; servicePort {}; rmiPort {}; args null",
 	    			new Object[] {rmiName,servicePort,new Integer(rmiPort)});
-	    	engine = new RemoteREngine_Server(rmiName, servicePort, rmiPort, null);
+	    	engine = new RemoteREngine_Server(rmiName, servicePort, rmiPort, arguments.get("init"), null);
 	    } catch (REngineException e) {
 	    	System.err.println(e.getClass().getName() +": While creating the R Engine, " + e.getMessage());
 	    	logger.error(e.getClass().getName() + " while creating the R Engine",e);
@@ -172,6 +172,9 @@ public class REngineServer {
 		System.out.println("  [--debug]    			: Print out additional debug information");
 		System.out.println("                     	default: 'No' ");
 		
+		System.out.println("  [--init]    			: R server init script");
+		System.out.println("                     	default: '' (no init script) ");
+
 	}
 	
     

@@ -1,8 +1,8 @@
 Package: RemoteREngine
 Type: Package
 Title: RMI based REngine implementation 
-Version: 0.0-6
-Date: 2009-09-29
+Version: 0.0-7
+Date: 2009-10-01
 Author: Romain Francois 
 Maintainer: Romain Francois <francoisromain@free.fr>
 Description: RMI based REngine implementation

@@ -1,0 +1,9 @@
+
+0.0-7
+
+Enabled the user to specify a start up script to be run on the server prior to 
+the server registering itself.
+
+0.0-6
+
+Introduced logging on the server via log4j & slf4j.

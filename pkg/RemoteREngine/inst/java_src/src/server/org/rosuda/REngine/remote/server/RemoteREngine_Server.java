@@ -21,7 +21,10 @@
 package org.rosuda.REngine.remote.server;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
@@ -39,6 +42,7 @@ import org.rosuda.JRI.Rengine;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REXPReference;
+import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.REngineRegistry;
 import org.rosuda.REngine.JRI.JRIEngine;
@@ -141,11 +145,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param name name of this engine in the RMI registry
 	 * @param servicePort Port number for this service to use for recieving requests
 	 * @param registryPort port used by the RMI registry
+	 * @param startUpOptions the client start up options
 	 * @param args arguments for R 
 	 * 
 	 * @throws REngineException Error creating the R instance
 	 */ 
-	public RemoteREngine_Server(String name, int servicePort, int registryPort, String[] args) throws REngineException, RemoteException, AccessException {
+	public RemoteREngine_Server(String name, int servicePort, int registryPort, String initScript, String[] args) throws REngineException, RemoteException, AccessException {
 		super();
 		this.name = name ; 
 		this.registryPort = registryPort ;
@@ -168,6 +173,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.debug("About to construct JRIEngine");
 		r = new JRIEngine( args, callbackLoop ) ;
 
+		// Execute R prepare script before R server is available via RMI
+		runInitScript(r, initScript);
+		
 		/* TODO: forbid the q function */
 		
 		/* capture global variables of the JRIEngine */
@@ -237,7 +245,86 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				" to local RMIRegistry running on port " + registryPort + ", running under Id: " + getPID());
 		running = true; 
 	}
+
+	/**
+	 * Run the initialisation script.
+	 * 
+	 * <p>
+	 * If the script path is not provided or empty, return without action.
+	 * 
+	 * @param r the JRI engine
+	 * @param initScript the path to the initial script
+	 * @throws REngineException
+	 * @throws RemoteException
+	 * @throws AccessException
+	 */
+	private void runInitScript(JRIEngine r, String initScript) throws REngineException, RemoteException, AccessException{
+		
+		// if no init script provided
+		if (initScript == null || initScript.trim().length() == 0){
+			return;
+		}
+		
+		logger.info("REngine execute init script '"+initScript+"' ...");
+		
+		// read the whole content of the init script
+		String script = readFile(initScript);
+		
+		// parse and evaluate the script
+		try {
+			r.parseAndEval(script);
+		} catch (REXPMismatchException e) {
+			logger.error("Unable to run init script '"+initScript+"', "+e.getMessage(),e);
+			throw new REngineException(REngine.getLastEngine(), "Unable to run init script '"+initScript+"', "+e.getMessage());
+		}
+	}
 	
+	/**
+	 * Read the content of the init script.
+	 * 
+	 * @param filePath
+	 * @return
+	 * @throws AccessException
+	 */
+	private String readFile(String filePath) throws AccessException{
+		File file = new File(filePath);
+		logger.debug("Executing: {}",file.getAbsolutePath());
+		InputStream in = null;
+		try {
+			in = new FileInputStream(file);
+			byte[] buf = new byte[(int)file.length()];
+			in.read(buf);
+			return new String(buf);
+		} catch (FileNotFoundException e) {
+			String msg = "Init script '"+filePath+"' not found.";
+			logger.error(msg,e);
+			throw new AccessException(msg, e);
+		} catch (IOException e) {
+			String msg = "Error in reading Init script '"+filePath+"', "+e.getMessage();
+			logger.error(msg,e);
+			throw new AccessException(msg, e);
+		} finally{
+			closeInputStream(in);
+		}
+	}
+	
+	/**
+	 * Close the input stream silently.
+	 * 
+	 * @param in
+	 */
+	private void closeInputStream(InputStream in) {
+		if (in == null){
+			return;
+		}
+		try {
+			in.close();
+			in = null;
+		} catch (IOException e) {
+			logger.error("Error in close inputstream :"+e.getMessage(),e);
+		}
+	}
+
 	/** 
 	 * utility to extract the long pointer from a reference. This is only used when making the variables 
 	 * object because it needs to transfer to the client before the client can resolve references
@@ -258,7 +345,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws AccessException
 	 */
 	public RemoteREngine_Server(String name, int port) throws REngineException, RemoteException, AccessException{
-		this( name, 0, port, null) ;
+		this( name, 0, port, null, null) ;
 	}
 	
 	/**
@@ -274,7 +361,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 
 	public RemoteREngine_Server(String name, int servicePort, int registryPort) throws REngineException, RemoteException, AccessException{
-		this( name, servicePort, registryPort, null) ;
+		this( name, servicePort, registryPort, null, null) ;
 	}
 	/**
 	 * Shutdown hook that indicates to clients of this server 
