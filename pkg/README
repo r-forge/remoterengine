@@ -5,7 +5,7 @@ $ R CMD build RemoteREngine
 
 this creates a tar.gz file
 
-# R CMD INSTALL --clean RemoteREngine_0.0-5.tar.gz
+# R CMD INSTALL --clean RemoteREngine_0.0-*.tar.gz
 
 ( this has the advantage of not adding the compiled files into the project )
 
@@ -27,3 +27,4 @@ $ re --name test
 $ re --name test --port 1099
 $ re 
 
+For further information, check http://wiki.r-project.org/rwiki/doku.php?id=packages:r-forge:remoterengine
