@@ -24,7 +24,9 @@
 	<!--{{{ Properties -->
   <property file="./build.properties"/>
   <!--}}} -->
-  
+
+	<filelist id="loggingjars" dir="${lib.dir}" files="${logging.jars}"/>
+
   <!--{{{ clean -->
 	<target name="clean">
 		<delete dir="build" />
@@ -50,6 +52,7 @@
 	
 	<path id="common_classpath">
 		<pathelement location="lib/REngine.jar" />
+		<filelist refid="loggingjars" />
 	</path>
 	
 	<target name="common" depends="init">
@@ -138,6 +141,7 @@
 		<pathelement location="${common.dir}" />
 		<pathelement location="${rengine.jar}" />
 		<pathelement location="${jriengine.jar}" />
+		<filelist refid="loggingjars" />
 	</path>
 	
 	<target name="server" depends="common">
@@ -161,6 +165,7 @@
 	<path id="client_classpath">
 		<pathelement location="${common.dir}" />
 		<pathelement location="lib/REngine.jar" />
+		<filelist refid="loggingjars" />
 	</path>
 	
 	<target name="client" depends="common,server">
@@ -192,6 +197,7 @@
 		<pathelement location="${client.dir}" />
 		<pathelement location="${rengine.jar}" />
 		<pathelement location="${jriengine.jar}" />
+		<filelist refid="loggingjars" />
 	</path>
 	
 
@@ -213,6 +219,7 @@
 		<pathelement location="${common.dir}" />
 		<pathelement location="${server.dir}" />
 		<pathelement location="${client.dir}" />
+		<filelist refid="loggingjars" />
 	</path>
 	
 	<target name="annotation-javac" depends="client">
@@ -242,6 +249,7 @@
 	
 	<path id="annotation_factory_path">
 		<pathelement location="jars/RemoteREngine-annotationprocessor.jar" />
+		<filelist refid="loggingjars" />
 	</path>
 	
 	<target name="annotation" depends="annotation-jar">
@@ -256,16 +264,17 @@
 	<!--}}}-->
 
 	<!--{{{ copy the manifest file and licenses -->
-	<target name="do.copy" description="copy the manifest file and licenses">
+	<target name="do.copy" description="copy the manifest file, logging jars and licenses">
 		<mkdir dir="${common.dir}/licenses"/>
 		<copy todir="${common.dir}/licenses">
 			<fileset dir="lib/licenses">
 				<include name="**/*"/>
 			</fileset>
 		</copy>
-		<copy todir="build">
+		<copy todir="${build.dir}">
 			<fileset dir=".">
 				<include name="MANIFEST.MF"/>
+				<include name="${logging.conf}" />
 			</fileset>
 		</copy>
 		<tstamp>
@@ -279,6 +288,10 @@
 			<replacefilter token="{build.os}" value="${os.name}-${os.version}" />
 			<replacefilter token="{vendor}" value="${vendor}" />
 		</replace>
+		
+		<copy todir="${jar.dir}">
+			<filelist refid="loggingjars" />
+		</copy>
 	</target>
 	<!--}}}-->
 
@@ -291,6 +304,7 @@
 			<fileset dir="${common.dir}" />
 			<fileset dir="${stubs.dir}" />
 			<fileset file="build/services.xml" />
+			<fileset file="${logging.conf}" />
 		</jar>
 		
 		<!-- server jar -->
@@ -302,6 +316,7 @@
 			<fileset dir="${common.dir}" />
 			<fileset dir="${stubs.dir}" />
 			<fileset file="build/services.xml" />
+			<fileset file="${logging.conf}" />
 		</jar>
 
 	</target>

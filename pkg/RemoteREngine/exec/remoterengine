@@ -84,6 +84,9 @@ Sys.setenv( NO_SIG = NO_SIG )
 # {{{ classpath
 CP <- paste( 
 	system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), 
+	system.file( "java", "log4j-1.2.15.jar", package = "RemoteREngine" ), 
+	system.file( "java", "slf4j-log4j12-1.5.8.jar", package = "RemoteREngine" ), 
+	system.file( "java", "slf4j-api-1.5.8.jar", package = "RemoteREngine" ), 
 	system.file( "java", "boot", package = "rJava" ), 
 	system.file( "java", package = "rJava" ), 
 	sep = SEP
@@ -104,7 +107,12 @@ policy <- system.file( "policy", "server.policy", package = "RemoteREngine" )
 # }}}
 
 # {{{ codebase
-codebase <- paste( "file:", system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), sep = "" )
+codebase <- paste( 
+	paste( "file:", system.file( "java", "RemoteREngine-server.jar", package = "RemoteREngine" ), sep = "" ),
+	paste( "file:", system.file( "java", "log4j-1.2.15.jar", package = "RemoteREngine" ), sep = "" ),
+	paste( "file:", system.file( "java", "slf4j-log4j12-1.5.8.jar", package = "RemoteREngine" ), sep = "" ),
+	paste( "file:", system.file( "java", "slf4j-api-1.5.8.jar", package = "RemoteREngine" ), sep = "" ),
+	sep = " ")
 # }}}
 
 # {{{ command line args
