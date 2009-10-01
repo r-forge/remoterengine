@@ -14,6 +14,10 @@ of the installed package, you can start it like this :
 
 $ `Rscript -e "system.file( 'exec', 'remoterengine', package = 'RemoteREngine' ) " ` --name test --port 1099
 
+or
+
+$ Rscript -e "RemoteREngine::start.server()" -name test
+
 On my system I have this alias set up: 
 
 alias re="R CMD /usr/local/lib/R/library/RemoteREngine/exec/remoterengine"
