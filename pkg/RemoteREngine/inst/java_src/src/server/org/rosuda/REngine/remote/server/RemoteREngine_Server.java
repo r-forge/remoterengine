@@ -65,6 +65,8 @@ import org.rosuda.REngine.remote.server.console.ConsoleSync;
 import org.rosuda.REngine.remote.server.console.ConsoleThread;
 import org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server;
 import org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The main class of the server side part of the RemoteREngine project 
@@ -74,6 +76,8 @@ import org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server;
  */
 public class RemoteREngine_Server implements RemoteREngineInterface {
 
+	private final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.server.RemoteREngine_Server.class);
+	
 	private static boolean DEBUG = false; 
 	
 	public static void setDebug( boolean debug){
@@ -148,6 +152,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		
 		/* inform the clients that the jvm of the server is dying */
 		shutdownHook = new RemoteREngineServerShutdownHook() ;
+		logger.debug("Adding shutdownhook for R server process");
 		Runtime.getRuntime().addShutdownHook( shutdownHook ); 
 		
 		clients = new Vector<RemoteREngineClient>(); 
@@ -159,7 +164,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		consoleCallbackHandler = new ConsoleCallbackHandler(this);
 		callbackSender = new CallbackSender(this) ;
 		addCallbackListener( consoleCallbackHandler ) ;
-		
+
+		logger.debug("About to construct JRIEngine");
 		r = new JRIEngine( args, callbackLoop ) ;
 
 		/* TODO: forbid the q function */
@@ -177,29 +183,28 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			registry = LocateRegistry.getRegistry(null, registryPort);
 		} catch (RemoteException r) {
 			// Unable to locate the registry, so try and create one
-			System.out.println("Unable to locate registry, so creating a new RMI Registry locally");
+			logger.error("Unable to locate registry, so creating a new RMI Registry locally",r);
 		}
 		try {
 			if (registry==null) registry = LocateRegistry.createRegistry(registryPort);
 		} catch (RemoteException e) {
-			System.err.println(e.getClass().getName() + ": While trying to create registry on port " + registryPort + 
-					": " + e.getMessage());
-			System.err.println(e.getCause());
+			logger.error(e.getClass().getName() + ": While trying to create registry on port " + registryPort,e);
 			throw e;
 		}
 
 		try {
 			stub = (RemoteREngineInterface)UnicastRemoteObject.exportObject(this,servicePort);
 		} catch (RemoteException e) {
-			System.err.println("Unable to serialize server on " + servicePort + ": " + e.getMessage());
+			logger.error("Unable to serialize server on " + servicePort + ": " + e.getMessage(),e);
 			throw e;
 		}
 
 		try {
 			registry.bind(name, stub);
 		} catch (AlreadyBoundException e) {
-			debug(name + " already bound, attempting to shut down previous server");
-			
+//			debug(name + " already bound, attempting to shut down previous server");
+//			logger.info(name + " already bound, attempting to shut down previous server");
+//			
 //			try {
 //				RemoteREngineInterface previousServer = (RemoteREngineInterface)registry.lookup(name);
 //				previousServer.shutdown();
@@ -212,20 +217,23 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			try {
 				// Note, by automatically rebinding we risk orphaning the previous server and leaving
 				// process leaks
+				logger.info("Trying to rebind {}",name);
 				registry.rebind(name, stub);
 			} catch (AccessException ae) {
-				System.err.println("AccessException while rebinding server to registry: " + ae.getMessage());
+				logger.error("AccessException while rebinding server to registry: " + ae.getMessage(),ae);
 				throw ae;
 			}catch (RemoteException re) {
-				System.err.println("Unable to rebind server to port " + servicePort + ": " + re.getMessage());
+				logger.error("Unable to rebind server to port " + servicePort + ": " + re.getMessage(),re);
 				throw re;
 			}
 		} catch (RemoteException e) {
-			System.err.println("Unable to bind server(" + name + ") to port " + servicePort + ": " + e.getMessage());
+			logger.error("Unable to bind server(" + name + ") to port " + servicePort + ": " + e.getMessage(),e);
 			throw e;
 		}
 
 		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + servicePort + 
+				" to local RMIRegistry running on port " + registryPort + ", running under Id: " + getPID());
+		logger.info("R Engine bound as `"+ name +"` as a service on port " + servicePort + 
 				" to local RMIRegistry running on port " + registryPort + ", running under Id: " + getPID());
 		running = true; 
 	}
@@ -276,7 +284,10 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	private class RemoteREngineServerShutdownHook extends Thread{
 		public void run(){
-			if( !running ) shutdown() ;
+			if( !running ) {
+				logger.info("Calling shutdown");
+				shutdown() ;
+			}
 		}
 	}
 	
@@ -284,11 +295,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Shutdown the server
 	 */
 	public synchronized void shutdown(){
-		System.err.println( "R Server: shutdown" ) ;
+		logger.info( "R Server: shutdown" ) ;
 		
 		if( !running ) return; 
 		running = false; 
 		
+		// TODO implement a version of consoleThread that won't block on input
 		if (consoleThread != null) consoleThread.requestStop() ;
 		if (consoleThread != null) consoleThread.interrupt() ;
 		
@@ -298,18 +310,18 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		}
 		/* TODO: empty the clients and listeners ? */
 		
-		System.err.println("Unbinding " + name );
+		logger.info("Unbinding " + name );
 		try {
 			if (registry != null) {
 				registry.unbind( name );
-				System.out.println(name + " unbound from registry ");
+				logger.debug(name + " unbound from registry ");
 			}
 			
 			if (stub != null) {
 				if (UnicastRemoteObject.unexportObject(stub, false)) {
-					System.out.println(name + " successfully unexported");
+					logger.debug(name + " successfully unexported");
 				} else {
-					System.out.println("Unable to Unexport " + name);
+					logger.debug("Unable to Unexport " + name);
 				}
 			}
 		} catch (NotBoundException e) {
@@ -322,28 +334,29 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			if (cause != null) {
 				buf.append(cause.getClass().getName() + ": " + cause.getMessage());
 			}
-			System.err.println( buf.toString());
+			logger.error( buf.toString(),e);
 		}
 		System.out.println("Stopping R");
+		logger.info("Stopping R");
 		/* : shutdown R cleanly as well */
 		try {
 			RTermination rterminator = new RTermination();
+			logger.debug("Start R termination thread");
 			rterminator.start();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + " while closing R session; " + e.getMessage());
 		}
 		System.out.println("\n" + Calendar.getInstance().getTime() + ": Stopping the JVM in 3 seconds.");
-		int seconds = 3000;
-		for (int i=0; i < seconds; i+=100) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {}
-			System.out.print(".");
-		}
-		System.out.println("\nJava Shut down");
+//		int seconds = 3000;
+//		for (int i=0; i < seconds; i+=100) {
+//			try {
+//				Thread.sleep(100);
+//			} catch (InterruptedException e) {}
+//			System.out.print(".");
+//		}
+		System.out.println("\nCalling System.exit(0)");
+		logger.info("Calling System.exit(0)");
 		System.exit(0);
-		
-		
 	}
 
 	/**
@@ -352,12 +365,12 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private class RTermination extends Thread{
 		public void run(){
 			try {
-				System.out.println("Terminating R");
+				logger.debug("Terminating R");
 				Rengine theEngine = r.getRni();
 				if (theEngine != null && theEngine.isAlive()) theEngine.end();
-				System.out.println("R Terminated at " + Calendar.getInstance().getTime() );
+				logger.debug("R Terminated");
 			} catch (Exception e) {
-				System.err.println(e.getClass().getName() + " while closing R session; " + e.getMessage());
+				logger.error(e.getClass().getName() + " while closing R session; " + e.getMessage(),e);
 			}
 			return;
 		}
@@ -386,8 +399,14 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @return parsed expression 
 	 */
 	public REXP parse(String text, boolean resolve) throws REngineException {
-		debug( ">> parse" ) ;
-		return r.parse( text, resolve ) ; 
+		debug( ">> parse '" + text + "'" ) ;
+		try {
+			REXP rexp =  r.parse( text, resolve ) ;
+			return rexp;
+		} catch (REngineException e) {
+			logger.error("Parsing '" + text + "'",e);
+			throw e;
+		}
 	}
 
 	/** 
@@ -398,8 +417,18 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @return the result of the evaluation of the last expression 
 	 */
 	public REXP eval(REXP what, REXP where, boolean resolve) throws REngineException, REXPMismatchException{
-		debug( ">> eval" ) ;
-		return r.eval( what, where, resolve ); 
+		if (what.isString()) {
+			logger.debug("eval {}",what.toString());
+		} else {
+			debug( ">> eval" ) ;
+		}
+		try {
+			REXP rexp =  r.eval( what, where, resolve ); 
+			return rexp;
+		} catch (REngineException e) {
+			logger.error("eval '" + (what.isString() ? what.toString() : what) + "'",e);
+			throw e;
+		}
 	}
 
 	/**
@@ -411,7 +440,16 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public void assign(String symbol, REXP value, REXP env) throws REngineException, REXPMismatchException{ 
 		debug( ">> assign(" + symbol + ")") ;
-		r.assign( symbol, value, env ); 
+		logger.debug("assign {}",symbol);
+		try {
+			r.assign( symbol, value, env );
+		} catch (REngineException e) {
+			logger.error("Assign " + symbol,e);
+			throw e;
+		} catch (REXPMismatchException e) {
+			logger.error("Assign " + symbol,e);
+			throw e;
+		}
 	}
 
 
@@ -423,8 +461,17 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @return value
 	 */
 	public REXP get(String symbol, REXP env, boolean resolve) throws REngineException, REXPMismatchException {
-		debug( ">> get" ) ;
-		return r.get( symbol, env, resolve ); 
+		debug( ">> get '" + symbol + "'" ) ;
+		try {
+			REXP rexp = r.get( symbol, env, resolve );
+			return rexp;
+		} catch (REngineException e) {
+			logger.error("Get " + symbol,e);
+			throw e;
+		} catch (REXPMismatchException e) {
+			logger.error("Get " + symbol,e);
+			throw e;
+		}
 	}
 
 	/** 
@@ -436,8 +483,16 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws REngineException when references are not supported
 	 */
 	public REXP resolveReference(REXP ref) throws REngineException, REXPMismatchException{ 
-		debug( ">> resolveReference" ) ;
-		return r.resolveReference( ref ); 
+		debug( ">> resolveReference" + (ref.isString() ? ref.toString() : "")) ;
+		try {
+			return r.resolveReference( ref ); 
+		} catch (REngineException e) {
+			logger.error("resolveReference " ,e);
+			throw e;
+		} catch (REXPMismatchException e) {
+			logger.error("resolveReference" ,e);
+			throw e;
+		}
 	}
 
 	/** 
@@ -449,8 +504,16 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws REngineException if references are not supported
 	 */
 	public REXP createReference(REXP value) throws REngineException, REXPMismatchException{
-		debug( ">> createReference" ) ;
-		return r.createReference( value ); 
+		debug( ">> createReference" + (value.isString() ? " '" + value.toString() + "'" : "")) ;
+		try {
+			return r.createReference( value ); 
+		} catch (REngineException e) {
+			logger.error("createReference " ,e);
+			throw e;
+		} catch (REXPMismatchException e) {
+			logger.error("createReference" ,e);
+			throw e;
+		}
 	}
 
 	/** 
@@ -460,8 +523,16 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param ref reference to finalize 
 	 */
 	public void finalizeReference(REXP ref) throws REngineException, REXPMismatchException{ 
-		debug( ">> finalizeReference" ) ;
-		r.finalizeReference( ref ); 
+		debug( ">> finalizeReference" + (ref.isString() ? "'" + ref.toString() + "'" : "") ) ;
+		try {
+			r.finalizeReference( ref ); 
+		} catch (REngineException e) {
+			logger.error("finalizeReference " ,e);
+			throw e;
+		} catch (REXPMismatchException e) {
+			logger.error("finalizeReference" ,e);
+			throw e;
+		}
 	}
 
 	/**
@@ -473,11 +544,19 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public REXP getParentEnvironment(REXP env, boolean resolve) throws REngineException, REXPMismatchException {
 		debug( ">> getParentEnvironment" ) ;
-		return r.getParentEnvironment( env, resolve ); 
+		try {
+			return r.getParentEnvironment( env, resolve ); 
+		} catch (REngineException e) {
+			logger.error("getParentEnvironment " ,e);
+			throw e;
+		} catch (REXPMismatchException e) {
+			logger.error("getParentEnvironment" ,e);
+			throw e;
+		}
 	}
 
 	/**
-	 * create a new environemnt
+	 * create a new environment
 	 *
 	 * @param parent parent environment
 	 * @param resolve whether to resolve the reference to the environemnt (usually <code>false</code> since the returned environment will be empty)
@@ -485,7 +564,15 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public REXP newEnvironment(REXP parent, boolean resolve) throws REngineException, REXPMismatchException{ 
 		debug( ">> newEnvironment" ) ;
-		return r.newEnvironment( parent, resolve ) ; 
+		try {
+			return r.newEnvironment( parent, resolve ) ; 
+		} catch (REngineException e) {
+			logger.error("newEnvironment " ,e);
+			throw e;
+		} catch (REXPMismatchException e) {
+			logger.error("newEnvironment" ,e);
+			throw e;
+		}
 	}
 
 	/**
@@ -497,7 +584,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		try {
 			result = r.parseAndEval( text, where, resolve );
 		} catch (REngineException e) {
-			debug(e.getClass().getName() + ": " + e.getMessage() + " while processing " + text);
+			logger.error(e.getClass().getName() + ": " + e.getMessage() + " while processing " + text,e);
 			throw e;
 		}
 		return result;
@@ -513,9 +600,17 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws IOException when the stream cannot be create
 	 */
 	public RemoteFileInputStream openFile( String filename) throws ServerSideIOException, RemoteException{
-		RemoteFileInputStream_Server stream = new RemoteFileInputStream_Server( filename ) ;
-		RemoteFileInputStream stub = (RemoteFileInputStream) UnicastRemoteObject.exportObject(stream);
-    	return stub ; 
+		try {
+			RemoteFileInputStream_Server stream = new RemoteFileInputStream_Server( filename ) ;
+			RemoteFileInputStream stub = (RemoteFileInputStream) UnicastRemoteObject.exportObject(stream);
+	    	return stub ; 
+		} catch (ServerSideIOException e) {
+			logger.error("ServerSideIOException",e);
+			throw e;
+		} catch (RemoteException e) {
+			logger.error("RemoteException",e);
+			throw e;
+		}
 	}
 
 	/**
@@ -524,17 +619,32 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * 
 	 * @return the stream to write into 
 	 * @throws RemoteException 
+	 * @throws FileAlreadyExistsException
 	 * @throws IOException when the stream cannot be created 
 	 */
 	public RemoteFileOutputStream createFile( String filename, boolean must_be_new) throws ServerSideIOException, FileAlreadyExistsException, RemoteException{
-		if( must_be_new ){
-			if( (new File( filename) ).exists() ){
-				throw new FileAlreadyExistsException( filename ) ;
+		File targetFile = null;
+		try {
+			if( must_be_new ){
+				targetFile = new File(filename);
+				if( targetFile.exists() ){
+					throw new FileAlreadyExistsException( filename ) ;
+				}
 			}
+			RemoteFileOutputStream_Server stream = new RemoteFileOutputStream_Server( filename ) ;
+			RemoteFileOutputStream stub = (RemoteFileOutputStream)UnicastRemoteObject.exportObject( stream ) ;
+			return stub ;
+		} catch (FileAlreadyExistsException e) {
+			logger.error("FileAlreadyExistsException: " + 
+					(targetFile != null ? targetFile.getAbsolutePath() : filename),e);
+			throw e;
+		} catch (ServerSideIOException e) {
+			logger.error("ServerSideIOException",e);
+			throw e;
+		} catch (RemoteException e) {
+			logger.error("RemoteException",e);
+			throw e;
 		}
-		RemoteFileOutputStream_Server stream = new RemoteFileOutputStream_Server( filename ) ;
-		RemoteFileOutputStream stub = (RemoteFileOutputStream)UnicastRemoteObject.exportObject( stream ) ;
-		return stub ;
 	}
 	
 	/**
@@ -546,6 +656,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws RemoteException
 	 */
 	public void sendToConsole( String cmd, RemoteREngineClient origin ){
+		logger.debug(cmd);
 		consoleSync.add( new Command( cmd, new RemoteREngineClientSender(origin) ) );
 	}
 		
@@ -553,6 +664,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		if( DEBUG ){
 			System.err.println( message ); 
 		}
+		if (logger.isDebugEnabled()) logger.debug(message);
 	}
 
 	/**
@@ -563,6 +675,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public synchronized JRIEngineGlobalVariables subscribe(RemoteREngineClient client) throws RemoteException, AlreadyRegisteredException {
 		debug( "registering client" ) ;
 		if( clients.contains( client ) ){
+			logger.error("Client already exists");
 			throw new AlreadyRegisteredException(); 
 		}
 		clients.add( client ) ;
@@ -575,6 +688,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param listener the callback listener
 	 */
 	public synchronized void addCallbackListener( CallbackListener listener) {
+		logger.debug("Adding CallbackListener");
 		callbackListeners.add( listener ) ;
 	}
 	
@@ -583,6 +697,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @param listener the callback listener to remove
 	 */
 	public synchronized void removeCallbackListener( CallbackListener listener) {
+		logger.debug("Removing CallbackListener");
 		callbackListeners.remove( listener ) ;
 	}
 
@@ -594,6 +709,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public synchronized void close(RemoteREngineClient client) throws RemoteException, NotRegisteredException {
 		debug( "unregister client" ) ;
 		if( !clients.contains( client) ){
+			logger.error("Client wasn't registered");
 			throw new NotRegisteredException() ; 
 		}
 		clients.remove( client ) ;
@@ -604,6 +720,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * Sends a response to a callback
 	 */
 	public void sendResponse( CallbackResponse<? extends RCallbackWithResponse> response ) throws RemoteException {
+		logger.debug("Sending callback response");
 		callbackLoop.addResponse(response) ;
 	}
 	
@@ -623,6 +740,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		consoleThread.start(); 
 		consoleCallbackHandler.start(); 
 		callbackSender.start(); 
+		logger.debug("Starting console thread");
 	}
 
 	/**

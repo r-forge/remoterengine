@@ -25,6 +25,8 @@ import org.rosuda.REngine.remote.common.tools.ServiceException;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
 import org.rosuda.REngine.remote.common.tools.StoppableThread;
 import org.rosuda.REngine.remote.server.RemoteREngine_Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The console thread, that allows control of the server on the server side 
@@ -33,6 +35,7 @@ import org.rosuda.REngine.remote.server.RemoteREngine_Server;
  *
  */
 public class ConsoleThread extends StoppableThread {
+	private final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.server.console.ConsoleThread.class);
 
 	/**
 	 * The server associated with this thread
@@ -62,8 +65,11 @@ public class ConsoleThread extends StoppableThread {
 	 */
 	@Override
 	public void loop(){
+		logger.debug("Awaiting console input");
 		String line = reader.readLine() ;
+		logger.debug("Received '{}'",line);
 		if ("Quit".equalsIgnoreCase(line)) {
+			logger.info("Processing Quit");
 			requestStop(); 
 			server.shutdown() ; /* let clients know */
 		} else {
@@ -74,7 +80,7 @@ public class ConsoleThread extends StoppableThread {
 
 	@Override
 	public void end() {
-		System.out.println( "console thread stopped" ) ;
+		logger.debug( "console thread stopped" ) ;
 	}
 
 }

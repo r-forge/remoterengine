@@ -43,4 +43,10 @@ public class RemoteREngineConstants {
 	public static final int DEFAULTSERVERPORT = 0;  // RMI Dynamically allocates a port number
 	/** Representation of the NA string returned by REngine */
 	public static final String NAN = "NaN";
+	/** Key to define the name of the system property for the log4j configuration file */
+	public static final String LOG4JCONFIGURATIONKEY = "log4j.configuration";
+	/** Default logging configuration file */
+	public static final String DEFAULTLOGCONFIGURATION = "logging.xml";
+	/** Key to a System property to determine whether remote debugging should be enabled on the server */
+	public static final String ATTACHREMOTEDEBUGGERKEY = "DebugRemoteREngine";
 }

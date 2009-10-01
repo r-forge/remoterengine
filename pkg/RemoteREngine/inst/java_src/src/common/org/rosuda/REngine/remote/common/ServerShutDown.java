@@ -27,6 +27,8 @@ import java.rmi.registry.Registry;
 
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.RemoteREngineInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author$
@@ -34,13 +36,15 @@ import org.rosuda.REngine.remote.common.RemoteREngineInterface;
  * <p>URL : $HeadURL$
  */
 public class ServerShutDown extends Thread {
+	final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.common.ServerShutDown.class);
+	
 	/** Name of the server within the RMI Registry */
 	private String serverName;
 	/** Hostname or IP Address of the RMI Registry */
 	private String registryHost;
 	/** Port number of the RMI Registry */
 	private int registryPort;
-		
+	
 	/**
 	 * Create an instance of the ServerShutDown
 	 * @param serverName Name of the RMI Service to be shut down
@@ -60,11 +64,16 @@ public class ServerShutDown extends Thread {
 	 */
 	public void run() {
 		try {
+			logger.info("Attempting to shut down {} bound within {}:{}",new Object[]{serverName,registryHost,new Integer(registryPort)});
 			Registry reg = LocateRegistry.getRegistry(registryHost, registryPort);
 			RemoteREngineInterface engine = (RemoteREngineInterface) reg.lookup(serverName);
-			if (engine != null) engine.shutdown();
+			if (engine != null) {
+				logger.info("Calling shutdown");
+				engine.shutdown();
+				logger.debug("Returned from shutdown");
+			}
 		} catch (NotBoundException nb) {
-			System.err.println("Unable to locate " + serverName + " bound within " + registryHost + ":" + registryPort );
+			logger.error("Unable to locate " + serverName + " bound within " + registryHost + ":" + registryPort, nb);
 		} catch (RemoteException e) {
 			// Expect to get a RemoteException here because if the method has succeeded, then
 			// it can't return! 

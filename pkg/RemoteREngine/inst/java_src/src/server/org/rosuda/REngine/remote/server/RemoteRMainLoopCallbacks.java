@@ -35,11 +35,14 @@ import org.rosuda.REngine.remote.common.callbacks.RWriteConsoleCallback;
 import org.rosuda.REngine.remote.common.callbacks.ReadConsoleCallback;
 import org.rosuda.REngine.remote.common.console.Command;
 import org.rosuda.REngine.remote.server.callbacks.CallbackResponseWaiter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Remote main loop callbacks 
  */
 public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
+	final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.server.RemoteRMainLoopCallbacks.class);
 
 	/**
 	 * R server associated with these callbacks
@@ -69,6 +72,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	*  @param oType output type (0=regular, 1=error/warning)
     */
 	public void rWriteConsole(Rengine re, String text, int oType) {
+		logger.debug("rWriteConsole: {}",text);
 		server.sendCallbackToListeners( new RWriteConsoleCallback( text, oType ) ) ;
 	}
 
@@ -80,6 +84,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param which identifies whether R enters (1) or exits (0) the busy state
 	 */
 	public void rBusy(Rengine re, int which) {
+		logger.debug("rBusy: " + (which == 1? "entered" : "exited"));
 		server.sendCallbackToListeners( new RBusyCallback( which == 1 ) ) ;
 	}
 	
@@ -89,6 +94,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param re calling engine
 	 */	
 	public void rFlushConsole(Rengine re) {
+		logger.debug("rFlush");
 		server.sendCallbackToListeners( new RFlushConsoleCallback() ) ;
 	}
 	
@@ -100,6 +106,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param message message to display
 	 */
 	public void rShowMessage(Rengine re, String message) {
+		logger.debug("rShowMessage: {}",message);
 		server.sendCallbackToListeners( new RShowMessageCallback( message ) ) ;
 	}
 	
@@ -112,6 +119,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param filename name of the history file
 	 */
     public void   rSaveHistory  (Rengine re, String filename){
+    	logger.debug("rSaveHistory {}",filename);
     	// TODO: read the history file
     	// TODO: Make the history available to clients
     }
@@ -123,6 +131,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param filename name of the history file
 	 */
     public void   rLoadHistory  (Rengine re, String filename){
+    	logger.debug("rLoadHistory: {}" + filename);
     	// TODO: load the history file
     }
 
@@ -134,6 +143,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @return path/name of the selected file 
 	 */
 	public String rChooseFile(Rengine re, int newFile) {
+		logger.debug("rChooseFile");
 		// TODO: choose a file on the client(s), bring the file back and return the name of the file in the server
 		ChooseFileCallback callback = new ChooseFileCallback( ( newFile != 0)  ) ;
 		waiter.waitingFor( callback.getId() ) ; 
@@ -160,6 +170,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param addToHistory flag telling the handler whether the input should be considered for adding to history (!=0) or not (0)
 	 * @return user's input to be passed to R for evaluation */
 	public synchronized String rReadConsole(Rengine re, String prompt, int addToHistory) {
+		logger.debug("rReadConsole");
 		/* send the callback to clients (they might be interested in the prompt) */
 		ReadConsoleCallback callback = new ReadConsoleCallback( prompt) ;
 		server.sendCallbackToListeners( callback ) ; 
@@ -167,13 +178,15 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 		/* wait for the next available command: this blocks */
 		Command cmd = server.getConsoleSync().next() ;
 		String result = cmd.getCommand() ;
+		if (result == null) logger.warn("Null command returned from R Console");
 		
 		InputCallback input = new InputCallback( result, cmd.getSender() ) ;
 		server.sendCallbackToListeners( input ) ; 
 		
-		if( !result.endsWith( "\n" ) ){
+		if( result != null && !result.endsWith( "\n" ) ){
 			result += "\n" ;
 		}
+		logger.debug("rReadConsole sending '{}'", result);
 		return result ;
 	}
 
@@ -182,6 +195,7 @@ public class RemoteRMainLoopCallbacks implements RMainLoopCallbacks {
 	 * @param response the response to a callback
 	 */
 	public void addResponse( CallbackResponse<? extends RCallbackWithResponse> response){
+		logger.debug("addResponse");
 		int id = response.getCallbackId() ; 
 		if( waiter.isWaitingFor( id )){
 			

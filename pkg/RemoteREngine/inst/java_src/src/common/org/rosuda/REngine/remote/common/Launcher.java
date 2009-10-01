@@ -35,6 +35,9 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Helper class to set the environment and then launch the server process
  * @author $Author$
@@ -42,6 +45,8 @@ import java.util.Vector;
  * <p>URL : $HeadURL$
  */
 public class Launcher {
+	final Logger logger = LoggerFactory.getLogger(Launcher.class);
+
 	/** Key for the JAVA_HOME environment variable / system property */
 	public static final String JAVA_HOME = "JAVA_HOME";
 	/** Key for the system property identifying the java executable */
@@ -72,6 +77,9 @@ public class Launcher {
 	/** Default list of packages to be loaded when the server starts */
 	public static final String[] DEFAULT_PACKAGES = new String[] {"utils", "stats", "rJava", "methods", "grDevices", 
 		"graphics", "datasets"};
+	public static final String[] loggingJars = new String[] {	"slf4j-api-1.5.8.jar",
+																"slf4j-log4j12-1.5.8.jar",
+																"log4j-1.2.15.jar"};
 	/** Internal cache of the system properties */
 	protected Properties systemProps = System.getProperties();
 	/** Internal store for the command line arguments from the launcher */
@@ -98,6 +106,7 @@ public class Launcher {
 		menu.append("\n\t-c: Class to be launched; default " + DEFAULT_STARTCLASS);
 		menu.append("\n\t-D<propertyname>=<propertyvalue>: Set System property");
 		menu.append("\n\t-t: Test mode - write out the launch command but do not execute it");
+		logger.info(menu.toString());
 		System.out.println(menu.toString());
 		if (exit) System.exit(0);
 	}
@@ -176,18 +185,18 @@ public class Launcher {
 				warning.append(R_HOME + " environment must be set to a valid directory; currently set to '" + rHomeString + "'\n");
 			}
 		}
-		if (verbose) System.out.println("R_HOME: " + rHomeString);
+		logger.debug("R_HOME: {}", rHomeString);
 		
 		// Define R_SHARE_DIR, R_INCLUDE_DIR,R_DOC_DIR
 		String rShare = filePath(new String[] {rHomeString,"share"});
 		systemProps.setProperty(R_SHARE, rShare);
-		if (verbose) System.out.println(R_SHARE + ": " + rShare);
+		logger.debug("{} : {}",R_SHARE, rShare);
 		String rInclude = filePath(new String[]{rHomeString, "include"});
 		systemProps.setProperty(R_INCLUDE_DIR, rInclude);
-		if (verbose) System.out.println(R_INCLUDE_DIR + ": " + rInclude);
+		logger.debug("{}: {}",R_INCLUDE_DIR, rInclude);
 		String rDoc = filePath(new String[]{rHomeString, "doc"});
 		systemProps.setProperty(R_DOC_DIR, rDoc);
-		if (verbose) System.out.println(R_DOC_DIR + ": " + rDoc);
+		logger.debug("{}: {}",R_DOC_DIR, rDoc);
 		
 		// Define R_DEFAULT_PACKAGES
 		StringBuilder packages = new StringBuilder();
@@ -197,7 +206,7 @@ public class Launcher {
 		String rPackages = "";
 		if (packages.length() > 0) rPackages = packages.substring(0, packages.length() - 1); 
 		systemProps.setProperty(R_DEFAULT_PACKAGES, rPackages);
-		if (verbose) System.out.println(R_DEFAULT_PACKAGES + ": " + rPackages);
+		logger.debug( "{}: {}",R_DEFAULT_PACKAGES, rPackages);
 
 		// Set JRI_LD_PATH
 		String jriPath = "";
@@ -213,12 +222,12 @@ public class Launcher {
 		// TODO Ensure jriPath is only included in the path once
 		String fullLDPath = (ldPath == null || ldPath.length()==0) ? jriPaths : mergePaths(jriPaths,ldPath);
 		systemProps.setProperty(LD_LIBRARY_PATH,	fullLDPath);
-		if (verbose) System.out.println(LD_LIBRARY_PATH + ": " + fullLDPath);
+		logger.debug( "{}: {}", LD_LIBRARY_PATH, fullLDPath);
 		
 		systemProps.setProperty(LC_NUMERIC, "C");
-		if (verbose) System.out.println(LC_NUMERIC + ": " + findProperty(LC_NUMERIC));
+		logger.debug("{}: {}",LC_NUMERIC , findProperty(LC_NUMERIC));
 		systemProps.setProperty(NO_SIG,"1");
-		if (verbose) System.out.println(NO_SIG + ": " + findProperty(NO_SIG));
+		logger.debug("{}: {}", NO_SIG, findProperty(NO_SIG));
 		
 		String rLibrary = "";
 		String rJava = "";
@@ -234,20 +243,22 @@ public class Launcher {
 		String classpath = buildClasspath(rHomeString, rJava, useJarFiles, buildDirPath, false);
 		String codebase = buildClasspath(rHomeString, rJava, useJarFiles, buildDirPath, true);
 		
-		if (verbose) System.out.println("Classpath: " + classpath);
-		if (verbose) System.out.println("RMI Codebase: " + codebase);
+		logger.debug("Classpath: {}", classpath);
+		logger.debug("RMI Codebase: {}", codebase);
 
 		String policyFile = "";
 		try {
 			policyFile = locateFile("server.policy", remoteRServer);
 		} catch (IOException e) {
 			warning.append(e.getClass().getName() + " while locating security policy file\n");
+			logger.error(" while locating security policy file\n{}", e.getClass().getName(), e.getMessage());
 		}
-		if (verbose) System.out.println("Policy file: " + policyFile);
+		logger.debug("Policy file: {}", policyFile);
 
 		if (warning.length() > 0) {
 			System.err.println("Environment set up failed:\n");
 			System.err.println(warning.toString());
+			logger.error("Environment set up failed: \n{}", warning.toString());
 			return new Vector<String>(0);
 		} 
 
@@ -267,6 +278,10 @@ public class Launcher {
 				command.add("-D" + newProperty + "=" + newProperties.getProperty((String)newProperty));
 			}
 		}
+		if (!findProperty(RemoteREngineConstants.LOG4JCONFIGURATIONKEY).equals("")) {
+			command.add("-D" + RemoteREngineConstants.LOG4JCONFIGURATIONKEY + "=" +
+					findProperty(RemoteREngineConstants.LOG4JCONFIGURATIONKEY));
+		}
 		command.add(startClass);
 		if (arguments.length > 0) {
 			for (String arg : arguments) command.add(arg);
@@ -283,26 +298,30 @@ public class Launcher {
 		String javaHomeString = findProperty(JAVA_HOME);
 		if (javaHomeString == null) {
 			warning.append(JAVA_HOME + " must be set to the path of the Java installation\n");
+			logger.error("{} must be set to the path of the Java installation",JAVA_HOME);
 		} else {
 			File javahome = new File(javaHomeString);
 			if (!javahome.exists()) {
 				warning.append(JAVA_HOME + " environment must be set to a valid directory; currently set to '" + javaHomeString + "'\n");
+				logger.error("{} environment must be set to a valid directory; currently set to '{}'", JAVA_HOME, javaHomeString );
 			}
 		}
-		if (verbose) System.out.println(JAVA_HOME + ": " + javaHomeString);
+		logger.debug("{}: ",JAVA_HOME, javaHomeString);
 
 		String javaCmd = "";
 		try {
 			javaCmd = locateJava(javaHomeString);
 		} catch (IOException e) {
 			warning.append(e.getClass().getName() + " while locating Java command relative to '" + javaHomeString + "'\n");
+			logger.error("{} while locating Java command relative to '{}'",e.getClass().getName(),javaHomeString);
 		}
 			
 		if (javaCmd.length() == 0) {
 			warning.append("Unable to locate java executable, searching below '" + javaHomeString + "'\n");
+			logger.error("Unable to locate java executable, searching below '{}'",javaHomeString);
 		}
 		systemProps.setProperty(JAVACMD, javaCmd);
-		if (verbose) System.out.println(JAVACMD + ": " + javaCmd);
+		logger.debug("{}: {}", JAVACMD, javaCmd);
 		
 		return javaCmd;
 	}
@@ -325,6 +344,7 @@ public class Launcher {
 			return rJavaClasspath;
 		} catch (FileNotFoundException e) {
 			warning.append("Unable to locate rJava classpath directories\n");
+			logger.error("Unable to locate rJava classpath directories");
 		}
 		return "";
 	}
@@ -351,8 +371,13 @@ public class Launcher {
 				classpath.add((convertToCodebase ? "file:" : "") + locateFile("stubs",buildDirPath) + "\\");
 				classpath.add((convertToCodebase ? "file:" : "") + buildDirPath + "\\");
 			}
+			// include the logging jars
+			for (String loggingjar : loggingJars) {
+				classpath.add(loggingjar);
+			}
 		} catch (IOException e) {
 			warning.append(e.getClass().getName() + " while building classpath\n");
+			logger.error("{} while building classpath",e.getClass().getName());
 		}
 		
 		// We don't need to include the rJava path within the RMI Codebase
@@ -419,12 +444,21 @@ public class Launcher {
 	 * @throws IOException Error interpreting path information
 	 */
 	private String locateFile(String[] targets, String[] start) throws FileNotFoundException, IOException {
-		if (targets == null || targets.length == 0) throw new FileNotFoundException("Target not defined");
-		if (start == null || start.length == 0) throw new FileNotFoundException("Start not defined");
+		if (targets == null || targets.length == 0) {
+			logger.error("Target not defined");
+			throw new FileNotFoundException("Target not defined");
+		}
+		if (start == null || start.length == 0) {
+			logger.error("Start not defined");
+			throw new FileNotFoundException("Start not defined");
+		}
 		Stack<File>directoriesToCheck = new Stack<File>();
 		File startingPoint = new File(filePath(start));
 		directoriesToCheck.push(startingPoint);
-		if (startingPoint == null || !startingPoint.exists()) throw new FileNotFoundException("Unable to find '" + startingPoint +"'");
+		if (startingPoint == null || !startingPoint.exists()) {
+			logger.error("Unable to find '{}'",startingPoint);
+			throw new FileNotFoundException("Unable to find '" + startingPoint +"'");
+		}
 		boolean found = false;
 		while (directoriesToCheck.size() > 0 && !found) {
 			File currentDir = directoriesToCheck.pop();
@@ -438,6 +472,7 @@ public class Launcher {
 				if (file.isDirectory()) directoriesToCheck.push(file);
 			}
 		}
+		logger.error("Unable to locate '{}' beneath '{}'",targets, start);
 		throw new FileNotFoundException("Unable to locate '" + targets + "' beneath '" + start + "'");
 	}
 	
@@ -483,6 +518,7 @@ public class Launcher {
 			return filePath(elements, findProperty("file.separator"),false);
 		} catch (FileNotFoundException e) {
 			// we should never get here
+			logger.error("Unknown error within filePath",e);
 			throw new RuntimeException("Unknown error within filePath",e);
 		}
 	}
@@ -517,22 +553,26 @@ public class Launcher {
 		String fullPath = (path.length() > 0)? path.substring(0, path.length()-1) : "";
 		if (check) {
 			File file = new File(fullPath);
-			if (!file.exists()) throw new FileNotFoundException(fullPath + " does not exist");
+			if (!file.exists()) {
+				logger.error("{} does not exist",fullPath);
+				throw new FileNotFoundException(fullPath + " does not exist");
+			}
 		}
 		return fullPath;
 	}
-	
+
+	/**
+	 * Search for a property within the System properties. If it can't be found within
+	 * the System properties, search within the environment variables
+	 * @param propertyName Name of the property to be located
+	 * @return Property value or empty string if property can't be found
+	 */
 	private String findProperty(String propertyName) {
 		if (systemProps.containsKey(propertyName)) return systemProps.getProperty(propertyName);
 
 		Map<String, String> environment = System.getenv();
-/*		if (verbose) {
-			for (String key : environment.keySet()) 
-				System.out.println(key + ": " + environment.get(key));
-		}
-*/
 		if (environment.containsKey(propertyName)) return environment.get(propertyName);
-		if (verbose) System.out.println("Unable to find property for '" + propertyName + "'");
+		logger.debug("Unable to find property for '{}'", propertyName );
 		return "";
 	}
 
@@ -541,9 +581,26 @@ public class Launcher {
 	 * @param args Command line arguments @see #buildLaunchCommand()
 	 */
 	public static void main(String[] args) {
+		// Set the logging configuration properties
+		if (System.getProperty(RemoteREngineConstants.LOG4JCONFIGURATIONKEY) == null || System.getProperty(RemoteREngineConstants.LOG4JCONFIGURATIONKEY).equals("")) {
+			System.setProperty(RemoteREngineConstants.LOG4JCONFIGURATIONKEY,RemoteREngineConstants.DEFAULTLOGCONFIGURATION);
+		}
+
 		Launcher launcher = new Launcher(args);
 		String javaCmd = launcher.findJava();
 		Vector<String> launchCommand = launcher.buildLaunchCommand(javaCmd);
+		Logger logger = LoggerFactory.getLogger(Launcher.class);
+		
+		// Set up a remote debugger for the server process
+		boolean debugServerProcess = Boolean.getBoolean(RemoteREngineConstants.ATTACHREMOTEDEBUGGERKEY);
+		logger.debug("Remote debugging is set to {}",debugServerProcess);
+		if (debugServerProcess) {
+			launchCommand.add("-Xdebug");
+			launchCommand.add("-Xrunjdwp:transport=dt_socket,address=8001,server=y,suspend=n");
+		}
+
+		logger.debug("Java executable: {}",javaCmd);
+		logger.debug("Launchcommand: {}", launchCommand);
 		if (launcher.verbose) {
 			System.out.println("\nCommand: ");
 			for (String component : launchCommand) {
@@ -559,24 +616,12 @@ public class Launcher {
 					System.out.println(component);
 					builder.append(component + " ");
 				}
-				File launchfile = null;
-				BufferedWriter bw = null;
-				try {
-					launchfile = new File("launchcommand.txt");
-					bw = new BufferedWriter(new FileWriter(launchfile));
-					bw.write(builder.toString() + "\n");
-				} catch (IOException e) {
-					System.err.println(e.getClass().getName() + " writing command to " + launchfile.getAbsolutePath() +
-							": " + e.getMessage());
-				} finally {
-					try {
-						bw.flush();
-						bw.close();
-					} catch (Exception e) {}
-				}
+				
+				launcher.writeCommandToFile(builder, "launchcommand.txt");
 			}	
 		} else {
 			System.out.println("Launcher classpath: " + System.getProperty("java.class.path"));
+			logger.info("Launcher classpath: {}", System.getProperty("java.class.path"));
 			Runtime runtime = Runtime.getRuntime();
 			ProcessStreamHandler stdOutHandler = null;
 			ProcessStreamHandler stdErrHandler = null;
@@ -585,8 +630,10 @@ public class Launcher {
 				BufferedReader in = new BufferedReader(new InputStreamReader(System.in) );
 
 				Process process = runtime.exec(launchCommand.toArray(new String[0]));
-				stdOutHandler = new ProcessStreamHandler(process.getInputStream());
-				stdErrHandler = new ProcessStreamHandler(process.getErrorStream());
+				
+				// TODO make the output files system properties
+				stdOutHandler = new ProcessStreamHandler(process.getInputStream(),"RServerOut.log",false);
+				stdErrHandler = new ProcessStreamHandler(process.getErrorStream(),"RServerErr.log",false);
 				stdInHandler = new InputHandler(process.getOutputStream());
 				OutputStream os = process.getOutputStream();
 				
@@ -600,9 +647,10 @@ public class Launcher {
 				
 	            int exitVal = process.waitFor();
 	            System.out.println("ExitValue: " + exitVal);
-				
+				logger.info("ExitValue: {}",exitVal);
 			} catch (Throwable e) {
 				System.err.println(e.getClass().getName() + " while running server; " + e.getMessage());
+				logger.error(e.getClass().getName() + " while running server; " + e.getMessage(),e);
 			} finally {
 				if (stdOutHandler != null) stdOutHandler.close();
 	            if (stdErrHandler != null) stdErrHandler.close();
@@ -626,5 +674,25 @@ public class Launcher {
 	 */
 	public boolean isTestMode() {
 		return testMode;
+	}
+	
+	public void writeCommandToFile(StringBuilder builder, String filename) {
+		File launchfile = null;
+		BufferedWriter bw = null;
+		try {
+			launchfile = new File(filename);
+			bw = new BufferedWriter(new FileWriter(launchfile));
+			bw.write(builder.toString() + "\n");
+			System.out.println("Launch command written out to " + launchfile.getAbsolutePath());
+		} catch (IOException e) {
+			System.err.println(e.getClass().getName() + " writing command to " + launchfile.getAbsolutePath() +
+					": " + e.getMessage());
+			logger.error("{} writing command to: {}; {}",new String[] {e.getClass().getName(),launchfile.getAbsolutePath(), e.getMessage()});
+		} finally {
+			try {
+				bw.flush();
+				bw.close();
+			} catch (Exception e) {}
+		}		
 	}
 }
