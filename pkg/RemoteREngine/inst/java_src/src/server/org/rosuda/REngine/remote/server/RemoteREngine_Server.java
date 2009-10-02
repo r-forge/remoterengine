@@ -718,7 +718,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		if( DEBUG ){
 			System.err.println( message ); 
 		}
-		if (logger.isDebugEnabled()) logger.debug(message);
+		if (logger.isInfoEnabled()) logger.info(message);
 	}
 
 	/**
