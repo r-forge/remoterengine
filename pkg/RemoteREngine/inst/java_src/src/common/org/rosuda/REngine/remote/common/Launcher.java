@@ -39,7 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Helper class to set the environment and then launch the server process
+ * Helper class to set the environment and then launch the server process. Run with -h option
+ * to view the options for this program or see {@link #printMenu(boolean)}
  * @author $Author$
  * @version $Rev$ as of $Date$
  * <p>URL : $HeadURL$
@@ -92,7 +93,21 @@ public class Launcher {
 	protected StringBuilder warning = new StringBuilder();
 
 	/**
-	 * Print a list of the menu options to StdOut. This can be activated by the '-h' option on the command line
+	 * Print a list of the menu options to StdOut. This can be activated by the '-h' option on the command line.
+	 * Options include:
+	 * <p>
+	 * Launcher -v -h -b path -c class -XMemoryDefinition <System Properties>);
+	 * <ul>
+	 * <li>-h: Print this menu</li>
+	 * <li>-v: Verbose mode; default false</li>
+	 * <li>-X: Java process memory defintion; default {@link #DEFAULT_MEMORYSIZE}</li>
+	 * <li>-b: Path to root of class files (instead of {@link #SERVER_JARFILE} file</li>
+	 * <li>-c: Class to be launched; default {@link #DEFAULT_STARTCLASS}</li>
+	 * <li>-Dlog4j.configuration=&lt;some file&gt; Set the logging properties; default logging.xml</li>
+	 * <li>-t -DDebugRemoteREngine=TRUE To attach a remote debugger (on port 8001); default false</li>
+	 * <li>-D&lt;propertyname&gt;=&lt;propertyvalue&gt;: Set System property</li>
+	 * <li>-t: Test mode - write out the launch command but do not execute it</li>
+	 * </ul>
 	 * @param exit Should the JVM shut down after printing the message
 	 */
 	private void printMenu(boolean exit) {
@@ -104,8 +119,11 @@ public class Launcher {
 		menu.append("\n\t-X: Java process memory defintion; default " + DEFAULT_MEMORYSIZE);
 		menu.append("\n\t-b: Path to root of class files (instead of " + SERVER_JARFILE + " file");
 		menu.append("\n\t-c: Class to be launched; default " + DEFAULT_STARTCLASS);
+		menu.append("\n\t-Dlog4j.configuration=<some file> Set the logging properties; default logging.xml" );
+		menu.append("\n-t -DDebugRemoteREngine=TRUE To attach a remote debugger (on port 8001); default false" );
 		menu.append("\n\t-D<propertyname>=<propertyvalue>: Set System property");
 		menu.append("\n\t-t: Test mode - write out the launch command but do not execute it");
+		
 		logger.info(menu.toString());
 		System.out.println(menu.toString());
 		if (exit) System.exit(0);
@@ -364,16 +382,16 @@ public class Launcher {
 			if (useJarFiles) {
 				classpath.add((convertToCodebase ? "file:" : "") + locateFile(SERVER_JARFILE, remoteRServer));
 			} else {
-				classpath.add((convertToCodebase ? "file:" : "") + locateFile("annotations",buildDirPath) + "\\");
-				classpath.add((convertToCodebase ? "file:" : "") + locateFile("client",buildDirPath) + "\\");
-				classpath.add((convertToCodebase ? "file:" : "") + locateFile("common",buildDirPath) + "\\");
-				classpath.add((convertToCodebase ? "file:" : "") + locateFile("server",buildDirPath) + "\\");
-				classpath.add((convertToCodebase ? "file:" : "") + locateFile("stubs",buildDirPath) + "\\");
-				classpath.add((convertToCodebase ? "file:" : "") + buildDirPath + "\\");
+				classpath.add((convertToCodebase ? "file:" : "") + locateFile("annotations",buildDirPath) + "/");
+				classpath.add((convertToCodebase ? "file:" : "") + locateFile("client",buildDirPath) + "/");
+				classpath.add((convertToCodebase ? "file:" : "") + locateFile("common",buildDirPath) + "/");
+				classpath.add((convertToCodebase ? "file:" : "") + locateFile("server",buildDirPath) + "/");
+				classpath.add((convertToCodebase ? "file:" : "") + locateFile("stubs",buildDirPath) + "/");
+				classpath.add((convertToCodebase ? "file:" : "") + buildDirPath + "/");
 			}
 			// include the logging jars
 			for (String loggingjar : loggingJars) {
-				classpath.add(loggingjar);
+				classpath.add((convertToCodebase ? "file:" : "") + locateFile(loggingjar, remoteRServer));
 			}
 		} catch (IOException e) {
 			warning.append(e.getClass().getName() + " while building classpath\n");
@@ -385,7 +403,8 @@ public class Launcher {
 		String classpathStr = mergePaths(classpath.toArray(new String[0]));
 		if (convertToCodebase) {
 			classpathStr = classpathStr.replace("\\", "/");
-			classpathStr = classpathStr.replace(";", ":");
+			classpathStr = classpathStr.replace(";", " ");
+			classpathStr = "\"" + classpathStr + "\"";
 		}
 		return classpathStr;
 	}
@@ -577,8 +596,8 @@ public class Launcher {
 	}
 
 	/**
-	 * Start the program
-	 * @param args Command line arguments @see #buildLaunchCommand()
+	 * Start the program, for start options, refer to: {@link #printMenu(boolean)}
+	 * @param args Command line arguments {@link #printMenu(boolean)}
 	 */
 	public static void main(String[] args) {
 		// Set the logging configuration properties
@@ -600,7 +619,7 @@ public class Launcher {
 		}
 
 		logger.debug("Java executable: {}",javaCmd);
-		logger.debug("Launchcommand: {}", launchCommand);
+		logger.info("Launchcommand: {}", launchCommand);
 		if (launcher.verbose) {
 			System.out.println("\nCommand: ");
 			for (String component : launchCommand) {
