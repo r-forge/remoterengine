@@ -62,6 +62,9 @@ import org.rosuda.REngine.remote.common.exceptions.NotRegisteredException;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
+import org.rosuda.REngine.remote.common.utils.FileParser;
+import org.rosuda.REngine.remote.common.utils.PIDReporter;
+import org.rosuda.REngine.remote.common.utils.ThreadLogger;
 import org.rosuda.REngine.remote.server.callbacks.CallbackSender;
 import org.rosuda.REngine.remote.server.callbacks.ClientCallbackListener;
 import org.rosuda.REngine.remote.server.console.ConsoleCallbackHandler;
@@ -239,10 +242,10 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw e;
 		}
 
-		System.out.println( "R Engine bound as `"+ name +"` as a service on port " + servicePort + 
-				" to local RMIRegistry running on port " + registryPort + ", running under Id: " + getPID());
-		logger.info("R Engine bound as `"+ name +"` as a service on port " + servicePort + 
-				" to local RMIRegistry running on port " + registryPort + ", running under Id: " + getPID());
+		String msg = "R Engine bound as `"+ name +"` as a service on port " + servicePort + 
+		" to local RMIRegistry running on port " + registryPort + ", running under Id: " + PIDReporter.getPID();
+		System.out.println( msg );
+		logger.info(msg);
 		running = true; 
 	}
 
@@ -268,62 +271,22 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.info("REngine execute init script '"+initScript+"' ...");
 		
 		// read the whole content of the init script
-		String script = readFile(initScript);
+		String[] scriptCommands = (new FileParser()).readLines(initScript);
 		
 		// parse and evaluate the script
 		try {
-			r.parseAndEval(script);
+			for (String command : scriptCommands) {
+				r.parseAndEval(command);
+			}
+		} catch (REngineException e) {
+			logger.error("Exception running initialisation script: " + e.getMessage(),e);
+			throw e;
 		} catch (REXPMismatchException e) {
 			logger.error("Unable to run init script '"+initScript+"', "+e.getMessage(),e);
 			throw new REngineException(REngine.getLastEngine(), "Unable to run init script '"+initScript+"', "+e.getMessage());
 		}
 	}
 	
-	/**
-	 * Read the content of the init script.
-	 * 
-	 * @param filePath
-	 * @return
-	 * @throws AccessException
-	 */
-	private String readFile(String filePath) throws AccessException{
-		File file = new File(filePath);
-		logger.debug("Executing: {}",file.getAbsolutePath());
-		InputStream in = null;
-		try {
-			in = new FileInputStream(file);
-			byte[] buf = new byte[(int)file.length()];
-			in.read(buf);
-			return new String(buf);
-		} catch (FileNotFoundException e) {
-			String msg = "Init script '"+filePath+"' not found.";
-			logger.error(msg,e);
-			throw new AccessException(msg, e);
-		} catch (IOException e) {
-			String msg = "Error in reading Init script '"+filePath+"', "+e.getMessage();
-			logger.error(msg,e);
-			throw new AccessException(msg, e);
-		} finally{
-			closeInputStream(in);
-		}
-	}
-	
-	/**
-	 * Close the input stream silently.
-	 * 
-	 * @param in
-	 */
-	private void closeInputStream(InputStream in) {
-		if (in == null){
-			return;
-		}
-		try {
-			in.close();
-			in = null;
-		} catch (IOException e) {
-			logger.error("Error in close inputstream :"+e.getMessage(),e);
-		}
-	}
 
 	/** 
 	 * utility to extract the long pointer from a reference. This is only used when making the variables 
@@ -383,6 +346,8 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public synchronized void shutdown(){
 		logger.info( "R Server: shutdown" ) ;
+		ThreadLogger threadLogger = new ThreadLogger();
+		threadLogger.logAllThreads("About to shutdown");
 		
 		if( !running ) return; 
 		running = false; 
@@ -434,17 +399,19 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			System.err.println(e.getClass().getName() + " while closing R session; " + e.getMessage());
 		}
 		System.out.println("\n" + Calendar.getInstance().getTime() + ": Stopping the JVM in 3 seconds.");
-//		int seconds = 3000;
-//		for (int i=0; i < seconds; i+=100) {
-//			try {
-//				Thread.sleep(100);
-//			} catch (InterruptedException e) {}
-//			System.out.print(".");
-//		}
+		int seconds = 3000;
+		for (int i=0; i < seconds; i+=100) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {}
+			System.out.print(".");
+		}
+		threadLogger.logAllThreads("Finished shut down");
 		System.out.println("\nCalling System.exit(0)");
 		logger.info("Calling System.exit(0)");
 		System.exit(0);
 	}
+
 
 	/**
 	 * Thread to shut down the R process underneath this engine.
@@ -851,26 +818,6 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 */
 	public synchronized Vector<CallbackListener> getCallbackListeners() {
 		return callbackListeners ;
-	}
-	
-	/**
-	 * Method to return an estimate of the JVM's process Id. This implementation is not guaranteed to work
-	 * on all OSs - no Java PID solution is, however it appears to work on most common ones.
-	 * @return ProcessId of the JVM
-	 */
-	public String getPID() {
-		try {
-			String name = ManagementFactory.getRuntimeMXBean().getName();
-			if (name.indexOf("@") > 0) {
-				StringTokenizer tok = new StringTokenizer(name,"@");
-				return tok.nextToken();
-			} else  {
-				return name;
-			}
-		} catch (Exception e) {
-			if (DEBUG) System.out.println(e.getClass().getName() + " while trying to determine process Id; " + e.getMessage());
-			return "";
-		}
 	}
 }
 

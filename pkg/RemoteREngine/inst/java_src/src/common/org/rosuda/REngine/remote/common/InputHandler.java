@@ -54,7 +54,7 @@ public class InputHandler implements Runnable {
 		while (run) {
 			try{
 				res = in.readLine() ;
-				if (res == null) {
+				if (res != null) {
 					if (res.equals("Quit")) {
 						System.out.println(this.getClass().getName() + " preparing to close");
 						run = false;
