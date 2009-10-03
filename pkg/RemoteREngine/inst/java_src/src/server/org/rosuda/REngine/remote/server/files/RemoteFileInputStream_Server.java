@@ -31,6 +31,8 @@ import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.FileChunk;
 import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default Remote File Input stream implementation, backed by an 
@@ -45,7 +47,8 @@ import org.rosuda.REngine.remote.common.files.RemoteFileInputStream;
  *
  */
 public class RemoteFileInputStream_Server implements RemoteFileInputStream {
-	
+	private final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.server.files.RemoteFileInputStream_Server.class);
+
 	/**
 	 * The default size of the buffer
 	 */
@@ -77,6 +80,7 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		try{
 			stream = new BufferedInputStream( new FileInputStream( file ) );
 		} catch( IOException ioe ){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 	}
@@ -96,6 +100,7 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		try{
 			res = stream.available() ;
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 		return res; 
@@ -105,7 +110,10 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		try{
 			stream.close() ;
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
+		} finally {
+			stream = null;
 		}
 	}
 
@@ -121,6 +129,7 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		try{
 			stream.reset() ;
 		} catch(IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 	}
@@ -130,6 +139,7 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		try{ 
 			res = stream.skip( n ) ;
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 		return res; 
@@ -144,6 +154,7 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 		try{
 			c = stream.read( buffer ) ;
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 		
@@ -159,7 +170,13 @@ public class RemoteFileInputStream_Server implements RemoteFileInputStream {
 	}
 
 	public boolean delete() throws RemoteException {
-		return file.delete() ;
+		boolean success = file.delete();
+		if (!success) {
+			logger.error("Failed to delete: " + file.getAbsolutePath());
+		} else {
+			if (logger.isDebugEnabled()) logger.debug("Successfully deleted {}",file.getAbsoluteFile());
+		}
+		return success ;
 	}
 	
 }

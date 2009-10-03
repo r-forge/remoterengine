@@ -26,6 +26,8 @@ import java.io.IOException;
 
 import org.rosuda.REngine.remote.common.exceptions.ServerSideIOException;
 import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link RemoteFileOutputStream} backed by 
@@ -35,6 +37,8 @@ import org.rosuda.REngine.remote.common.files.RemoteFileOutputStream;
  *
  */
 public class RemoteFileOutputStream_Server implements RemoteFileOutputStream {
+
+	private final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.server.files.RemoteFileOutputStream_Server.class);
 
 	/**
 	 * The back end {@link FileOutputStream}
@@ -50,6 +54,7 @@ public class RemoteFileOutputStream_Server implements RemoteFileOutputStream {
 		try{
 			stream = new FileOutputStream( file ) ;
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 	}
@@ -67,7 +72,10 @@ public class RemoteFileOutputStream_Server implements RemoteFileOutputStream {
 		try{
 			stream.close() ; 	
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
+		} finally {
+			stream = null;
 		}
 	}
 
@@ -75,6 +83,7 @@ public class RemoteFileOutputStream_Server implements RemoteFileOutputStream {
 		try{
 			stream.flush(); 
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 	}
@@ -83,6 +92,7 @@ public class RemoteFileOutputStream_Server implements RemoteFileOutputStream {
 		try{
 			stream.write( b ) ;
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ); 
 		}
 	}
@@ -91,6 +101,7 @@ public class RemoteFileOutputStream_Server implements RemoteFileOutputStream {
 		try{
 			stream.write( b, off, len) ;
 		} catch( IOException ioe){
+			logger.error(ioe.getClass().getName() + ": " + ioe.getMessage(),ioe);
 			throw new ServerSideIOException( ioe ) ;
 		}
 	}
