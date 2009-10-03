@@ -21,11 +21,7 @@
 package org.rosuda.REngine.remote.server;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.management.ManagementFactory;
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NoSuchObjectException;
@@ -35,7 +31,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.rosuda.JRI.Rengine;
@@ -122,6 +117,11 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private int registryPort ;
 	
 	/**
+	 * Port of the services.
+	 */
+	private int servicePort;
+	
+	/**
 	 * The console thread associated with this engine
 	 */
 	private ConsoleThread consoleThread ; 
@@ -157,6 +157,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		super();
 		this.name = name ; 
 		this.registryPort = registryPort ;
+		this.servicePort = servicePort;
 		
 		/* inform the clients that the jvm of the server is dying */
 		shutdownHook = new RemoteREngineServerShutdownHook() ;
@@ -656,7 +657,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public RemoteFileInputStream openFile( String filename) throws ServerSideIOException, RemoteException{
 		try {
 			RemoteFileInputStream_Server stream = new RemoteFileInputStream_Server( filename ) ;
-			RemoteFileInputStream stub = (RemoteFileInputStream) UnicastRemoteObject.exportObject(stream);
+			RemoteFileInputStream stub = (RemoteFileInputStream) UnicastRemoteObject.exportObject(stream, servicePort);
 	    	return stub ; 
 		} catch (ServerSideIOException e) {
 			logger.error("ServerSideIOException",e);
@@ -686,7 +687,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				}
 			}
 			RemoteFileOutputStream_Server stream = new RemoteFileOutputStream_Server( filename ) ;
-			RemoteFileOutputStream stub = (RemoteFileOutputStream)UnicastRemoteObject.exportObject( stream ) ;
+			RemoteFileOutputStream stub = (RemoteFileOutputStream)UnicastRemoteObject.exportObject( stream, servicePort ) ;
 			return stub ;
 		} catch (FileAlreadyExistsException e) {
 			logger.error("FileAlreadyExistsException: " + 
