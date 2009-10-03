@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.remote.common.CommandLineArgs;
-import org.rosuda.REngine.remote.common.Launcher;
 import org.rosuda.REngine.remote.common.RemoteREngineConstants;
 import org.rosuda.REngine.remote.common.tools.ServiceManager;
 import org.slf4j.Logger;
@@ -43,7 +42,8 @@ import org.slf4j.LoggerFactory;
 public class REngineServer {
 
 	final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.server.REngineServer.class);
-
+	
+	private static RemoteREngine_Server engine = null;
 	
 	/**
 	 * Main method to start the R server
@@ -100,8 +100,7 @@ public class REngineServer {
 	        System.setSecurityManager(new SecurityManager());
 	    }
 
-	    Registry registry = null ; 
-	    RemoteREngine_Server engine = null;
+	    Registry registry = null ;
 	    try {
 	    	logger.debug("About to start R Server using: rmiName {}; servicePort {}; rmiPort {}; args null",
 	    			new Object[] {rmiName,servicePort,new Integer(rmiPort)});
@@ -152,6 +151,22 @@ public class REngineServer {
     		System.exit(1);
     	}
     	
+    	// bootstrap, stop the reference been garbage collected.
+    	bootstrap();
+    	
+	}
+	
+	/**
+	 * Run the service bootstrap (stop it being garbage collected by JVM).
+	 */
+	private static void bootstrap() {
+		while (true) {
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException ex) {
+				// ignore
+			}
+		}
 	}
 	
 	/**
