@@ -1,5 +1,8 @@
+0.0-8 2009-10-02
 
-0.0-7
+Bug fix to ensure file transfers happen over the correct service port
+
+0.0-7 2009-10-01
 
 Enabled the user to specify a start up script to be run on the server prior to 
 the server registering itself.
