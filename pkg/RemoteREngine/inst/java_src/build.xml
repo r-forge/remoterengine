@@ -264,7 +264,7 @@
 	<!--}}}-->
 
 	<!--{{{ copy the manifest file and licenses -->
-	<target name="do.copy" description="copy the manifest file, logging jars and licenses">
+	<target name="do.copy">
 		<mkdir dir="${common.dir}/licenses"/>
 		<copy todir="${common.dir}/licenses">
 			<fileset dir="lib/licenses">
@@ -296,7 +296,7 @@
 	<!--}}}-->
 
 	<!--{{{ creating the jar -->
-	<target name="makejars" depends="stubs,annotation,do.copy">
+	<target name="makejars" depends="stubs,annotation,do.copy" description="Create the main jar files">
 		<!-- client jar -->
 		<unjar src="lib/REngine.jar"   	dest="${client.dir}" />
 		<jar jarfile="${jar.dir}/RemoteREngine-client.jar" manifest="build/MANIFEST.MF">
