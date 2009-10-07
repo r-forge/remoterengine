@@ -21,8 +21,8 @@
 }}}-->
 
 	<target name="test_r_build" description="Get R to build the project's installation package">
-		<exec executable="R">
-			<arg value="CMD build RemoteREngine"/>
+		<exec executable="Rcmd">
+			<arg value="build RemoteREngine"/>
 		</exec>
 	</target>
 </project>
