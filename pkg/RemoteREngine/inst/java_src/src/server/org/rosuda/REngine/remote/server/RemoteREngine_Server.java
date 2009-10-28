@@ -79,9 +79,9 @@ import org.slf4j.LoggerFactory;
 public class RemoteREngine_Server implements RemoteREngineInterface {
 
 	private final Logger logger = LoggerFactory.getLogger(org.rosuda.REngine.remote.server.RemoteREngine_Server.class);
-	
+
 	private static boolean DEBUG = false; 
-	
+
 	public static void setDebug( boolean debug){
 		DEBUG = debug; 
 	}
@@ -89,7 +89,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private Vector<RemoteREngineClient> clients ;
 	private Vector<CallbackListener> callbackListeners ; 
 	private CallbackSender callbackSender ; 
-	
+
 	/** 
 	 * The local R engine this server is shadowing
 	 */ 
@@ -100,48 +100,48 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * when they subscribe
 	 */
 	private JRIEngineGlobalVariables variables ;
-	
+
 	/**
 	 * Shutdown hook
 	 */
 	private RemoteREngineServerShutdownHook shutdownHook; 
-	
+
 	/**
 	 * Name of this object in the RMI registry
 	 */
 	private String name; 
-	
+
 	/**
 	 * Port of the RMI registry
 	 */
 	private int registryPort ;
-	
+
 	/**
 	 * Port of the services.
 	 */
 	private int servicePort;
-	
+
 	/**
 	 * The console thread associated with this engine
 	 */
 	private ConsoleThread consoleThread ; 
-	
+
 	private ConsoleCallbackHandler consoleCallbackHandler; 
-	
-	
+
+
 	private Registry registry ; 
 	private RemoteREngineInterface stub = null;
-	
+
 	private boolean running = false; 
-	
+
 	private ConsoleSync consoleSync ;
-	
-	
+
+
 	/**
 	 * The callback loop
 	 */
 	private RemoteRMainLoopCallbacks callbackLoop; 
-	
+
 	/**
 	 * Constructor. Initiates the local R engine that this engine shadows
 	 * 
@@ -158,17 +158,17 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		this.name = name ; 
 		this.registryPort = registryPort ;
 		this.servicePort = servicePort;
-		
+
 		/* inform the clients that the jvm of the server is dying */
 		shutdownHook = new RemoteREngineServerShutdownHook() ;
 		logger.debug("Adding shutdownhook for R server process");
 		Runtime.getRuntime().addShutdownHook( shutdownHook ); 
-		
+
 		clients = new Vector<RemoteREngineClient>(); 
 		callbackListeners = new Vector<CallbackListener>(); 
 		callbackLoop = new RemoteRMainLoopCallbacks(this) ;
 		consoleSync = new ConsoleSync(this) ;
-		
+
 		consoleThread = new ConsoleThread(this);
 		consoleCallbackHandler = new ConsoleCallbackHandler(this);
 		callbackSender = new CallbackSender(this) ;
@@ -177,11 +177,18 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.debug("About to construct JRIEngine");
 		r = (JRIEngine)JRIEngine.createEngine( args, callbackLoop, true) ;
 
+		/* load and init rJava */
+		try{
+			r.parseAndEval( "require( 'rJava' ); .jinit() " ) ;
+		} catch( REXPMismatchException e){
+			logger.error(e.getClass().getName() + ": While trying to load rJava  " );
+		}
+
 		// Execute R prepare script before R server is available via RMI
 		runInitScript( initScript );
-		
+
 		/* TODO: forbid the q function */
-		
+
 		/* capture global variables of the JRIEngine */
 		variables = new JRIEngineGlobalVariables( 
 				getPointer( r.globalEnv ), 
@@ -189,7 +196,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 				getPointer( r.baseEnv ), 
 				getPointer( r.nullValueRef) , 
 				REngineRegistry.getId(r) ) ;
-		
+
 		try {
 			// Locate a local registry as RMI Servers can't register with Remote Registries
 			registry = LocateRegistry.getRegistry(null, registryPort);
@@ -214,17 +221,17 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		try {
 			registry.bind(name, stub);
 		} catch (AlreadyBoundException e) {
-//			debug(name + " already bound, attempting to shut down previous server");
-//			logger.info(name + " already bound, attempting to shut down previous server");
-//			
-//			try {
-//				RemoteREngineInterface previousServer = (RemoteREngineInterface)registry.lookup(name);
-//				previousServer.shutdown();
-//			} catch (RemoteException re) {
-//				System.err.println(re.getClass().getName() + " while trying to shut down previous server");
-//			} catch (NotBoundException nbe) { 
-//				// Do nothing - it has just unbound!	
-//			} 
+			//			debug(name + " already bound, attempting to shut down previous server");
+			//			logger.info(name + " already bound, attempting to shut down previous server");
+			//			
+			//			try {
+			//				RemoteREngineInterface previousServer = (RemoteREngineInterface)registry.lookup(name);
+			//				previousServer.shutdown();
+			//			} catch (RemoteException re) {
+			//				System.err.println(re.getClass().getName() + " while trying to shut down previous server");
+			//			} catch (NotBoundException nbe) { 
+			//				// Do nothing - it has just unbound!	
+			//			} 
 
 			try {
 				// Note, by automatically rebinding we risk orphaning the previous server and leaving
@@ -234,7 +241,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			} catch (AccessException ae) {
 				logger.error("AccessException while rebinding server to registry: " + ae.getMessage(),ae);
 				throw ae;
-			}catch (RemoteException re) {
+			} catch (RemoteException re) {
 				logger.error("Unable to rebind server to port " + servicePort + ": " + re.getMessage(),re);
 				throw re;
 			}
@@ -263,25 +270,20 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws AccessException
 	 */
 	private void runInitScript(String initScript) throws REngineException, RemoteException, AccessException{
-		
+
 		// if no init script provided
 		if (initScript == null || initScript.trim().length() == 0){
 			return;
 		}
-		
+
 		logger.info("REngine execute init script '"+initScript+"' ...");
-		
+
 		// read the whole content of the init script
-		// FIXME [ian]: this is no good; we either need to call source or parseAndEval the 
-		//        result of readFile at once, this current way of doing it fails as soon
-		//        as one R command spans multiple lines, which is bread and butter
-		String[] scriptCommands = (new FileParser()).readLines(initScript);
-		
+		String script = (new FileParser()).readFile(initScript) + "\n" ;
+
 		// parse and evaluate the script
 		try {
-			for (String command : scriptCommands) {
-				r.parseAndEval(command);
-			}
+			r.parseAndEval(script);
 		} catch (REngineException e) {
 			logger.error("Exception running initialisation script: " + e.getMessage(),e);
 			throw e;
@@ -290,7 +292,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw new REngineException( r, "Unable to run init script '"+initScript+"', "+e.getMessage());
 		}
 	}
-	
+
 
 	/** 
 	 * utility to extract the long pointer from a reference. This is only used when making the variables 
@@ -299,14 +301,14 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	private long getPointer( REXPReference ref){
 		return ( (Long)ref.getHandle() ).longValue() ;
 	}
-	
-	
+
+
 	/**
 	 * Constructor initializing R with the default arguments - service will run on a randomly assigned port
 	 * 
 	 * @param name name of this engine in the MRI registry
- 	 * @param port port used by the RMI registry
- 	 * 
+	 * @param port port used by the RMI registry
+	 * 
 	 * @throws REngineException
 	 * @throws RemoteException
 	 * @throws AccessException
@@ -314,14 +316,14 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public RemoteREngine_Server(String name, int port) throws REngineException, RemoteException, AccessException{
 		this( name, 0, port, null, null) ;
 	}
-	
+
 	/**
 	 * Constructor initializing R with the default arguments - service will run on a randomly assigned port
 	 * 
 	 * @param name name of this engine in the MRI registry
 	 * @param servicePort Port used by the service to receive requests
- 	 * @param registryPort port used by the RMI registry
- 	 * 
+	 * @param registryPort port used by the RMI registry
+	 * 
 	 * @throws REngineException
 	 * @throws RemoteException
 	 * @throws AccessException
@@ -344,7 +346,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			}
 		}
 	}
-	
+
 	/**
 	 * Shutdown the server
 	 */
@@ -352,27 +354,27 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.info( "R Server: shutdown" ) ;
 		ThreadLogger threadLogger = new ThreadLogger();
 		threadLogger.logAllThreads("About to shutdown");
-		
+
 		if( !running ) return; 
 		running = false; 
-		
+
 		// TODO implement a version of consoleThread that won't block on input
 		if (consoleThread != null) consoleThread.requestStop() ;
 		if (consoleThread != null) consoleThread.interrupt() ;
-		
+
 		if( !clients.isEmpty() ){
 			ServerDownCallback dying = new ServerDownCallback() ;
 			sendCallbackToListeners(dying) ;
 		}
 		/* TODO: empty the clients and listeners ? */
-		
+
 		logger.info("Unbinding " + name );
 		try {
 			if (registry != null) {
 				registry.unbind( name );
 				logger.debug(name + " unbound from registry ");
 			}
-			
+
 			if (stub != null) {
 				if (UnicastRemoteObject.unexportObject(stub, false)) {
 					logger.debug(name + " successfully unexported");
@@ -434,21 +436,21 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		}
 	}
 
-	
+
 	/**
 	 * @return the name of this engine in the RMI registry
 	 */
 	public String getName(){
 		return name; 
 	}
-	
+
 	/**
 	 * @return the port on which the RMI registry runs
 	 */
 	public int getPort(){
 		return registryPort ; 
 	}
-	
+
 	/**                                                    
 	 * parse a string into an expression vector         
 	 *
@@ -661,7 +663,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		try {
 			RemoteFileInputStream_Server stream = new RemoteFileInputStream_Server( filename ) ;
 			RemoteFileInputStream stub = (RemoteFileInputStream) UnicastRemoteObject.exportObject(stream, servicePort);
-	    	return stub ; 
+			return stub ; 
 		} catch (ServerSideIOException e) {
 			logger.error("ServerSideIOException",e);
 			throw e;
@@ -704,7 +706,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * Called when a client wants to send a command to the REPL
 	 * 
@@ -717,7 +719,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.debug(cmd);
 		consoleSync.add( new Command( cmd, new RemoteREngineClientSender(origin) ) );
 	}
-		
+
 	private void debug( String message){
 		if( DEBUG ){
 			System.err.println( message ); 
@@ -740,7 +742,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		addCallbackListener( new ClientCallbackListener( client ) ) ;
 		return variables ; 
 	}
-	
+
 	/**
 	 * Adds a callback listener
 	 * @param listener the callback listener
@@ -749,7 +751,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.debug("Adding CallbackListener");
 		callbackListeners.add( listener ) ;
 	}
-	
+
 	/**
 	 * Removes a callback listener
 	 * @param listener the callback listener to remove
@@ -781,7 +783,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.debug("Sending callback response");
 		callbackLoop.addResponse(response) ;
 	}
-	
+
 	/**
 	 * Send a callback to all the listeners associated with this server
 	 * 
@@ -790,7 +792,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	public void sendCallbackToListeners(RCallback callback){
 		callbackSender.addToQueue( callback ) ;
 	}
-	
+
 	/** 
 	 * start the console thread
 	 */

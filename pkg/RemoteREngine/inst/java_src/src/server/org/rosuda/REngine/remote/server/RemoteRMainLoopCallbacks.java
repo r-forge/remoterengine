@@ -20,8 +20,6 @@
 
 package org.rosuda.REngine.remote.server;
 
-import org.rosuda.JRI.RMainLoopCallbacks;
-import org.rosuda.JRI.Rengine;
 import org.rosuda.REngine.REngine;
 import org.rosuda.REngine.REngineCallbacks;
 import org.rosuda.REngine.REngineConsoleHistoryInterface;
