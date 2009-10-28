@@ -175,10 +175,10 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		addCallbackListener( consoleCallbackHandler ) ;
 
 		logger.debug("About to construct JRIEngine");
-		r = new JRIEngine( args, callbackLoop ) ;
+		r = (JRIEngine)JRIEngine.createEngine( args, callbackLoop, true) ;
 
 		// Execute R prepare script before R server is available via RMI
-		runInitScript(r, initScript);
+		runInitScript( initScript );
 		
 		/* TODO: forbid the q function */
 		
@@ -262,7 +262,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 	 * @throws RemoteException
 	 * @throws AccessException
 	 */
-	private void runInitScript(JRIEngine r, String initScript) throws REngineException, RemoteException, AccessException{
+	private void runInitScript(String initScript) throws REngineException, RemoteException, AccessException{
 		
 		// if no init script provided
 		if (initScript == null || initScript.trim().length() == 0){
@@ -272,6 +272,9 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 		logger.info("REngine execute init script '"+initScript+"' ...");
 		
 		// read the whole content of the init script
+		// FIXME [ian]: this is no good; we either need to call source or parseAndEval the 
+		//        result of readFile at once, this current way of doing it fails as soon
+		//        as one R command spans multiple lines, which is bread and butter
 		String[] scriptCommands = (new FileParser()).readLines(initScript);
 		
 		// parse and evaluate the script
@@ -284,7 +287,7 @@ public class RemoteREngine_Server implements RemoteREngineInterface {
 			throw e;
 		} catch (REXPMismatchException e) {
 			logger.error("Unable to run init script '"+initScript+"', "+e.getMessage(),e);
-			throw new REngineException(REngine.getLastEngine(), "Unable to run init script '"+initScript+"', "+e.getMessage());
+			throw new REngineException( r, "Unable to run init script '"+initScript+"', "+e.getMessage());
 		}
 	}
 	
