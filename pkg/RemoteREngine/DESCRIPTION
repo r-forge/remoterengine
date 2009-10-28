@@ -8,4 +8,4 @@ Maintainer: Romain Francois <francoisromain@free.fr>
 Description: RMI based REngine implementation
 License: GPL (>=3)
 LazyLoad: yes
-Depends:rJava (>= 0.7-0), ant (>= 0.0-6)
+Depends:rJava (>= 0.8-0), ant (>= 0.0-8)
